@@ -139,7 +139,7 @@ public class TileTextureMap {
             return Optional.of(AntiqueAtlas.id("plateau_mesa"));
         }
 
-        if (biomeTag.is(BiomeTags.IS_FOREST) || biomeTag.is(Tags.Biomes.IS_DECIDUOUS_TREE)) {
+        if (biomeTag.is(BiomeTags.IS_FOREST) || biomeTag.is(Tags.Biomes.IS_DENSE_VEGETATION) || biomeTag.is(Tags.Biomes.IS_DECIDUOUS_TREE) || biomeTag.is(Tags.Biomes.IS_CONIFEROUS_TREE)) {
             if (biomeTag.is(Tags.Biomes.IS_ICY) || biomeTag.is(Tags.Biomes.IS_SNOWY)) {
                 if (biomeTag.is(BiomeTags.IS_HILL)) {
                     return Optional.of(AntiqueAtlas.id("snow_pines_hills"));
@@ -147,15 +147,24 @@ public class TileTextureMap {
                     return Optional.of(AntiqueAtlas.id("snow_pines"));
                 }
             } else {
-                if (biomeTag.is(BiomeTags.IS_HILL)) {
-                    return Optional.of(AntiqueAtlas.id("forest_hills"));
-                } else {
-                    return Optional.of(AntiqueAtlas.id("forest"));
-                }
+            	if (biomeTag.is(Tags.Biomes.IS_CONIFEROUS_TREE)) {
+                    if (biomeTag.is(BiomeTags.IS_HILL)) {
+                        return Optional.of(AntiqueAtlas.id("pines_hills"));
+                    } else {
+                        return Optional.of(AntiqueAtlas.id("pines"));
+                    }
+            	}
+            	else {
+                    if (biomeTag.is(BiomeTags.IS_HILL)) {
+                        return Optional.of(AntiqueAtlas.id("forest_hills"));
+                    } else {
+                        return Optional.of(AntiqueAtlas.id("forest"));
+                    }
+            	}
             }
         }
 
-        if (biomeTag.is(Tags.Biomes.IS_PLAINS) || biomeTag.is(Tags.Biomes.IS_SNOWY_PLAINS)) {
+        if (biomeTag.is(Tags.Biomes.IS_PLAINS) || biomeTag.is(Tags.Biomes.IS_SNOWY_PLAINS) || biomeTag.is(Tags.Biomes.IS_SPARSE_VEGETATION)) {
             if (biomeTag.is(Tags.Biomes.IS_ICY)
                     || biomeTag.is(Tags.Biomes.IS_SNOWY)
             ) {
