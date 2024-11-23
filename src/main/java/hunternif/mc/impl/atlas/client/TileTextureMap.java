@@ -138,7 +138,7 @@ public class TileTextureMap {
             return Optional.of(AntiqueAtlas.id("plateau_mesa"));
         }
 
-        if (biomeTag.is(BiomeTags.IS_FOREST) || biomeTag.is(ConventionalBiomeTags.IS_DECIDUOUS_TREE)) {
+        if (biomeTag.is(BiomeTags.IS_FOREST) || biomeTag.is(ConventionalBiomeTags.IS_VEGETATION_DENSE) || biomeTag.is(ConventionalBiomeTags.IS_DECIDUOUS_TREE) || biomeTag.is(ConventionalBiomeTags.IS_CONIFEROUS_TREE)) {
             if (biomeTag.is(ConventionalBiomeTags.IS_ICY) || biomeTag.is(ConventionalBiomeTags.IS_SNOWY)) {
                 if (biomeTag.is(BiomeTags.IS_HILL)) {
                     return Optional.of(AntiqueAtlas.id("snow_pines_hills"));
@@ -146,15 +146,24 @@ public class TileTextureMap {
                     return Optional.of(AntiqueAtlas.id("snow_pines"));
                 }
             } else {
-                if (biomeTag.is(BiomeTags.IS_HILL)) {
-                    return Optional.of(AntiqueAtlas.id("forest_hills"));
-                } else {
-                    return Optional.of(AntiqueAtlas.id("forest"));
-                }
+            	if (biomeTag.is(ConventionalBiomeTags.IS_CONIFEROUS_TREE)) {
+                    if (biomeTag.is(BiomeTags.IS_HILL)) {
+                        return Optional.of(AntiqueAtlas.id("pines_hills"));
+                    } else {
+                        return Optional.of(AntiqueAtlas.id("pines"));
+                    }
+            	}
+            	else {
+                    if (biomeTag.is(BiomeTags.IS_HILL)) {
+                        return Optional.of(AntiqueAtlas.id("forest_hills"));
+                    } else {
+                        return Optional.of(AntiqueAtlas.id("forest"));
+                    }
+            	}
             }
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_PLAINS) || biomeTag.is(ConventionalBiomeTags.IS_SNOWY_PLAINS)) {
+        if (biomeTag.is(ConventionalBiomeTags.IS_PLAINS) || biomeTag.is(ConventionalBiomeTags.IS_SNOWY_PLAINS) || biomeTag.is(ConventionalBiomeTags.IS_VEGETATION_SPARSE)) {
             if (biomeTag.is(ConventionalBiomeTags.IS_ICY)
                     || biomeTag.is(ConventionalBiomeTags.IS_SNOWY)
             ) {
