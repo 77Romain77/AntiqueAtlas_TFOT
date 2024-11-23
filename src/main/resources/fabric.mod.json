@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "contact": {
+    "homepage": "${mod_page}",
+    "issues": "${mod_issue_tracker}"
+  },
+
+  "license": "${mod_license}",
+  "icon": "pack.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "hunternif.mc.impl.atlas.AntiqueAtlas"
+    ],
+    "client": [
+      "hunternif.mc.impl.atlas.AntiqueAtlas"
+    ]
+  },
+  "mixins": [
+    "${mod_id}.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": [">=${loader_version_min}", "<${loader_version_max}"],
+    "fabric": "*",
+    "minecraft": [">=${minecraft_version_min}", "<${minecraft_version_max}"],
+    "java": ">=17",
+	"unionlib": [">=${unionlib_version_min}", "<${unionlib_version_max}"]
+  },
+  "accessWidener": "${mod_id}.accesswidener",
+  "suggests": {
+    "another-mod": "*"
+  }
+}

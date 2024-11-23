@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "package": "com.stereowalker.actualfishing.mixin",
+  "refmap": "actualfishing.refmap.json",
+  "compatibilityLevel": "JAVA_19",
+	"plugin": "com.stereowalker.actualfishing.mixin.ActuallyFishingMixinPlugin",
+  "mixins": [
+    "AbstractFishMixin",
+    "FishingHookMixin",
+    "FishingRodItemMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
