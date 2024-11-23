@@ -15,7 +15,7 @@ public class MinecraftClientMixin {
     @Inject(method = "setLevel", at=@At("TAIL"))
     void AntiqueAtlas_joinWorld(ClientLevel world, ReceivingLevelScreen.Reason pReason, CallbackInfo info)
     {
-    	if (world == null)
+    	if (world != null)
     		ClientProxy.assignCustomBiomeTextures(world);
     }
 }
