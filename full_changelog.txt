@@ -1,0 +1,6 @@
+[1.0.1]
+- Removed unnecessary logging
+- Fish are less likely to bite at night
+
+[1.0.0]
+- Initial release
