@@ -24,14 +24,14 @@ public class DimensionUpdateS2CPacket extends ClientboundUnionPacket {
 	Collection<TileInfo> tiles;
 
 	public DimensionUpdateS2CPacket(int atlasID, ResourceKey<Level> world, Collection<TileInfo> tiles) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.world = world;
 		this.tiles = tiles;
 	}
 	
 	public DimensionUpdateS2CPacket(RegistryFriendlyByteBuf byteBuf) {
-		super(byteBuf);
+		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
 		int tileCount = byteBuf.readVarInt();

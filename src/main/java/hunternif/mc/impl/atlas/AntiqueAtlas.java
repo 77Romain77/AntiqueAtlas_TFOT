@@ -54,9 +54,11 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod(value = AntiqueAtlas.ID)
 public class AntiqueAtlas extends MinecraftMod implements PacketHolder {
+	public static AntiqueAtlas instance;
 	
     public AntiqueAtlas() {
     	super("antiqueatlas", () -> new AntiqueAtlasClientSegment(), () -> new ServerSegment());
+    	instance = this;
 	}
 
 	public static final String ID = "antiqueatlas";

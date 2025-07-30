@@ -25,13 +25,13 @@ public class MapDataS2CPacket extends ClientboundUnionPacket {
     CompoundTag data;
 
 	public MapDataS2CPacket(int atlasID, CompoundTag data) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.data = data;
 	}
 	
 	public MapDataS2CPacket(RegistryFriendlyByteBuf byteBuf) {
-		super(byteBuf);
+		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.data = byteBuf.readNbt();
 	}

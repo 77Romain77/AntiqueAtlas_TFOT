@@ -33,14 +33,14 @@ public class TileGroupsS2CPacket extends ClientboundUnionPacket {
     List<TileGroup> tileGroups;
 
 	public TileGroupsS2CPacket(int atlasID, ResourceKey<Level> world, List<TileGroup> tileGroups) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.world = world;
 		this.tileGroups = tileGroups;
 	}
 	
 	public TileGroupsS2CPacket(RegistryFriendlyByteBuf byteBuf) {
-		super(byteBuf);
+		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
         int length = byteBuf.readVarInt();

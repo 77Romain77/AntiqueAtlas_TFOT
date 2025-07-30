@@ -26,7 +26,7 @@ public class PutTileS2CPacket extends ClientboundUnionPacket {
     ResourceLocation tile;
 
 	public PutTileS2CPacket(int atlasID, ResourceKey<Level> world, int x, int z, ResourceLocation tile) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.world = world;
 		this.x = x;
@@ -35,7 +35,7 @@ public class PutTileS2CPacket extends ClientboundUnionPacket {
 	}
 	
 	public PutTileS2CPacket(RegistryFriendlyByteBuf byteBuf) {
-		super(byteBuf);
+		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
 		this.x = byteBuf.readVarInt();

@@ -22,7 +22,7 @@ public class PutTileC2SPacket extends ServerboundUnionPacket {
 	ResourceLocation tile;
 	
 	public PutTileC2SPacket(int atlasID, int x, int z, ResourceLocation tile) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.tile = tile;
 		this.x = x;
@@ -30,7 +30,7 @@ public class PutTileC2SPacket extends ServerboundUnionPacket {
 	}
 
 	public PutTileC2SPacket(RegistryFriendlyByteBuf packetBuffer) {
-		super(packetBuffer);
+		super(packetBuffer, AntiqueAtlas.instance.channel);
 		this.atlasID = packetBuffer.readVarInt();
 		this.tile = packetBuffer.readResourceLocation();
 		this.x = packetBuffer.readVarInt();

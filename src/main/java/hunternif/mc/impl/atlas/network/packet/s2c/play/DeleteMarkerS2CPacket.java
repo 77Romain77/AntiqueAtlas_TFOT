@@ -25,13 +25,13 @@ public class DeleteMarkerS2CPacket extends ClientboundUnionPacket {
 	int atlasID, markerID;
 
 	public DeleteMarkerS2CPacket(int atlasID, int markerID) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.markerID = markerID;
 	}
 	
 	public DeleteMarkerS2CPacket(RegistryFriendlyByteBuf byteBuf) {
-		super(byteBuf);
+		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.markerID = byteBuf.readVarInt();
 	}

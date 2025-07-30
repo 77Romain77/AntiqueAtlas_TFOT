@@ -25,7 +25,7 @@ public class PutBrowsingPositionC2SPacket extends ServerboundUnionPacket {
 	ResourceKey<Level> world;
 	
 	public PutBrowsingPositionC2SPacket(int atlasID, ResourceKey<Level> world, int x, int y, double zoom) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.world = world;
 		this.x = x;
@@ -34,7 +34,7 @@ public class PutBrowsingPositionC2SPacket extends ServerboundUnionPacket {
 	}
 
 	public PutBrowsingPositionC2SPacket(RegistryFriendlyByteBuf packetBuffer) {
-		super(packetBuffer);
+		super(packetBuffer, AntiqueAtlas.instance.channel);
 		this.atlasID = packetBuffer.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, packetBuffer.readResourceLocation());
 		this.x = packetBuffer.readVarInt();

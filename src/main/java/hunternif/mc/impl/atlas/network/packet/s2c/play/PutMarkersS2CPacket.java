@@ -37,7 +37,7 @@ public class PutMarkersS2CPacket extends ClientboundUnionPacket {
 	ListMultimap<ResourceLocation, Marker.Precursor> markersByType;
 
 	public PutMarkersS2CPacket(int atlasID, ResourceKey<Level> world, Collection<Marker> markers) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.world = world;
 		markersByType = ArrayListMultimap.create();
@@ -47,7 +47,7 @@ public class PutMarkersS2CPacket extends ClientboundUnionPacket {
 	}
 	
 	public PutMarkersS2CPacket(RegistryFriendlyByteBuf byteBuf) {
-		super(byteBuf);
+		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
         int typesLength = byteBuf.readVarInt();

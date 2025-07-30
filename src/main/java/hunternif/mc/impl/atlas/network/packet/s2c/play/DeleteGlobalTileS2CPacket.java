@@ -24,14 +24,14 @@ public class DeleteGlobalTileS2CPacket extends ClientboundUnionPacket {
 	int chunkX, chunkZ;
 
 	public DeleteGlobalTileS2CPacket(ResourceKey<Level> world, int chunkX, int chunkZ) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.world = world;
 		this.chunkX = chunkX;
 		this.chunkZ = chunkZ;
 	}
 	
 	public DeleteGlobalTileS2CPacket(RegistryFriendlyByteBuf byteBuf) {
-		super(byteBuf);
+		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
 		this.chunkX = byteBuf.readVarInt();
 		this.chunkZ = byteBuf.readVarInt();

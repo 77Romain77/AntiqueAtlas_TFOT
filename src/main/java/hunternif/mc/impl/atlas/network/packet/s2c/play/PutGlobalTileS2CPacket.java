@@ -28,13 +28,13 @@ public class PutGlobalTileS2CPacket extends ClientboundUnionPacket {
 	List<Map.Entry<ChunkPos, ResourceLocation>> tiles;
 
 	public PutGlobalTileS2CPacket(ResourceKey<Level> world, List<Map.Entry<ChunkPos, ResourceLocation>> tiles) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.world = world;
 		this.tiles = tiles;
 	}
 	
 	public PutGlobalTileS2CPacket(ResourceKey<Level> world, int chunkX, int chunkZ, ResourceLocation tileId) {
-		super(null);
+		super(AntiqueAtlas.instance.channel);
 		this.world = world;
 		this.tiles = new ArrayList<>();
 		this.tiles.add(new Map.Entry<ChunkPos, ResourceLocation>() {
@@ -54,7 +54,7 @@ public class PutGlobalTileS2CPacket extends ClientboundUnionPacket {
 	}
 	
 	public PutGlobalTileS2CPacket(RegistryFriendlyByteBuf byteBuf) {
-		super(byteBuf);
+		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
 		this.tiles = new ArrayList<>();
 		int max = byteBuf.readVarInt();
