@@ -51,6 +51,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.neoforged.fml.common.Mod;
@@ -86,7 +87,7 @@ public class AntiqueAtlas extends MinecraftMod implements PacketHolder {
             return null;
         }
 
-        return ((ServerLevel) world).getDataStorage().computeIfAbsent(new SavedData.Factory<>(AtlasIdData::new, AtlasIdData::fromNbt, null), "antiqueatlas:global_atlas_data");
+        return ((ServerLevel) world).getDataStorage().computeIfAbsent(new SavedData.Factory<>(AtlasIdData::new, AtlasIdData::fromNbt, null), "antiqueatlas_global_atlas_data");
     }
     
     @Override
@@ -125,13 +126,17 @@ public class AntiqueAtlas extends MinecraftMod implements PacketHolder {
     			TileDetectorBase.scanBiomeTypes(server);
     		}
     	});
-    	collector.addInsert(Inserts.LOGGED_IN, (a) -> {
-    		globalMarkersData.onPlayerLogin((ServerPlayer) a);
-    		globalTileData.onPlayerLogin((ServerPlayer) a);
-    		PlayerEventHandler.onPlayerLogin((ServerPlayer) a);
+    	collector.addInsert(Inserts.LOGGED_IN, (player) -> {
+    		globalMarkersData.onPlayerLogin((ServerPlayer) player);
+    		globalTileData.onPlayerLogin((ServerPlayer) player);
+    		PlayerEventHandler.onPlayerLogin((ServerPlayer) player);
     	});
     	collector.addInsert(Inserts.STRUCTURE_ADDED, StructureHandler::resolve);
     	collector.addInsert(Inserts.STRUCTURE_PIECE_ADDED, StructureHandler::resolve);
+    	
+    	collector.addInsert(Inserts.LIVING_TICK, (living) -> {
+    		if (living instanceof Player player) PlayerEventHandler.onPlayerTick(player);
+    	});
     }
     
     @Override

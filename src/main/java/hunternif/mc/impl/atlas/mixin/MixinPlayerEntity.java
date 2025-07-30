@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Player.class)
+//No longer useful
 public class MixinPlayerEntity {
 
     @Inject(at = @At("RETURN"), method = "tick")
