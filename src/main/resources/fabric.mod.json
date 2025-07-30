@@ -8,6 +8,7 @@
   "authors": [
     "${mod_authors}"
   ],
+  "contributors": ["Hunternif", "Kenkron", "osipxd", "thecodewarrior", "TehNut", "crafteverywhere", "coolAlias", "Ruukas97", "Mazdallier", "chesterccj305", "asiekierka", "sam-kirby", "esotericist", "dadodollabela", "Yulife", "Waterrail", "The-Fireplace", "TBM13", "Rikshy", "GirafiStudios", "DrCopernicus", "DBotThePony", "AugiteSoul", "Stereowalker"],
   "contact": {
     "homepage": "${mod_page}",
     "issues": "${mod_issue_tracker}"
