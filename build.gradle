@@ -15,6 +15,8 @@ repositories {
 	maven {url "https://www.cursemaven.com"} //CurseForge
     maven {url = "https://repo.spongepowered.org/maven"} // mixin
 	maven {url "https://girafi.dk/maven/"}
+	
+	maven { url = 'https://maven.minecraftforge.net/' } //BOP
 }
 
 dependencies {
