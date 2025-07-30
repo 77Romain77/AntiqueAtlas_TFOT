@@ -1,6 +1,7 @@
 package hunternif.mc.impl.atlas.registry;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +60,7 @@ public class MarkerType {
 		type.initMips();
 		if (REGISTRY.containsKey(location)) {
 			int id = REGISTRY.getId(REGISTRY.get(location));
-			//TODO: Fix
+			//Mojang no longer ship a way to override entries
 //			REGISTRY.registerOrOverride(OptionalInt.of(id), ResourceKey.create(KEY, location), type, Lifecycle.stable());
 		} else {
 			REGISTRY.register(ResourceKey.create(KEY, location), type, new RegistrationInfo(Optional.empty(), Lifecycle.stable()));
@@ -203,10 +204,12 @@ public class MarkerType {
 
 			Resource iresource = null;
 			NativeImage bufferedimage = null;
+			InputStream is = null;
 
 			try {
 				iresource = Minecraft.getInstance().getResourceManager().getResource(icons[i]).get();
-				bufferedimage = NativeImage.read(iresource.open());
+				is = iresource.open();
+				bufferedimage = NativeImage.read(is);
 				iconSizes[i] = Math.min(bufferedimage.getWidth(), bufferedimage.getHeight());
 				BitMatrix matrix = new BitMatrix(bufferedimage.getWidth(), bufferedimage.getHeight(), false);
 
@@ -235,6 +238,7 @@ public class MarkerType {
 				}
 
 				iconPixels[i] = matrix;
+				is.close();
 			} catch (IOException e) {
 				Log.warn(e, "Marker %s -- Error getting texture size data for index %d - %s",
 								MarkerType.REGISTRY.getKey(this).toString(), i, icons[i].toString());
@@ -242,8 +246,8 @@ public class MarkerType {
 				if (bufferedimage != null) {
 					bufferedimage.close();
 				}
-				//TODO: AA Fix This
-//				IOUtils.closeQuietly(iresource);
+				//TODO: Handled already somewhere above
+				//IOUtils.closeQuietly(iresource);
 			}
 		}
 	}
