@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -411,7 +412,12 @@ public class GuiComponent extends Screen {
      */
     @Override
     public void render(GuiGraphics matrices, int mouseX, int mouseY, float partialTick) {
+    	//1.21 breaks the atlas
 //        super.render(matrices, mouseX, mouseY, partialTick);
+    	for (Renderable renderable : this.renderables) {
+            renderable.render(matrices, mouseX, mouseY, partialTick);
+        }
+    	
         for (GuiComponent child : children) {
             if (!child.isClipped) {
                 child.render(matrices, mouseX, mouseY, partialTick);

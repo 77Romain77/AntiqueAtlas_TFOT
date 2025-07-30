@@ -3,6 +3,7 @@ package hunternif.mc.impl.atlas.client.gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.stereowalker.unionlib.client.gui.screens.controls.ModControlsScreen;
 import com.stereowalker.unionlib.util.ScreenHelper;
 
 import hunternif.mc.api.client.AtlasClientAPI;
@@ -92,6 +93,7 @@ public class GuiMarkerFinalizer extends GuiComponent {
         textField = new EditBox(Minecraft.getInstance().font, (this.width - 200) / 2, this.height / 2 - 81, 200, 20, Component.translatable("gui.antiqueatlas.marker.label"));
         textField.setEditable(true);
         textField.setValue("");
+        this.addRenderableWidget(this.textField);
 
         scroller = new GuiScrollingContainer();
         scroller.setWheelScrollsHorizontally();

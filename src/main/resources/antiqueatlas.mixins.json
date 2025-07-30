@@ -9,7 +9,10 @@
   ],
   "client": [
     "HeldItemRendererMixin",
-    "MinecraftClientMixin"
+    "MinecraftClientMixin",
+    "MixinEntity",
+    "GlDebugMixin",
+    "MixinPlayerEntityDeath"
   ],
   "injectors": {
     "defaultRequire": 1

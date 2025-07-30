@@ -4,6 +4,7 @@ import com.stereowalker.unionlib.network.protocol.game.ServerboundUnionPacket;
 
 import hunternif.mc.api.AtlasAPI;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -50,7 +51,7 @@ public class PutMarkerC2SPacket extends ServerboundUnionPacket {
 		packetBuffer.writeVarInt(x);
 		packetBuffer.writeVarInt(z);
 		packetBuffer.writeBoolean(visibleBeforeDiscovery);
-		packetBuffer.writeUtf(Component.Serializer.toJson(label, null));
+		packetBuffer.writeUtf(Component.Serializer.toJson(label, RegistryAccess.EMPTY));
 	}
 
 	@Override

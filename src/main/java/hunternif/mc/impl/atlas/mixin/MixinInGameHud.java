@@ -12,6 +12,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 
 @Mixin(Gui.class)
+//No longer useful
 public class MixinInGameHud {
     @Shadow
     private int scaledWidth;
