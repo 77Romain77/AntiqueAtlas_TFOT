@@ -3,7 +3,9 @@
   "package": "hunternif.mc.impl.atlas.mixin",
   "refmap": "antiqueatlas.refmap.json",
   "compatibilityLevel": "JAVA_19",
+  "plugin": "hunternif.mc.impl.atlas.mixin.VolatileMixinPlugin",
   "mixins": [
+  	"MixinPlayerEntity"
   ],
   "client": [
     "HeldItemRendererMixin",
