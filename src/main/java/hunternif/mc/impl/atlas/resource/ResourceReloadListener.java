@@ -30,6 +30,12 @@ public interface ResourceReloadListener<T> extends PreparableReloadListener {
                 .thenCompose(t -> apply(t, manager, applyProfiler, applyExecutor));
     }
 
+    default String getName() {
+        return id().toString();
+    }
+
+    ResourceLocation id();
+
     Collection<ResourceLocation> getDependencies();
 
 }
