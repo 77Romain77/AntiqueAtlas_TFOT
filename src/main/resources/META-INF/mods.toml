@@ -9,7 +9,7 @@ version="${mod_version}"
 displayName="${mod_name}"
 updateJSONURL=""
 displayURL="${mod_page}"
-credits="I'd like to thank all my supporters on Patreon for giving me a reason to continue modding, and you for downloading and playing with this mod"
+credits="Hunternif, Kenkron, osipxd, thecodewarrior, TehNut, crafteverywhere, coolAlias, Ruukas97, Mazdallier, chesterccj305, asiekierka, sam-kirby, esotericist, dadodollabela, Yulife, Waterrail, The-Fireplace, TBM13, Rikshy, GirafiStudios, DrCopernicus, DBotThePony, AugiteSoul, Stereowalker"
 authors="${mod_authors}"
 description='''${mod_description}'''
 [[dependencies.${mod_id}]] #optional
