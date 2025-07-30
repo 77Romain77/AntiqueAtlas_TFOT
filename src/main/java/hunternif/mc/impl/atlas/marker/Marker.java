@@ -1,6 +1,7 @@
 package hunternif.mc.impl.atlas.marker;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -109,7 +110,7 @@ public class Marker {
 
 	public void write(FriendlyByteBuf buf) {
 		buf.writeVarInt(this.id);
-		buf.writeUtf(Component.Serializer.toJson(this.label, null));
+		buf.writeUtf(Component.Serializer.toJson(this.label, RegistryAccess.EMPTY));
 		buf.writeVarInt(this.x);
 		buf.writeVarInt(this.z);
 		buf.writeBoolean(this.visibleAhead);
@@ -124,7 +125,7 @@ public class Marker {
 
 		public Precursor(FriendlyByteBuf buf) {
 			this.id = buf.readVarInt();
-			this.label = Component.Serializer.fromJson(buf.readUtf(), null);
+			this.label = Component.Serializer.fromJson(buf.readUtf(), RegistryAccess.EMPTY);
 			this.x = buf.readVarInt();
 			this.z = buf.readVarInt();
 			this.visibleAhead = buf.readBoolean();

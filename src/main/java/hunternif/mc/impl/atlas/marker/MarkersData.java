@@ -13,6 +13,7 @@ import com.stereowalker.unionlib.util.VersionHelper;
 
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -114,7 +115,7 @@ public class MarkersData extends SavedData {
 				Marker marker = new Marker(
 						id,
 						VersionHelper.toLoc(markerTag.getString(TAG_MARKER_TYPE)),
-						Component.Serializer.fromJson(markerTag.getString(TAG_MARKER_LABEL), null),
+						Component.Serializer.fromJson(markerTag.getString(TAG_MARKER_LABEL), RegistryAccess.EMPTY),
 						world,
 						markerTag.getInt(TAG_MARKER_X),
 						markerTag.getInt(TAG_MARKER_Y),
