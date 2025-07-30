@@ -7,7 +7,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
-import com.stereowalker.unionlib.neoforge.PlatformHelper;
+import com.stereowalker.unionlib.forge.PlatformHelper;
 
 public class VolatileMixinPlugin implements IMixinConfigPlugin {
     @Override
