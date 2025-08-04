@@ -2,27 +2,44 @@ package hunternif.mc.impl.atlas.item;
 
 import java.util.function.UnaryOperator;
 
+import com.mojang.serialization.Codec;
 import com.stereowalker.unionlib.core.registries.RegistryHolder;
 import com.stereowalker.unionlib.core.registries.RegistryObject;
+import com.stereowalker.unionlib.util.VersionHelper;
 
 import hunternif.mc.impl.atlas.AntiqueAtlas;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
-import net.minecraft.world.level.saveddata.maps.MapId;
 
 public class AntiqueAtlasItems {
+	public record AtlasId(int id) {
+	    public static final Codec<AtlasId> CODEC = Codec.INT.xmap(AtlasId::new, AtlasId::id);
+	    public static final StreamCodec<ByteBuf, AtlasId> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(AtlasId::new, AtlasId::id);
+
+	    public String key() {
+	        return "atlas_" + this.id;
+	    }
+	}
 	@RegistryHolder(namespace = AntiqueAtlas.ID)
 	public class Components {
 		@RegistryObject("atlas_id")
-		public static final DataComponentType<MapId> ATLAS_ID = register(
-		        type -> type.persistent(MapId.CODEC).networkSynchronized(MapId.STREAM_CODEC)
+		public static final DataComponentType<AtlasId> ATLAS_ID = register(
+		        type -> type.persistent(AtlasId.CODEC).networkSynchronized(AtlasId.STREAM_CODEC)
 		);
 	    private static <T> DataComponentType<T> register(UnaryOperator<DataComponentType.Builder<T>> pBuilder) {
 	        return pBuilder.apply(DataComponentType.builder()).build();
 	    }
+	    public static final VersionHelper.Data<AtlasId> ATLAS_ID_DATA = new VersionHelper.Data<AtlasId>(
+				(stack) -> stack.has(ATLAS_ID),
+				(stack) -> stack.get(ATLAS_ID),
+				(stack, dat) -> stack.set(ATLAS_ID, dat),
+				(stack) -> stack.remove(ATLAS_ID));
 	}
 	
 	@RegistryHolder(namespace = AntiqueAtlas.ID)
@@ -43,7 +60,7 @@ public class AntiqueAtlasItems {
 	
     public static ItemStack getAtlasFromId(int atlasID) {
         ItemStack atlas = new ItemStack(Items.ATLAS);
-        atlas.set(Components.ATLAS_ID, new MapId(atlasID));
+        Components.ATLAS_ID_DATA.setData(atlas, new AtlasId(atlasID));
         return atlas;
     }
 
