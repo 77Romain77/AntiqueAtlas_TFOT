@@ -18,7 +18,6 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.saveddata.maps.MapId;
 
 /**
  * 2 or more atlases combine into one with all biome and marker data copied.
@@ -134,7 +133,7 @@ public class RecipeAtlasCombining implements CraftingRecipe {
 
         // Set atlas ID last, because otherwise we wouldn't be able copy the
         // data from the atlas which was used as a placeholder for the result.
-        result.set(AntiqueAtlasItems.Components.ATLAS_ID, new MapId(atlasID));
+        AntiqueAtlasItems.Components.ATLAS_ID_DATA.setData(result, new AntiqueAtlasItems.AtlasId(atlasID));
         return result;
     }
 }
