@@ -34,6 +34,11 @@ public class AntiqueAtlasConfig implements ConfigObject {
     @UnionConfig.Comment(comment = {"Player will need to craft atlas item to use atlas."})
     public boolean itemNeeded = true;
 
+    @UnionConfig.Entry(group = "Gameplay", name = "minimap", 
+    		translatable = "text.autoconfig.antiqueatlas.option.minimap", side = ConfigSide.Shared)
+    @UnionConfig.Comment(comment = {"Show a minimap if held in the mainhand"})
+    public boolean minimap = false;
+
     //============ Interface settings =============
     @UnionConfig.Entry(group = "User Interface", name = "doScaleMarkers", 
     		translatable = "text.autoconfig.antiqueatlas.option.doScaleMarkers", side = ConfigSide.Shared)
