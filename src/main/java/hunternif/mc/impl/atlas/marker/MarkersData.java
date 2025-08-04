@@ -78,7 +78,7 @@ public class MarkersData extends SavedData {
 	public MarkersData() {
 	}
 
-	public static MarkersData fromNbt(CompoundTag compound, Provider provider) {
+	public static MarkersData fromNbt(CompoundTag compound) {
 		MarkersData data = new MarkersData();
 		doReadNbt(compound, data);
 		return data;
@@ -115,7 +115,7 @@ public class MarkersData extends SavedData {
 				Marker marker = new Marker(
 						id,
 						VersionHelper.toLoc(markerTag.getString(TAG_MARKER_TYPE)),
-						Component.Serializer.fromJson(markerTag.getString(TAG_MARKER_LABEL), RegistryAccess.EMPTY),
+						Component.Serializer.fromJson(markerTag.getString(TAG_MARKER_LABEL)),
 						world,
 						markerTag.getInt(TAG_MARKER_X),
 						markerTag.getInt(TAG_MARKER_Y),
@@ -126,7 +126,7 @@ public class MarkersData extends SavedData {
 	}
 
 	@Override
-	public CompoundTag save(CompoundTag compound, Provider provider) {
+	public CompoundTag save(CompoundTag compound) {
 		Log.info("Saving local markers data to NBT");
 		compound.putInt(TAG_VERSION, VERSION);
 		ListTag dimensionMapList = new ListTag();
@@ -139,7 +139,7 @@ public class MarkersData extends SavedData {
 				CompoundTag markerTag = new CompoundTag();
 				markerTag.putInt(TAG_MARKER_ID, marker.getId());
 				markerTag.putString(TAG_MARKER_TYPE, marker.getType().toString());
-				markerTag.putString(TAG_MARKER_LABEL, Component.Serializer.toJson(marker.getLabel(), provider));
+				markerTag.putString(TAG_MARKER_LABEL, Component.Serializer.toJson(marker.getLabel()));
 				markerTag.putInt(TAG_MARKER_X, marker.getX());
 				markerTag.putInt(TAG_MARKER_Y, marker.getZ());
 				markerTag.putBoolean(TAG_MARKER_VISIBLE_AHEAD, marker.isVisibleAhead());

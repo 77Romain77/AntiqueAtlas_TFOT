@@ -21,7 +21,7 @@ public class AtlasIdData extends SavedData {
         return id;
     }
 
-    public static AtlasIdData fromNbt(CompoundTag compound, HolderLookup.Provider provider) {
+    public static AtlasIdData fromNbt(CompoundTag compound) {
         AtlasIdData data = new AtlasIdData();
         if (compound.contains(TAG_NEXT_ID, Tag.TAG_ANY_NUMERIC)) {
             data.nextId = compound.getInt(TAG_NEXT_ID);
@@ -32,7 +32,7 @@ public class AtlasIdData extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound, HolderLookup.Provider provider) {
+    public CompoundTag save(CompoundTag compound) {
         compound.putInt(TAG_NEXT_ID, nextId);
         return compound;
     }

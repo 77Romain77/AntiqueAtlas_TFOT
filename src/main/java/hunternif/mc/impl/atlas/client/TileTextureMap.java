@@ -112,14 +112,14 @@ public class TileTextureMap {
         if (biomeTag.is(BiomeTags.IS_OCEAN)
                 || biomeTag.is(BiomeTags.IS_DEEP_OCEAN)
                 || biomeTag.is(BiomeTags.IS_RIVER)
-                || biomeTag.is(Tags.Biomes.IS_AQUATIC)) {
+                /*|| biomeTag.is(Tags.Biomes.IS_AQUATIC)*/) {
             if (biomeTag.is(Tags.Biomes.IS_COLD))
                 return Optional.of(AntiqueAtlas.id("ice"));
 
             return Optional.of(AntiqueAtlas.id("water"));
         }
 
-		if (biomeTag.is(BiomeTags.IS_BEACH) || biomeTag.is(Tags.Biomes.IS_BEACH)) {
+		if (biomeTag.is(BiomeTags.IS_BEACH)/* || biomeTag.is(Tags.Biomes.IS_BEACH)*/) {
             return Optional.of(AntiqueAtlas.id("shore"));
         }
 
@@ -139,7 +139,7 @@ public class TileTextureMap {
             return Optional.of(AntiqueAtlas.id("plateau_mesa"));
         }
 
-        if (biomeTag.is(BiomeTags.IS_FOREST) || biomeTag.is(Tags.Biomes.IS_DENSE_VEGETATION) || biomeTag.is(Tags.Biomes.IS_DECIDUOUS_TREE) || biomeTag.is(Tags.Biomes.IS_CONIFEROUS_TREE)) {
+        if (biomeTag.is(BiomeTags.IS_FOREST) /*|| biomeTag.is(Tags.Biomes.IS_DENSE_VEGETATION) || biomeTag.is(Tags.Biomes.IS_DECIDUOUS_TREE) || biomeTag.is(Tags.Biomes.IS_CONIFEROUS_TREE)*/) {
             if (biomeTag.is(Tags.Biomes.IS_COLD) || biomeTag.is(Tags.Biomes.IS_SNOWY)) {
                 if (biomeTag.is(BiomeTags.IS_HILL)) {
                     return Optional.of(AntiqueAtlas.id("snow_pines_hills"));
@@ -147,7 +147,7 @@ public class TileTextureMap {
                     return Optional.of(AntiqueAtlas.id("snow_pines"));
                 }
             } else {
-            	if (biomeTag.is(Tags.Biomes.IS_CONIFEROUS_TREE)) {
+            	if (biomeTag.is(Tags.Biomes.IS_CONIFEROUS/*_TREE*/)) {
                     if (biomeTag.is(BiomeTags.IS_HILL)) {
                         return Optional.of(AntiqueAtlas.id("pines_hills"));
                     } else {
@@ -164,9 +164,9 @@ public class TileTextureMap {
             }
         }
 
-        if (biomeTag.is(Tags.Biomes.IS_PLAINS) || biomeTag.is(Tags.Biomes.IS_SNOWY_PLAINS) || biomeTag.is(Tags.Biomes.IS_SPARSE_VEGETATION)) {
-            if (biomeTag.is(Tags.Biomes.IS_ICY)
-                    || biomeTag.is(Tags.Biomes.IS_SNOWY)
+        if (biomeTag.is(Tags.Biomes.IS_PLAINS)/* || biomeTag.is(Tags.Biomes.IS_SNOWY_PLAINS) || biomeTag.is(Tags.Biomes.IS_SPARSE_VEGETATION)*/) {
+            if (/*biomeTag.is(Tags.Biomes.IS_ICY)
+                    || */biomeTag.is(Tags.Biomes.IS_SNOWY)
             ) {
                 if (biomeTag.is(BiomeTags.IS_HILL)) {
                     return Optional.of(AntiqueAtlas.id("snow_hills"));
@@ -206,15 +206,15 @@ public class TileTextureMap {
 //            return Optional.of(AntiqueAtlas.id("hills"));
 //        }
 
-		if (biomeTag.is(Tags.Biomes.IS_MOUNTAIN) || biomeTag.is(Tags.Biomes.IS_MOUNTAIN_SLOPE)) {
+		if (biomeTag.is(Tags.Biomes.IS_MOUNTAIN)/* || biomeTag.is(Tags.Biomes.IS_MOUNTAIN_SLOPE)*/) {
             return Optional.of(AntiqueAtlas.id("mountains"));
         }
 
-        if (biomeTag.is(Tags.Biomes.IS_MOUNTAIN_PEAK)) {
-            return Optional.of(AntiqueAtlas.id("mountains_snow_caps"));
-        }
+//        if (biomeTag.is(Tags.Biomes.IS_MOUNTAIN_PEAK)) {
+//            return Optional.of(AntiqueAtlas.id("mountains_snow_caps"));
+//        }
 
-		if (biomeTag.is(BiomeTags.IS_END) || biomeTag.is(Tags.Biomes.IS_OUTER_END_ISLAND)) {
+		if (biomeTag.is(BiomeTags.IS_END)/* || biomeTag.is(Tags.Biomes.IS_OUTER_END_ISLAND)*/) {
             if (biomeTag.is(Tags.Biomes.IS_DENSE_END) || biomeTag.is(Tags.Biomes.IS_SPARSE_END)) {
                 return Optional.of(AntiqueAtlas.id("end_island_plants"));
             } else {
@@ -226,7 +226,7 @@ public class TileTextureMap {
             return Optional.of(AntiqueAtlas.id("mushroom"));
         }
 
-        if (biomeTag.is(Tags.Biomes.IS_NETHER) || biomeTag.is(BiomeTags.IS_NETHER)) {
+        if (/*biomeTag.is(Tags.Biomes.IS_NETHER) || */biomeTag.is(BiomeTags.IS_NETHER)) {
             return Optional.of(AntiqueAtlas.id("soul_sand_valley"));
         }
 

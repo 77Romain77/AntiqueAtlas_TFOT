@@ -19,7 +19,7 @@ public class GlobalMarkersData extends MarkersData {
 		return super.createAndSaveMarker(type, world, x, y, visibleAhead, label).setGlobal(true);
 	}
 
-	public static GlobalMarkersData readNbt(CompoundTag compound, Provider provider) {
+	public static GlobalMarkersData readNbt(CompoundTag compound) {
 		GlobalMarkersData data = new GlobalMarkersData();
 		doReadNbt(compound, data);
 		return data;

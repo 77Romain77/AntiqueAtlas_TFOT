@@ -50,19 +50,21 @@ class ProgressBarOverlay {
 
 //        RenderSystem.disableTexture();
         Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder vb = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder vb = tessellator.getBuilder();
 
-        vb.addVertex(x, y, 0).setColor(0.5f, 0.5f, 0.5f, 1);
-        vb.addVertex(x, y + barHeight, 0).setColor(0.5f, 0.5f, 0.5f, 1);
-        vb.addVertex(x + barWidth, y + barHeight, 0).setColor(0.5f, 0.5f, 0.5f, 1);
-        vb.addVertex(x + barWidth, y, 0).setColor(0.5f, 0.5f, 0.5f, 1);
+        vb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        vb.addVertex(x, y, 0).setColor(0.5f, 1, 0.5f, 1);
-        vb.addVertex(x, y + barHeight, 0).setColor(0.5f, 1, 0.5f, 1);
-        vb.addVertex(x + barWidth * p, y + barHeight, 0).setColor(0.5f, 1, 0.5f, 1);
-        vb.addVertex(x + barWidth * p, y, 0).setColor(0.5f, 1, 0.5f, 1);
+        vb.vertex(x, y, 0).color(0.5f, 0.5f, 0.5f, 1).endVertex();
+        vb.vertex(x, y + barHeight, 0).color(0.5f, 0.5f, 0.5f, 1).endVertex();
+        vb.vertex(x + barWidth, y + barHeight, 0).color(0.5f, 0.5f, 0.5f, 1).endVertex();
+        vb.vertex(x + barWidth, y, 0).color(0.5f, 0.5f, 0.5f, 1).endVertex();
 
-		BufferUploader.drawWithShader(vb.buildOrThrow());
+        vb.vertex(x, y, 0).color(0.5f, 1, 0.5f, 1).endVertex();
+        vb.vertex(x, y + barHeight, 0).color(0.5f, 1, 0.5f, 1).endVertex();
+        vb.vertex(x + barWidth * p, y + barHeight, 0).color(0.5f, 1, 0.5f, 1).endVertex();
+        vb.vertex(x + barWidth * p, y, 0).color(0.5f, 1, 0.5f, 1).endVertex();
+
+        tessellator.end();
 
 //        RenderSystem.enableTexture();
     }

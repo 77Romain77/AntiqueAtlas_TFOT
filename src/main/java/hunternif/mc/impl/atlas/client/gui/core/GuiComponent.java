@@ -359,9 +359,9 @@ public class GuiComponent extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mx, double my, double dy, double partial) {
-        if (!iterateMouseInput((c) -> c.mouseScrolled(mx, my, dy, partial))) {
-            return super.mouseScrolled(mx, my, dy, partial);
+    public boolean mouseScrolled(double mx, double my, double dy) {
+        if (!iterateMouseInput((c) -> c.mouseScrolled(mx, my, dy))) {
+            return super.mouseScrolled(mx, my, dy);
         } else {
             return true;
         }

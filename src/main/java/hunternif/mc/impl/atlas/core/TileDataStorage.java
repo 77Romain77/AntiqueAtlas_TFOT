@@ -36,7 +36,7 @@ public class TileDataStorage extends SavedData {
     public TileDataStorage() {
     }
     
-    public static TileDataStorage readNbt(CompoundTag compound, HolderLookup.Provider provider) {
+    public static TileDataStorage readNbt(CompoundTag compound) {
         TileDataStorage data = new TileDataStorage();
 
         int version = compound.getInt(TAG_VERSION);
@@ -58,7 +58,7 @@ public class TileDataStorage extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound, Provider provider) {
+    public CompoundTag save(CompoundTag compound) {
         compound.putInt(TAG_VERSION, VERSION);
 
         ListTag tileList = new ListTag();

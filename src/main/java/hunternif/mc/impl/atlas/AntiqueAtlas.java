@@ -85,7 +85,7 @@ public class AntiqueAtlas extends MinecraftMod implements PacketHolder {
             return null;
         }
 
-        return ((ServerLevel) world).getDataStorage().computeIfAbsent(new SavedData.Factory<>(AtlasIdData::new, AtlasIdData::fromNbt, null), "antiqueatlas_global_atlas_data");
+        return ((ServerLevel) world).getDataStorage().computeIfAbsent(AtlasIdData::fromNbt, AtlasIdData::new, "antiqueatlas_global_atlas_data");
     }
     
     @Override
@@ -164,7 +164,7 @@ public class AntiqueAtlas extends MinecraftMod implements PacketHolder {
     	if (AntiqueAtlas.CONFIG.itemNeeded) {    		
     		collector.addRegistryHolder(Registries.ITEM, AntiqueAtlasItems.Items.class);
     		collector.addRegistryHolder(Registries.RECIPE_SERIALIZER, AntiqueAtlasItems.Recipes.class);
-    		collector.addRegistryHolder(Registries.DATA_COMPONENT_TYPE, AntiqueAtlasItems.Components.class);
+//    		collector.addRegistryHolder(Registries.DATA_COMPONENT_TYPE, AntiqueAtlasItems.Components.class);
     	}
     }
 

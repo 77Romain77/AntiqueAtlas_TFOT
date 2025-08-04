@@ -29,7 +29,12 @@ dependencies {
 	annotationProcessor "org.spongepowered:mixin:"+modMixinVersion+":processor"
 	implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 	
-	implementation ("com.stereowalker.unionlib:UnionLib:${_minecraft_version}-${_unionlib_version}-${_loader}")
+	implementation fg.deobf("com.stereowalker.unionlib:UnionLib:${_minecraft_version}-${_unionlib_version}-${_loader}") {
+        exclude group: "net.minecraftforge", module: "forge"
+    }
+    minecraftLibrary ("org.tomlj:tomlj:1.0.0") {
+    	exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
 }
 
 // These aren't loader specific and should exist on all loaders

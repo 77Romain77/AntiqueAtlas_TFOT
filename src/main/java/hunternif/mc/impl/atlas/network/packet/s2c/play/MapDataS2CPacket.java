@@ -8,7 +8,6 @@ import hunternif.mc.impl.atlas.core.AtlasData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
@@ -30,7 +29,7 @@ public class MapDataS2CPacket extends ClientboundUnionPacket {
 		this.data = data;
 	}
 	
-	public MapDataS2CPacket(RegistryFriendlyByteBuf byteBuf) {
+	public MapDataS2CPacket(FriendlyByteBuf byteBuf) {
 		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.data = byteBuf.readNbt();

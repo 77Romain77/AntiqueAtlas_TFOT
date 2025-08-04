@@ -6,7 +6,6 @@ import hunternif.mc.api.AtlasAPI;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,14 +33,14 @@ public class PutMarkerC2SPacket extends ServerboundUnionPacket {
 		this.label = label;
 	}
 
-	public PutMarkerC2SPacket(RegistryFriendlyByteBuf packetBuffer) {
+	public PutMarkerC2SPacket(FriendlyByteBuf packetBuffer) {
 		super(packetBuffer, AntiqueAtlas.instance.channel);
 		this.atlasID = packetBuffer.readVarInt();
 		this.markerType = packetBuffer.readResourceLocation();
 		this.x = packetBuffer.readVarInt();
 		this.z = packetBuffer.readVarInt();
 		this.visibleBeforeDiscovery = packetBuffer.readBoolean();
-		this.label = Component.Serializer.fromJson(packetBuffer.readUtf(), packetBuffer.registryAccess());
+		this.label = Component.Serializer.fromJson(packetBuffer.readUtf());
 	}
 
 	@Override
@@ -51,7 +50,7 @@ public class PutMarkerC2SPacket extends ServerboundUnionPacket {
 		packetBuffer.writeVarInt(x);
 		packetBuffer.writeVarInt(z);
 		packetBuffer.writeBoolean(visibleBeforeDiscovery);
-		packetBuffer.writeUtf(Component.Serializer.toJson(label, RegistryAccess.EMPTY));
+		packetBuffer.writeUtf(Component.Serializer.toJson(label));
 	}
 
 	@Override

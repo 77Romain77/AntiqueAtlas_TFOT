@@ -141,7 +141,7 @@ public abstract class AGuiScrollbar extends GuiComponent {
     }
 
     @Override
-    public boolean mouseScrolled(double mx, double my, double wheelMove, double partial) {
+    public boolean mouseScrolled(double mx, double my, double wheelMove) {
         if (usesWheel && getParent().isMouseOver) {
             if (wheelMove != 0 && this.visible) {
                 wheelMove = wheelMove > 0 ? -1 : 1;
@@ -150,7 +150,7 @@ public abstract class AGuiScrollbar extends GuiComponent {
             }
         }
 
-        return super.mouseScrolled(mx, my, wheelMove, partial);
+        return super.mouseScrolled(mx, my, wheelMove);
     }
 
     @Override

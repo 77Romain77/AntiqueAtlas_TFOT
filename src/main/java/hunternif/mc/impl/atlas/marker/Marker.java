@@ -110,7 +110,7 @@ public class Marker {
 
 	public void write(FriendlyByteBuf buf) {
 		buf.writeVarInt(this.id);
-		buf.writeUtf(Component.Serializer.toJson(this.label, RegistryAccess.EMPTY));
+		buf.writeUtf(Component.Serializer.toJson(this.label));
 		buf.writeVarInt(this.x);
 		buf.writeVarInt(this.z);
 		buf.writeBoolean(this.visibleAhead);
@@ -125,7 +125,7 @@ public class Marker {
 
 		public Precursor(FriendlyByteBuf buf) {
 			this.id = buf.readVarInt();
-			this.label = Component.Serializer.fromJson(buf.readUtf(), RegistryAccess.EMPTY);
+			this.label = Component.Serializer.fromJson(buf.readUtf());
 			this.x = buf.readVarInt();
 			this.z = buf.readVarInt();
 			this.visibleAhead = buf.readBoolean();

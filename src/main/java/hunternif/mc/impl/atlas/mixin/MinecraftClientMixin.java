@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftClientMixin {
 
     @Inject(method = "setLevel", at=@At("TAIL"))
-    void AntiqueAtlas_joinWorld(ClientLevel world, ReceivingLevelScreen.Reason pReason, CallbackInfo info)
+    void AntiqueAtlas_joinWorld(ClientLevel world, CallbackInfo info)
     {
     	if (world != null)
     		ClientProxy.assignCustomBiomeTextures(world);

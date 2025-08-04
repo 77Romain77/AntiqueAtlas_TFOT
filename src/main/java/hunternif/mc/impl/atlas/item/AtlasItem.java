@@ -64,7 +64,7 @@ public class AtlasItem extends Item {
         if (blockState.is(BlockTags.BANNERS)) {
             AntiqueAtlasClientSegment.openAtlasGUI(context.getItemInHand());
             MapBanner mapBannerMarker = MapBanner.fromWorld(context.getLevel(), context.getClickedPos());
-            AntiqueAtlasClientSegment.getAtlasGUI().openMarkerFinalizer(mapBannerMarker.name().get());
+            AntiqueAtlasClientSegment.getAtlasGUI().openMarkerFinalizer(mapBannerMarker.getName());
             context.getLevel().playSound(context.getPlayer(), context.getClickedPos(), SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 1f);
 
             return InteractionResult.SUCCESS;

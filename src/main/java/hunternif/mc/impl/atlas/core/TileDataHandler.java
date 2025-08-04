@@ -45,7 +45,7 @@ public class TileDataHandler {
             return atlasDataClientCache.computeIfAbsent(key, s -> new AtlasData());
         } else {
             DimensionDataStorage manager = ((ServerLevel) world).getDataStorage();
-            return manager.computeIfAbsent(new SavedData.Factory<>(AtlasData::new, AtlasData::fromNbt, null), key);
+            return manager.computeIfAbsent(AtlasData::fromNbt, AtlasData::new, key);
         }
     }
 
