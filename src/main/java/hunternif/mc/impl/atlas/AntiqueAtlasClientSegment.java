@@ -10,6 +10,7 @@ import com.stereowalker.unionlib.mod.ClientSegment;
 import com.stereowalker.unionlib.util.VersionHelper;
 
 import hunternif.mc.impl.atlas.client.KeyHandler;
+import hunternif.mc.impl.atlas.client.OverlayRenderer;
 import hunternif.mc.impl.atlas.client.gui.ExportProgressOverlay;
 import hunternif.mc.impl.atlas.client.gui.GuiAtlas;
 import net.minecraft.client.Minecraft;
@@ -71,10 +72,18 @@ public class AntiqueAtlasClientSegment extends ClientSegment {
 		});
 	}
 	
+	private OverlayRenderer atlasOverlayRenderer = new OverlayRenderer();
 	@Override
 	public void setupGuiOverlays(OverlayCollector collector) {
 		collector.register("atlas", Order.END, (gui, renderer, scaledWidth, scaledHeight) -> {
-			 ExportProgressOverlay.INSTANCE.draw(renderer.guiGraphics(), scaledWidth, scaledHeight);
+			if (Minecraft.getInstance().screen == null && AntiqueAtlas.CONFIG.minimap) {
+				float height = ((218f /* 0.2f*/) / scaledHeight);
+				float width = ((310f /* 0.2f*/) / scaledWidth);
+				renderer.poseStack().pushPose();
+				renderer.poseStack().scale(54.5f / 218f, 77.5f / 310f, -1f);
+				atlasOverlayRenderer.drawOverlay(renderer.poseStack(), renderer.guiGraphics().bufferSource(), 15728880, Minecraft.getInstance().player.getMainHandItem());
+				renderer.poseStack().popPose();
+			}
 		});
 	}
 }
