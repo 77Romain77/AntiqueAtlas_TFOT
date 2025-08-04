@@ -145,7 +145,7 @@ public class OverlayRenderer {
         matrices.pushPose();
 
         matrices.translate((int) ((GuiAtlas.WIDTH * 1.5F) / 2F), (int) ((GuiAtlas.HEIGHT * 1.5F) / 2F), 0);
-        matrices.mulPose(new Quaternionf().rotateZ(this.player.getYHeadRot() + 180));
+        matrices.mulPose(new Quaternionf().rotateZ((this.player.getYHeadRot() + 180) * (float) (Math.PI / 180.0)));
         matrices.translate(-AntiqueAtlas.CONFIG.playerIconWidth / 2.0, -AntiqueAtlas.CONFIG.playerIconHeight / 2.0, 0);
 
         Textures.PLAYER.drawWithLight(buffer, matrices, 0, 0, AntiqueAtlas.CONFIG.playerIconWidth, AntiqueAtlas.CONFIG.playerIconHeight, light);
