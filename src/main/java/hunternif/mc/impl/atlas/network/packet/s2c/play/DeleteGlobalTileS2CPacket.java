@@ -6,7 +6,6 @@ import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.core.TileDataStorage;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -30,7 +29,7 @@ public class DeleteGlobalTileS2CPacket extends ClientboundUnionPacket {
 		this.chunkZ = chunkZ;
 	}
 	
-	public DeleteGlobalTileS2CPacket(RegistryFriendlyByteBuf byteBuf) {
+	public DeleteGlobalTileS2CPacket(FriendlyByteBuf byteBuf) {
 		super(byteBuf);
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
 		this.chunkX = byteBuf.readVarInt();

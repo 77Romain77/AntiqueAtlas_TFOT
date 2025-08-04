@@ -46,7 +46,7 @@ public class MarkersDataHandler {
             return markersDataClientCache.computeIfAbsent(key + world.dimension(), s -> new MarkersData());
         } else {
             DimensionDataStorage manager = ((ServerLevel) world).getDataStorage();
-            return manager.computeIfAbsent(new SavedData.Factory<>(MarkersData::new, MarkersData::fromNbt, null), key);
+            return manager.computeIfAbsent(MarkersData::fromNbt, MarkersData::new, key);
         }
     }
 

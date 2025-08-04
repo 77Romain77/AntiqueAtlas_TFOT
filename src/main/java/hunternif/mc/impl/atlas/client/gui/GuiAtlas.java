@@ -672,10 +672,10 @@ public class GuiAtlas extends GuiComponent {
     }
 
     @Override
-    public boolean mouseScrolled(double mx, double my, double wheelMove, double scrollY) {
+    public boolean mouseScrolled(double mx, double my, double wheelMove) {
         double origWheelMove = wheelMove;
 
-        boolean handled = super.mouseScrolled(mx, my, origWheelMove, scrollY);
+        boolean handled = super.mouseScrolled(mx, my, origWheelMove);
 
         if (!handled && wheelMove != 0) {
             wheelMove = wheelMove > 0 ? 1 : -1;
@@ -907,7 +907,7 @@ public class GuiAtlas extends GuiComponent {
             }
         }
 
-        super.renderBackground(matrices, mouseY, mouseY, par3);
+        super.renderBackground(matrices);
 
         RenderSystem.setShaderColor(1, 1, 1, 1);
         // TODO fix me for 1.17
@@ -1026,7 +1026,7 @@ public class GuiAtlas extends GuiComponent {
 
         // Draw progress overlay:
         if (state.is(EXPORTING_IMAGE)) {
-            renderBackground(matrices, mouseX, mouseY, par3);
+            renderBackground(matrices);
             progressBar.draw(matrices, (width - 100) / 2, height / 2 - 34);
         }
     }

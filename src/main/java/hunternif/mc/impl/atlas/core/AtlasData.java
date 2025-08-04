@@ -56,7 +56,7 @@ public class AtlasData extends SavedData {
     public AtlasData() {
     }
 
-    public static AtlasData fromNbt(CompoundTag compound, HolderLookup.Provider provider) {
+    public static AtlasData fromNbt(CompoundTag compound) {
         AtlasData data = new AtlasData();
         data.updateFromNbt(compound);
         return data;
@@ -85,7 +85,7 @@ public class AtlasData extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound, HolderLookup.Provider provider) {
+    public CompoundTag save(CompoundTag compound) {
         return writeToNBT(compound, true);
     }
 

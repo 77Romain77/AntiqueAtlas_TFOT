@@ -25,11 +25,11 @@ public class GlobalMarkersDataHandler {
 
 	public void onWorldLoad(ServerLevel world) {
 		if (world.dimension() == Level.OVERWORLD) {
-			data = world.getDataStorage().computeIfAbsent(new SavedData.Factory<>(() -> {
+			data = world.getDataStorage().computeIfAbsent(GlobalMarkersData::readNbt, () -> {
 				GlobalMarkersData data = new GlobalMarkersData();
 				data.setDirty();
 				return data;
-			}, GlobalMarkersData::readNbt, null), DATA_KEY);
+			}, DATA_KEY);
 		}
 	}
 

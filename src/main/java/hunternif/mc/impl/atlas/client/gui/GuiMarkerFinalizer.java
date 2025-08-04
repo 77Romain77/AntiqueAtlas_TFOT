@@ -160,7 +160,7 @@ public class GuiMarkerFinalizer extends GuiComponent {
 
     @Override
     public void render(GuiGraphics matrices, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(matrices, mouseY, mouseY, partialTick);
+        this.renderBackground(matrices);
         drawCentered(matrices, Component.translatable("gui.antiqueatlas.marker.label"), this.height / 2 - 97, 0xffffff, true);
         textField.render(matrices, mouseX, mouseY, partialTick);
         drawCentered(matrices, Component.translatable("gui.antiqueatlas.marker.type"), this.height / 2 - 44, 0xffffff, true);

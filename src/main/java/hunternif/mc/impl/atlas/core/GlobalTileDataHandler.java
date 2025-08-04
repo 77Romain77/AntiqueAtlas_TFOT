@@ -23,11 +23,11 @@ public class GlobalTileDataHandler {
             new ConcurrentHashMap<>(2, 0.75f, 2);
 
     public void onWorldLoad(ServerLevel world) {
-        globalTileData.put(world.dimension(), world.getDataStorage().computeIfAbsent(new SavedData.Factory<>(() -> {
+        globalTileData.put(world.dimension(), world.getDataStorage().computeIfAbsent(TileDataStorage::readNbt, () -> {
             TileDataStorage data = new TileDataStorage();
             data.setDirty();
             return data;
-        }, TileDataStorage::readNbt, null), DATA_KEY));
+        }, DATA_KEY));
     }
 
     public TileDataStorage getData(Level world) {

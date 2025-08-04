@@ -12,7 +12,7 @@ import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
 import hunternif.mc.impl.atlas.core.scaning.TileHeightType;
 import hunternif.mc.impl.atlas.util.Log;
-import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBiomeTags;
+import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -100,7 +100,7 @@ public class TileTextureMap {
 
         Holder<Biome> biomeTag = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(biome);
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_SWAMP)) {
+        if (biomeTag.is(ConventionalBiomeTags.SWAMP)) {
             if (biomeTag.is(BiomeTags.IS_HILL)) {
                 return Optional.of(AntiqueAtlas.id("swamp_hills"));
             } else {
@@ -111,14 +111,14 @@ public class TileTextureMap {
         if (biomeTag.is(BiomeTags.IS_OCEAN)
                 || biomeTag.is(BiomeTags.IS_DEEP_OCEAN)
                 || biomeTag.is(BiomeTags.IS_RIVER)
-                || biomeTag.is(ConventionalBiomeTags.IS_AQUATIC)) {
-            if (biomeTag.is(ConventionalBiomeTags.IS_ICY))
+                || biomeTag.is(ConventionalBiomeTags.AQUATIC)) {
+            if (biomeTag.is(ConventionalBiomeTags.ICY))
                 return Optional.of(AntiqueAtlas.id("ice"));
 
             return Optional.of(AntiqueAtlas.id("water"));
         }
 
-        if (biomeTag.is(BiomeTags.IS_BEACH) || biomeTag.is(ConventionalBiomeTags.IS_BEACH)) {
+        if (biomeTag.is(BiomeTags.IS_BEACH) || biomeTag.is(ConventionalBiomeTags.BEACH)) {
             return Optional.of(AntiqueAtlas.id("shore"));
         }
 
@@ -130,23 +130,23 @@ public class TileTextureMap {
             }
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_SAVANNA) || biomeTag.is(ConventionalBiomeTags.IS_SAVANNA_TREE)) {
+        if (biomeTag.is(ConventionalBiomeTags.SAVANNA) || biomeTag.is(ConventionalBiomeTags.TREE_SAVANNA)) {
             return Optional.of(AntiqueAtlas.id("savana"));
         }
 
-        if (biomeTag.is((ConventionalBiomeTags.IS_BADLANDS))) {
+        if (biomeTag.is((ConventionalBiomeTags.BADLANDS))) {
             return Optional.of(AntiqueAtlas.id("plateau_mesa"));
         }
 
-        if (biomeTag.is(BiomeTags.IS_FOREST) || biomeTag.is(ConventionalBiomeTags.IS_VEGETATION_DENSE) || biomeTag.is(ConventionalBiomeTags.IS_DECIDUOUS_TREE) || biomeTag.is(ConventionalBiomeTags.IS_CONIFEROUS_TREE)) {
-            if (biomeTag.is(ConventionalBiomeTags.IS_ICY) || biomeTag.is(ConventionalBiomeTags.IS_SNOWY)) {
+        if (biomeTag.is(BiomeTags.IS_FOREST) || biomeTag.is(ConventionalBiomeTags.VEGETATION_DENSE) || biomeTag.is(ConventionalBiomeTags.TREE_DECIDUOUS) || biomeTag.is(ConventionalBiomeTags.TREE_CONIFEROUS)) {
+            if (biomeTag.is(ConventionalBiomeTags.ICY) || biomeTag.is(ConventionalBiomeTags.SNOWY)) {
                 if (biomeTag.is(BiomeTags.IS_HILL)) {
                     return Optional.of(AntiqueAtlas.id("snow_pines_hills"));
                 } else {
                     return Optional.of(AntiqueAtlas.id("snow_pines"));
                 }
             } else {
-            	if (biomeTag.is(ConventionalBiomeTags.IS_CONIFEROUS_TREE)) {
+            	if (biomeTag.is(ConventionalBiomeTags.TREE_CONIFEROUS)) {
                     if (biomeTag.is(BiomeTags.IS_HILL)) {
                         return Optional.of(AntiqueAtlas.id("pines_hills"));
                     } else {
@@ -163,9 +163,9 @@ public class TileTextureMap {
             }
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_PLAINS) || biomeTag.is(ConventionalBiomeTags.IS_SNOWY_PLAINS) || biomeTag.is(ConventionalBiomeTags.IS_VEGETATION_SPARSE)) {
-            if (biomeTag.is(ConventionalBiomeTags.IS_ICY)
-                    || biomeTag.is(ConventionalBiomeTags.IS_SNOWY)
+        if (biomeTag.is(ConventionalBiomeTags.PLAINS) || biomeTag.is(ConventionalBiomeTags.SNOWY_PLAINS) || biomeTag.is(ConventionalBiomeTags.VEGETATION_SPARSE)) {
+            if (biomeTag.is(ConventionalBiomeTags.ICY)
+                    || biomeTag.is(ConventionalBiomeTags.SNOWY)
             ) {
                 if (biomeTag.is(BiomeTags.IS_HILL)) {
                     return Optional.of(AntiqueAtlas.id("snow_hills"));
@@ -181,7 +181,7 @@ public class TileTextureMap {
             }
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_ICY)) {
+        if (biomeTag.is(ConventionalBiomeTags.ICY)) {
             if (biomeTag.is(BiomeTags.IS_HILL)) {
                 return Optional.of(AntiqueAtlas.id("mountains_snow_caps"));
             } else {
@@ -189,7 +189,7 @@ public class TileTextureMap {
             }
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_DESERT)) {
+        if (biomeTag.is(ConventionalBiomeTags.DESERT)) {
             if (biomeTag.is(BiomeTags.IS_HILL)) {
                 return Optional.of(AntiqueAtlas.id("desert_hills"));
             } else {
@@ -197,7 +197,7 @@ public class TileTextureMap {
             }
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_TAIGA)) {
+        if (biomeTag.is(ConventionalBiomeTags.TAIGA)) {
             return Optional.of(AntiqueAtlas.id("snow"));
         }
 
@@ -205,35 +205,35 @@ public class TileTextureMap {
 //            return Optional.of(AntiqueAtlas.id("hills"));
 //        }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_MOUNTAIN) || biomeTag.is(ConventionalBiomeTags.IS_MOUNTAIN_SLOPE)) {
+        if (biomeTag.is(ConventionalBiomeTags.MOUNTAIN) || biomeTag.is(ConventionalBiomeTags.MOUNTAIN_SLOPE)) {
             return Optional.of(AntiqueAtlas.id("mountains"));
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_MOUNTAIN_PEAK)) {
+        if (biomeTag.is(ConventionalBiomeTags.MOUNTAIN_PEAK)) {
             return Optional.of(AntiqueAtlas.id("mountains_snow_caps"));
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_END) || biomeTag.is(ConventionalBiomeTags.IS_OUTER_END_ISLAND)) {
-            if (biomeTag.is(ConventionalBiomeTags.IS_VEGETATION_DENSE) || biomeTag.is(ConventionalBiomeTags.IS_VEGETATION_SPARSE)) {
+        if (biomeTag.is(ConventionalBiomeTags.IN_THE_END) || biomeTag.is(ConventionalBiomeTags.END_ISLANDS)) {
+            if (biomeTag.is(ConventionalBiomeTags.VEGETATION_DENSE) || biomeTag.is(ConventionalBiomeTags.VEGETATION_SPARSE)) {
                 return Optional.of(AntiqueAtlas.id("end_island_plants"));
             } else {
                 return Optional.of(AntiqueAtlas.id("end_island"));
             }
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_MUSHROOM)) {
+        if (biomeTag.is(ConventionalBiomeTags.MUSHROOM)) {
             return Optional.of(AntiqueAtlas.id("mushroom"));
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_NETHER) || biomeTag.is(BiomeTags.IS_NETHER)) {
+        if (biomeTag.is(ConventionalBiomeTags.IN_NETHER) || biomeTag.is(BiomeTags.IS_NETHER)) {
             return Optional.of(AntiqueAtlas.id("soul_sand_valley"));
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_VOID)) {
+        if (biomeTag.is(ConventionalBiomeTags.VOID)) {
             return Optional.of(AntiqueAtlas.id("end_void"));
         }
 
-        if (biomeTag.is(ConventionalBiomeTags.IS_UNDERGROUND)) {
+        if (biomeTag.is(ConventionalBiomeTags.UNDERGROUND)) {
             AntiqueAtlas.LOG.warn("Underground biomes aren't supported yet.");
         }
 

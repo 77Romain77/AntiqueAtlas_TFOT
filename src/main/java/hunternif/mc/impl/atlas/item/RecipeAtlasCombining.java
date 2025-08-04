@@ -7,16 +7,16 @@ import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.core.AtlasData;
 import hunternif.mc.impl.atlas.marker.Marker;
 import hunternif.mc.impl.atlas.marker.MarkersData;
-import net.minecraft.core.HolderLookup.Provider;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraft.world.level.Level;
 
 /**
@@ -25,9 +25,10 @@ import net.minecraft.world.level.Level;
  *
  * @author Hunternif
  */
-public class RecipeAtlasCombining implements CraftingRecipe {
+public class RecipeAtlasCombining extends CustomRecipe {
 
-    public RecipeAtlasCombining(CraftingBookCategory craftingBookCategory) {
+    public RecipeAtlasCombining(ResourceLocation pId, CraftingBookCategory craftingBookCategory) {
+    	super(pId, craftingBookCategory);
     }
 
     @Override
@@ -36,13 +37,13 @@ public class RecipeAtlasCombining implements CraftingRecipe {
     }
 
     @Override
-    public boolean matches(CraftingInput inv, Level world) {
+    public boolean matches(CraftingContainer inv, Level world) {
         return matches(inv);
     }
 
-    private boolean matches(CraftingInput inv) {
+    private boolean matches(CraftingContainer inv) {
         int atlasesFound = 0;
-        for (int i = 0; i < inv.size(); ++i) {
+        for (int i = 0; i < inv.getContainerSize(); ++i) {
             ItemStack stack = inv.getItem(i);
             if (!stack.isEmpty()) {
                 if (stack.getItem() == AntiqueAtlasItems.Items.ATLAS) {
@@ -54,10 +55,10 @@ public class RecipeAtlasCombining implements CraftingRecipe {
     }
     
     @Override
-    public ItemStack assemble(CraftingInput inv, Provider provider) {
+    public ItemStack assemble(CraftingContainer inv, RegistryAccess provider) {
         ItemStack firstAtlas = ItemStack.EMPTY;
         List<Integer> atlasIds = new ArrayList<>(9);
-        for (int i = 0; i < inv.size(); ++i) {
+        for (int i = 0; i < inv.getContainerSize(); ++i) {
             ItemStack stack = inv.getItem(i);
             if (!stack.isEmpty()) {
                 if (stack.getItem() instanceof AtlasItem) {
@@ -78,7 +79,7 @@ public class RecipeAtlasCombining implements CraftingRecipe {
     }
     
     @Override
-    public ItemStack getResultItem(Provider provider) {
+    public ItemStack getResultItem(RegistryAccess provider) {
         return new ItemStack(AntiqueAtlasItems.Items.ATLAS);
     }
 

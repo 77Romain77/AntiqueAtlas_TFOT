@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import hunternif.mc.impl.atlas.client.gui.ExportProgressOverlay;
-import net.minecraft.client.DeltaTracker;
+//import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -20,7 +20,7 @@ public class MixinInGameHud {
     private int scaledHeight;
 
     @Inject(at = @At("TAIL"), method = "render")
-    public void draw(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo info) {
+    public void draw(GuiGraphics guiGraphics/*, DeltaTracker deltaTracker*/, CallbackInfo info) {
         ExportProgressOverlay.INSTANCE.draw(guiGraphics, scaledWidth, scaledHeight);
     }
 }

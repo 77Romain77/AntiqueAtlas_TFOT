@@ -6,7 +6,6 @@ import hunternif.mc.api.AtlasAPI;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.util.Log;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -28,7 +27,7 @@ public class DeleteMarkerC2SPacket extends ServerboundUnionPacket {
 		this.markerID = markerID;
 	}
 
-	public DeleteMarkerC2SPacket(RegistryFriendlyByteBuf packetBuffer) {
+	public DeleteMarkerC2SPacket(FriendlyByteBuf packetBuffer) {
 		super(packetBuffer);
 		this.atlasID = packetBuffer.readInt();
 		this.markerID = packetBuffer.readInt();

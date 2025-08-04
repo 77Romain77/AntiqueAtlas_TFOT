@@ -6,7 +6,6 @@ import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.core.AtlasData;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -34,7 +33,7 @@ public class PutTileS2CPacket extends ClientboundUnionPacket {
 		this.tile = tile;
 	}
 	
-	public PutTileS2CPacket(RegistryFriendlyByteBuf byteBuf) {
+	public PutTileS2CPacket(FriendlyByteBuf byteBuf) {
 		super(byteBuf);
 		this.atlasID = byteBuf.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
