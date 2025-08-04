@@ -72,5 +72,6 @@
   "text.autoconfig.antiqueatlas.option.tileSize": "Size of a tile",
   "text.autoconfig.antiqueatlas.option.markerSize": "Size of a marker",
   "text.autoconfig.antiqueatlas.option.playerIconWidth": "Player icon width",
-  "text.autoconfig.antiqueatlas.option.playerIconHeight": "Player icon height"
+  "text.autoconfig.antiqueatlas.option.playerIconHeight": "Player icon height",
+  "text.autoconfig.antiqueatlas.option.minimap": "Minimap"
 }
