@@ -25,7 +25,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.maps.MapBanner;
-import net.minecraft.world.level.saveddata.maps.MapId;
 
 public class AtlasItem extends Item {
 
@@ -34,8 +33,9 @@ public class AtlasItem extends Item {
     }
     
     public static int getAtlasID(ItemStack stack) {
-    	MapId mapId = stack.get(AntiqueAtlasItems.Components.ATLAS_ID);
-        return mapId.id();
+    	if (AntiqueAtlasItems.Components.ATLAS_ID_DATA.hasData(stack))
+    		return AntiqueAtlasItems.Components.ATLAS_ID_DATA.getData(stack).id();
+    	return 0;
     }
 
     @Override
