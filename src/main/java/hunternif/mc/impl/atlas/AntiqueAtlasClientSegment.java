@@ -8,7 +8,6 @@ import com.stereowalker.unionlib.mod.ClientSegment;
 import com.stereowalker.unionlib.util.VersionHelper;
 
 import hunternif.mc.impl.atlas.client.KeyHandler;
-import hunternif.mc.impl.atlas.client.gui.ExportProgressOverlay;
 import hunternif.mc.impl.atlas.client.gui.GuiAtlas;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;

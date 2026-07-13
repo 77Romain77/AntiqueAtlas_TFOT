@@ -11,3 +11,4 @@
 - Protection des valeurs d’analyse invalides pouvant provoquer une division par zéro.
 - Traduction française complétée et libellés de l’interface rafraîchis à chaque ouverture.
 - Build GitHub Actions modernisé pour Java 17 avec publication automatique des JAR.
+- Suppression d’un ancien mixin de recette vide qui empêchait la compilation Forge 1.20.1.
