@@ -223,6 +223,10 @@ public class MarkersData extends SavedData {
 		return playersSentTo.contains(player);
 	}
 
+	public Collection<Player> getSyncedPlayers() {
+		return Collections.unmodifiableCollection(playersSentTo);
+	}
+
 	/** Send all data to the player in several packets. Called once during the
 	 * first run of ItemAtlas.onUpdate(). */
 	public void syncToPlayer(int atlasID, ServerPlayer player) {

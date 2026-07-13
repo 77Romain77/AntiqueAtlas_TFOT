@@ -46,7 +46,7 @@ public class PutTileC2SPacket extends ServerboundUnionPacket {
 
 	@Override
 	public boolean handleOnServer(ServerPlayer sender) {
-		if (AntiqueAtlas.CONFIG.itemNeeded && !AtlasAPI.getPlayerAtlases(sender).contains(atlasID)) {
+		if (!AtlasAPI.getPlayerAtlases(sender).contains(atlasID)) {
 			Log.warn("Player %s attempted to modify someone else's Atlas #%d",
 					sender.getName(), atlasID);
 			return false;

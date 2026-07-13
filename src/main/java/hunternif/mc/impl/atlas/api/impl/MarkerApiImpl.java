@@ -14,7 +14,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 public class MarkerApiImpl implements MarkerAPI {
@@ -43,7 +44,11 @@ public class MarkerApiImpl implements MarkerAPI {
                     : AntiqueAtlas.markersData.getMarkersData(atlasID, world);
 
             marker = data.createAndSaveMarker(markerId, world.dimension(), x, z, visibleAhead, label);
-            new PutMarkersS2CPacket(atlasID, world.dimension(), Collections.singleton(marker)).send((ServerLevel) world);
+            for (Player syncedPlayer : data.getSyncedPlayers()) {
+                if (syncedPlayer instanceof ServerPlayer serverPlayer) {
+                    new PutMarkersS2CPacket(atlasID, world.dimension(), Collections.singleton(marker)).send(serverPlayer);
+                }
+            }
         }
 
         return marker;
@@ -71,8 +76,11 @@ public class MarkerApiImpl implements MarkerAPI {
                     AntiqueAtlas.globalMarkersData.getData() :
                     AntiqueAtlas.markersData.getMarkersData(atlasID, world);
             data.removeMarker(markerID);
-
-            new DeleteMarkerS2CPacket(atlasID, markerID).send(((ServerLevel) world).getServer());
+            for (Player syncedPlayer : data.getSyncedPlayers()) {
+                if (syncedPlayer instanceof ServerPlayer serverPlayer) {
+                    new DeleteMarkerS2CPacket(atlasID, markerID).send(serverPlayer);
+                }
+            }
         }
     }
 }

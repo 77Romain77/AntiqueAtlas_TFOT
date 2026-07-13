@@ -1,7 +1,6 @@
 package hunternif.mc.impl.atlas.item;
 
 import java.util.Collection;
-import java.util.Objects;
 
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.AntiqueAtlasClientSegment;
@@ -97,7 +96,11 @@ public class AtlasItem extends Item {
             Collection<TileInfo> newTiles = AntiqueAtlas.worldScanner.updateAtlasAroundPlayer(data, player);
 
             if (!newTiles.isEmpty()) {
-                new DimensionUpdateS2CPacket(atlasId, player.getCommandSenderWorld().dimension(), newTiles).send(Objects.requireNonNull(player.getServer()));
+                for (Player syncedPlayer : data.getSyncedPlayers()) {
+                    if (syncedPlayer instanceof ServerPlayer serverPlayer) {
+                        new DimensionUpdateS2CPacket(atlasId, player.getCommandSenderWorld().dimension(), newTiles).send(serverPlayer);
+                    }
+                }
             }
         }
     }

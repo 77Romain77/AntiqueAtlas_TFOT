@@ -57,8 +57,13 @@ public class PutMarkerC2SPacket extends ServerboundUnionPacket {
 	public boolean handleOnServer(ServerPlayer sender) {
 		if (!AtlasAPI.getPlayerAtlases(sender).contains(atlasID)) {
 			AntiqueAtlas.LOG.warn(
-							"Player {} attempted to put marker into someone else's Atlas #{}}",
+							"Player {} attempted to put marker into someone else's Atlas #{}",
 							sender.getName(), atlasID);
+			return false;
+		}
+		if (label == null || label.getString().length() > 128) {
+			AntiqueAtlas.LOG.warn("Player {} attempted to create an Atlas marker with an invalid label",
+					sender.getName());
 			return false;
 		}
 

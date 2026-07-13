@@ -44,7 +44,7 @@ public class PutTileS2CPacket extends ClientboundUnionPacket {
 
 	@Override
 	public void encode(final FriendlyByteBuf byteBuf) {
-		byteBuf.writeInt(atlasID);
+		byteBuf.writeVarInt(atlasID);
 		byteBuf.writeResourceLocation(world.location());
 		byteBuf.writeVarInt(x);
 		byteBuf.writeVarInt(z);

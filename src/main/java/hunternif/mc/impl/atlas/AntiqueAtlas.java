@@ -161,11 +161,9 @@ public class AntiqueAtlas extends MinecraftMod implements PacketHolder {
     
     @Override
     public void setupRegistries(RegistryCollector collector) {
-    	if (AntiqueAtlas.CONFIG.itemNeeded) {    		
-    		collector.addRegistryHolder(Registries.ITEM, AntiqueAtlasItems.Items.class);
-    		collector.addRegistryHolder(Registries.RECIPE_SERIALIZER, AntiqueAtlasItems.Recipes.class);
+		collector.addRegistryHolder(Registries.ITEM, AntiqueAtlasItems.Items.class);
+		collector.addRegistryHolder(Registries.RECIPE_SERIALIZER, AntiqueAtlasItems.Recipes.class);
 //    		collector.addRegistryHolder(Registries.DATA_COMPONENT_TYPE, AntiqueAtlasItems.Components.class);
-    	}
     }
 
 	@Override
