@@ -1229,7 +1229,6 @@ public class GuiAtlas extends GuiComponent {
         btnExportPng.setTitle(Component.translatable("gui.antiqueatlas.exportImage"));
         btnMarker.setTitle(Component.translatable("gui.antiqueatlas.addMarker"));
         btnDelMarker.setTitle(Component.translatable("gui.antiqueatlas.delMarker"));
-        btnPosition.setTitle(Component.translatable("gui.antiqueatlas.followPlayer"));
         btnShowMarkers.setTitle(Component.translatable(
                 state.is(HIDING_MARKERS) ? "gui.antiqueatlas.showMarkers" : "gui.antiqueatlas.hideMarkers"));
     }
