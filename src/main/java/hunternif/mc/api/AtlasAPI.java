@@ -1,6 +1,5 @@
 package hunternif.mc.api;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,26 +51,23 @@ public class AtlasAPI {
     }
 
     /**
-     * Convenience method that returns a list of atlas IDs for all atlas items
-     * the player is currently carrying.
+     * Returns the player's personal atlas ID when access is allowed.
      **/
     public static List<Integer> getPlayerAtlases(Player player) {
-        if (!AntiqueAtlas.CONFIG.itemNeeded) {
-            return Collections.singletonList(player.getUUID().hashCode());
+        if (AntiqueAtlas.CONFIG.itemNeeded && !hasAtlas(player)) {
+            return Collections.emptyList();
         }
 
-        List<Integer> list = new ArrayList<>();
+        return Collections.singletonList(player.getUUID().hashCode());
+    }
+
+    private static boolean hasAtlas(Player player) {
         for (ItemStack stack : player.getInventory().items) {
-            if (!stack.isEmpty() && stack.getItem() instanceof AtlasItem) {
-                list.add(AtlasItem.getAtlasID(stack));
-            }
+            if (!stack.isEmpty() && stack.getItem() instanceof AtlasItem) return true;
         }
         for (ItemStack stack : player.getInventory().offhand) {
-            if (!stack.isEmpty() && stack.getItem() instanceof AtlasItem) {
-                list.add(AtlasItem.getAtlasID(stack));
-            }
+            if (!stack.isEmpty() && stack.getItem() instanceof AtlasItem) return true;
         }
-
-        return list;
+        return false;
     }
 }

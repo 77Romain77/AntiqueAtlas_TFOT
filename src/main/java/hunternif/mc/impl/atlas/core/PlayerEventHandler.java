@@ -1,7 +1,9 @@
 package hunternif.mc.impl.atlas.core;
 
 import java.util.Collection;
+import java.util.List;
 
+import hunternif.mc.api.AtlasAPI;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.marker.MarkersData;
 import hunternif.mc.impl.atlas.network.packet.s2c.play.DimensionUpdateS2CPacket;
@@ -11,12 +13,10 @@ import net.minecraft.world.level.Level;
 
 public class PlayerEventHandler {
     public static void onPlayerLogin(ServerPlayer player) {
-        if (AntiqueAtlas.CONFIG.itemNeeded) {
-            return;
-        }
-
+        List<Integer> atlasIDs = AtlasAPI.getPlayerAtlases(player);
+        if (atlasIDs.isEmpty()) return;
         Level world = player.level();
-        int atlasID = player.getUUID().hashCode();
+        int atlasID = atlasIDs.get(0);
 
         AtlasData data = AntiqueAtlas.tileData.getData(atlasID, world);
         // On the player join send the map from the server to the client:
@@ -32,11 +32,13 @@ public class PlayerEventHandler {
     }
 
     public static void onPlayerTick(Player player) {
-        if (player.level().isClientSide || AntiqueAtlas.CONFIG.itemNeeded || !(player instanceof ServerPlayer serverPlayer)) {
+        if (player.level().isClientSide || !(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
 
-        int atlasID = player.getUUID().hashCode();
+        List<Integer> atlasIDs = AtlasAPI.getPlayerAtlases(player);
+        if (atlasIDs.isEmpty()) return;
+        int atlasID = atlasIDs.get(0);
         AtlasData data = AntiqueAtlas.tileData.getData(atlasID, player.level());
 
         if (!data.isSyncedToPlayer(player) && !data.isEmpty()) {

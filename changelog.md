@@ -12,3 +12,5 @@
 - Traduction française complétée et libellés de l’interface rafraîchis à chaque ouverture.
 - Build GitHub Actions modernisé pour Java 17 avec publication automatique des JAR.
 - Suppression d’un ancien mixin de recette vide qui empêchait la compilation Forge 1.20.1.
+- Progression unifiée par joueur : l’objet contrôle l’accès mais ne possède plus les données de carte.
+- Recettes et format du pack corrigés pour Minecraft 1.20.1 ; anciennes recettes de partage retirées.

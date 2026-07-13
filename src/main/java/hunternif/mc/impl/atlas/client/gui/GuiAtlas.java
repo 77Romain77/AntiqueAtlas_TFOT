@@ -13,7 +13,6 @@ import hunternif.mc.impl.atlas.client.texture.TileTexture;
 import hunternif.mc.impl.atlas.core.WorldData;
 import hunternif.mc.impl.atlas.event.MarkerClickedCallback;
 import hunternif.mc.impl.atlas.event.MarkerHoveredCallback;
-import hunternif.mc.impl.atlas.item.AtlasItem;
 import hunternif.mc.impl.atlas.marker.DimensionMarkersData;
 import hunternif.mc.impl.atlas.marker.Marker;
 import hunternif.mc.impl.atlas.marker.MarkersData;
@@ -1245,9 +1244,9 @@ public class GuiAtlas extends GuiComponent {
     }
 
     /**
-     * Returns atlas id based on "itemNeeded" option
+     * The map belongs to the player. The atlas item only controls access.
      */
     private int getAtlasID() {
-        return AntiqueAtlas.CONFIG.itemNeeded ? AtlasItem.getAtlasID(stack) : player.getUUID().hashCode();
+        return player.getUUID().hashCode();
     }
 }

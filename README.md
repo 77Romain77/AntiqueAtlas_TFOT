@@ -9,8 +9,9 @@ Fork Forge 1.20.1 d’Antique Atlas, centré sur une carte persistante côté se
 - L’atlas affiche automatiquement la dimension actuelle du joueur.
 - Les données de chaque dimension restent séparées en interne pour éviter les collisions de coordonnées.
 - Les tuiles et marqueurs sont enregistrés dans les données du monde du serveur.
-- `itemNeeded = true` impose de posséder un atlas pour utiliser `M`.
-- `itemNeeded = false` associe la carte au joueur et permet de l’ouvrir sans objet.
+- La progression cartographique appartient toujours au joueur et reste sur le serveur.
+- `itemNeeded = true` impose de posséder un atlas pour utiliser `M`, sans lier les données à cet objet.
+- `itemNeeded = false` permet d’ouvrir exactement la même carte sans objet.
 
 Le mod doit être installé sur le serveur et sur tous les clients. Il nécessite :
 
