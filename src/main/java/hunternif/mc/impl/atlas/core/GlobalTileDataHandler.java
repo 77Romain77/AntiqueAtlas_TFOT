@@ -43,4 +43,10 @@ public class GlobalTileDataHandler {
         globalTileData.forEach((world, tileData) -> tileData.syncToPlayer(player, world));
     }
 
+    public void onClientConnectedToServer(boolean isRemote) {
+        if (isRemote) {
+            globalTileData.clear();
+        }
+    }
+
 }

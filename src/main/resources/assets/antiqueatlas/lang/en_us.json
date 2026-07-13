@@ -38,6 +38,7 @@
 
   "key.openatlas.desc": "Open Atlas",
   "key.antiqueatlas.category": "Antique Atlas",
+  "message.antiqueatlas.atlas_required": "You need an Antique Atlas to open the map",
 
   "text.autoconfig.antiqueatlas.title":  "Antique Atlas",
   "text.autoconfig.antiqueatlas.category.gameplay":  "Gameplay",
@@ -72,6 +73,5 @@
   "text.autoconfig.antiqueatlas.option.tileSize": "Size of a tile",
   "text.autoconfig.antiqueatlas.option.markerSize": "Size of a marker",
   "text.autoconfig.antiqueatlas.option.playerIconWidth": "Player icon width",
-  "text.autoconfig.antiqueatlas.option.playerIconHeight": "Player icon height",
-  "text.autoconfig.antiqueatlas.option.minimap": "Minimap"
+  "text.autoconfig.antiqueatlas.option.playerIconHeight": "Player icon height"
 }

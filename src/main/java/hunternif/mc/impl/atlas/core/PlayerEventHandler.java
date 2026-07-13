@@ -1,15 +1,22 @@
 package hunternif.mc.impl.atlas.core;
 
+import java.util.Collection;
+import java.util.List;
+
+import hunternif.mc.api.AtlasAPI;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.marker.MarkersData;
+import hunternif.mc.impl.atlas.network.packet.s2c.play.DimensionUpdateS2CPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 public class PlayerEventHandler {
     public static void onPlayerLogin(ServerPlayer player) {
+        List<Integer> atlasIDs = AtlasAPI.getPlayerAtlases(player);
+        if (atlasIDs.isEmpty()) return;
         Level world = player.level();
-        int atlasID = player.getUUID().hashCode();
+        int atlasID = atlasIDs.get(0);
 
         AtlasData data = AntiqueAtlas.tileData.getData(atlasID, world);
         // On the player join send the map from the server to the client:
@@ -25,12 +32,27 @@ public class PlayerEventHandler {
     }
 
     public static void onPlayerTick(Player player) {
-        if (!AntiqueAtlas.CONFIG.itemNeeded) {
-            // TODO Can we move world scanning to the server in this case as well?
-            AtlasData data = AntiqueAtlas.tileData.getData(
-                    player.getUUID().hashCode(), player.level());
+        if (player.level().isClientSide || !(player instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
 
-            AntiqueAtlas.worldScanner.updateAtlasAroundPlayer(data, player);
+        List<Integer> atlasIDs = AtlasAPI.getPlayerAtlases(player);
+        if (atlasIDs.isEmpty()) return;
+        int atlasID = atlasIDs.get(0);
+        AtlasData data = AntiqueAtlas.tileData.getData(atlasID, player.level());
+
+        if (!data.isSyncedToPlayer(player) && !data.isEmpty()) {
+            data.syncToPlayer(atlasID, player);
+        }
+
+        MarkersData markers = AntiqueAtlas.markersData.getMarkersData(atlasID, player.level());
+        if (!markers.isSyncedOnPlayer(player) && !markers.isEmpty()) {
+            markers.syncToPlayer(atlasID, serverPlayer);
+        }
+
+        Collection<TileInfo> newTiles = AntiqueAtlas.worldScanner.updateAtlasAroundPlayer(data, player);
+        if (!newTiles.isEmpty()) {
+            new DimensionUpdateS2CPacket(atlasID, player.level().dimension(), newTiles).send(serverPlayer);
         }
     }
 }

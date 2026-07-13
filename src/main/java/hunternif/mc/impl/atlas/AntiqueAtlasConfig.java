@@ -34,11 +34,6 @@ public class AntiqueAtlasConfig implements ConfigObject {
     @UnionConfig.Comment(comment = {"Player will need to craft atlas item to use atlas."})
     public boolean itemNeeded = true;
 
-    @UnionConfig.Entry(group = "Gameplay", name = "minimap", 
-    		translatable = "text.autoconfig.antiqueatlas.option.minimap", side = ConfigSide.Shared)
-    @UnionConfig.Comment(comment = {"Show a minimap if held in the mainhand"})
-    public boolean minimap = false;
-
     //============ Interface settings =============
     @UnionConfig.Entry(group = "User Interface", name = "doScaleMarkers", 
     		translatable = "text.autoconfig.antiqueatlas.option.doScaleMarkers", side = ConfigSide.Shared)
@@ -71,6 +66,7 @@ public class AntiqueAtlasConfig implements ConfigObject {
     @UnionConfig.Entry(group = "performance", name = "scanRadius", 
     		translatable = "text.autoconfig.antiqueatlas.option.scanRadius", side = ConfigSide.Shared)
     @UnionConfig.Comment(comment = {"The radius of the area around the player which is scanned by the Atlas at regular intervals.\nNote that this will not force faraway chunks to load, unless force_chunk_loading is enabled.\nLower value gives better performance."})
+    @UnionConfig.Range(min = 0, max = 32)
     public int scanRadius = 11;
 
     @UnionConfig.Entry(group = "performance", name = "forceChunkLoading", 
@@ -81,6 +77,7 @@ public class AntiqueAtlasConfig implements ConfigObject {
     @UnionConfig.Entry(group = "performance", name = "newScanInterval", 
     		translatable = "text.autoconfig.antiqueatlas.option.newScanInterval", side = ConfigSide.Shared)
     @UnionConfig.Comment(comment = {"Time in seconds between two scans of the area.\nHigher value gives better performance."})
+    @UnionConfig.Range(min = 0.05, max = 60.0)
     public float newScanInterval = 1f;
 
     @UnionConfig.Entry(group = "performance", name = "doRescan", 
@@ -91,7 +88,7 @@ public class AntiqueAtlasConfig implements ConfigObject {
     @UnionConfig.Entry(group = "performance", name = "rescanRate", 
     		translatable = "text.autoconfig.antiqueatlas.option.rescanRate", side = ConfigSide.Shared)
     @UnionConfig.Comment(comment = {"The number of area scans between full rescans.\nHigher value gives better performance."})
-    //@Setting.Constrain.Range(min = 1, max = 1000)
+    @UnionConfig.Range(min = 1, max = 1000)
     public int rescanRate = 4;
 
     @UnionConfig.Entry(group = "performance", name = "markerLimit", 

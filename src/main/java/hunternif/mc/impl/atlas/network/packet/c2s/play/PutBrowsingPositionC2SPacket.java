@@ -52,9 +52,19 @@ public class PutBrowsingPositionC2SPacket extends ServerboundUnionPacket {
 
 	@Override
 	public boolean handleOnServer(ServerPlayer sender) {
-		if (AntiqueAtlas.CONFIG.itemNeeded && !AtlasAPI.getPlayerAtlases(sender).contains(atlasID)) {
+		if (!AtlasAPI.getPlayerAtlases(sender).contains(atlasID)) {
 			Log.warn("Player %s attempted to put position marker into someone else's Atlas #%d",
 					sender.getName(), atlasID);
+			return false;
+		}
+		if (!world.equals(sender.level().dimension())) {
+			Log.warn("Player %s attempted to save an Atlas position for a different dimension",
+					sender.getName());
+			return false;
+		}
+		if (!Double.isFinite(zoom) || zoom < AntiqueAtlas.CONFIG.minScale || zoom > AntiqueAtlas.CONFIG.maxScale) {
+			Log.warn("Player %s attempted to save an invalid Atlas zoom level: %s",
+					sender.getName(), zoom);
 			return false;
 		}
 

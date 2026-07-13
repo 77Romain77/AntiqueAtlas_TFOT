@@ -53,7 +53,7 @@ public class WorldScanner {
      */
     public Collection<TileInfo> updateAtlasAroundPlayer(AtlasData data, Player player) {
         // Update the actual map only so often:
-        int newScanInterval = Math.round(AntiqueAtlas.CONFIG.newScanInterval * 20);
+        long newScanInterval = Math.max(1L, Math.round(AntiqueAtlas.CONFIG.newScanInterval * 20));
 
         if (player.getCommandSenderWorld().getGameTime() % newScanInterval != 0) {
             return Collections.emptyList(); //no new tiles
@@ -61,12 +61,12 @@ public class WorldScanner {
 
         ArrayList<TileInfo> updatedTiles = new ArrayList<>();
 
-        int rescanInterval = newScanInterval * AntiqueAtlas.CONFIG.rescanRate;
+        long rescanInterval = newScanInterval * Math.max(1L, AntiqueAtlas.CONFIG.rescanRate);
         boolean rescanRequired = AntiqueAtlas.CONFIG.doRescan && player.getCommandSenderWorld().getGameTime() % rescanInterval == 0;
 
         ITileDetector biomeDetector = getBiomeDetectorForWorld(player.getCommandSenderWorld().dimension());
 
-        int scanRadius = biomeDetector.getScanRadius();
+        int scanRadius = Math.max(0, biomeDetector.getScanRadius());
 
         // Look at chunks around in a circular area:
         for (int dx = -scanRadius; dx <= scanRadius; dx++) {
