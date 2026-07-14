@@ -17,3 +17,5 @@
   renommé `Antique Atlas`, ce qui évite tout objet personnalisé côté serveur.
 - Recettes et objets réseau historiques désactivés dans cette édition client.
 - Métadonnées, documentation, traductions française/anglaise et CI mises à jour.
+- Écran de configuration client autonome et fichier `antiqueatlas-client.json`,
+  sans initialiser le système réseau de la classe de base UnionLib.

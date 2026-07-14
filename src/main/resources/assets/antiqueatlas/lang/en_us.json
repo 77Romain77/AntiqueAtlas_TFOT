@@ -16,6 +16,12 @@
   "gui.antiqueatlas.maps.delete": "Delete",
   "gui.antiqueatlas.maps.deleteConfirm": "Confirm delete",
   "gui.antiqueatlas.maps.open": "Open map",
+  "gui.antiqueatlas.config.title": "Antique Atlas client settings",
+  "gui.antiqueatlas.config.itemRequired": "Renamed book required: %s",
+  "gui.antiqueatlas.config.deathMarker": "Automatic death marker: %s",
+  "gui.antiqueatlas.config.saveBrowsing": "Remember map position: %s",
+  "gui.antiqueatlas.config.scanRadius": "Scan radius: %s",
+  "gui.antiqueatlas.config.scanBudget": "Scan budget: %s",
 
   "gui.antiqueatlas.marker.label": "Label:",
   "gui.antiqueatlas.marker.type": "Type:",

@@ -4,7 +4,6 @@ import com.stereowalker.unionlib.config.ConfigObject;
 import com.stereowalker.unionlib.config.ConfigSide;
 import com.stereowalker.unionlib.config.UnionConfig;
 
-import hunternif.mc.impl.atlas.client.gui.GuiAtlas;
 
 @UnionConfig(name = "antiqueatlas", autoReload = true)
 public class AntiqueAtlasConfig implements ConfigObject {
@@ -133,7 +132,7 @@ public class AntiqueAtlasConfig implements ConfigObject {
     		translatable = "text.autoconfig.antiqueatlas.option.markerSize", side = ConfigSide.Shared)
     @UnionConfig.Comment(comment = {"The size (in GUI pixels) of a marker on the map.\nNote that this will change with Minecraft's GUI scale configuration."})
     //@Setting.Constrain.Range(min = 0)
-    public int markerSize = GuiAtlas.MARKER_SIZE / 2;
+    public int markerSize = 16;
 
     @UnionConfig.Entry(group = "appearance", name = "playerIconWidth", 
     		translatable = "text.autoconfig.antiqueatlas.option.playerIconWidth", side = ConfigSide.Shared)

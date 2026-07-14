@@ -37,6 +37,8 @@ Avec `itemNeeded = true`, le joueur doit avoir dans son inventaire un **livre
 vanilla renommé `Antique Atlas`**. Aucun objet personnalisé n’est enregistré :
 le client reste ainsi compatible avec un serveur qui ne possède pas le mod.
 Tenir ce livre affiche la carte dans les mains, uniquement à ce moment-là.
+Les réglages sont accessibles depuis le bouton **Config** de la liste des mods et
+sont enregistrés dans `.minecraft/config/antiqueatlas-client.json`.
 
 ## Prérequis et build
 

@@ -3,6 +3,7 @@ package hunternif.mc.impl.atlas;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 import com.stereowalker.unionlib.api.collectors.ReloadListeners;
 import com.stereowalker.unionlib.resource.ReloadListener;
@@ -26,27 +27,31 @@ import net.minecraft.world.level.biome.Biome;
 
 public class ClientProxy implements PreparableReloadListener, ReloadListener {
     public void initClient(ReloadListeners reloadListener) {
+        registerClientReloadListeners(reloadListener::listenTo);
+    }
+
+    public void registerClientReloadListeners(Consumer<PreparableReloadListener> registrar) {
         // read Textures first from assets
         TextureConfig textureConfig = new TextureConfig(Textures.TILE_TEXTURES_MAP);
-        reloadListener.listenTo(textureConfig);
+        registrar.accept(textureConfig);
 
         // then read TextureSets
         TextureSetMap textureSetMap = TextureSetMap.instance();
         TextureSetConfig textureSetConfig = new TextureSetConfig(textureSetMap);
-        reloadListener.listenTo(textureSetConfig);
+        registrar.accept(textureSetConfig);
 //        ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, textureSetConfig, textureSetConfig.getId(), textureSetConfig.getDependencies());
 
         // After that, we can read the tile mappings
         TileTextureMap tileTextureMap = TileTextureMap.instance();
         TileTextureConfig tileTextureConfig = new TileTextureConfig(tileTextureMap, textureSetMap);
-        reloadListener.listenTo(tileTextureConfig);
+        registrar.accept(tileTextureConfig);
 //        ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, tileTextureConfig, tileTextureConfig.getId(), tileTextureConfig.getDependencies());
 
         // Legacy file name:
-        reloadListener.listenTo(this);
+        registrar.accept(this);
 
         MarkerTextureConfig markerTextureConfig = new MarkerTextureConfig();
-        reloadListener.listenTo(markerTextureConfig);
+        registrar.accept(markerTextureConfig);
 
         for (MarkerType type : MarkerType.REGISTRY) {
             type.initMips();

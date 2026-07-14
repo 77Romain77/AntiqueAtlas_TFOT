@@ -1,8 +1,8 @@
 package hunternif.mc.impl.atlas;
 
-import com.stereowalker.unionlib.api.collectors.ConfigCollector;
 import com.stereowalker.unionlib.util.VersionHelper;
 import hunternif.mc.impl.atlas.client.AntiqueAtlasClientBootstrap;
+import hunternif.mc.impl.atlas.config.ClientConfigStorage;
 import hunternif.mc.impl.atlas.core.AtlasIdData;
 import hunternif.mc.impl.atlas.core.GlobalTileDataHandler;
 import hunternif.mc.impl.atlas.core.TileDataHandler;
@@ -48,11 +48,10 @@ public class AntiqueAtlas {
     public static final MarkersDataHandler markersData = new MarkersDataHandler();
     public static final GlobalTileDataHandler globalTileData = new GlobalTileDataHandler();
     public static final GlobalMarkersDataHandler globalMarkersData = new GlobalMarkersDataHandler();
-    public static final AntiqueAtlasConfig CONFIG = new AntiqueAtlasConfig();
+    public static final AntiqueAtlasConfig CONFIG = ClientConfigStorage.load();
 
     public AntiqueAtlas() {
         instance = this;
-        new ConfigCollector(ID).registerConfig(CONFIG);
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> AntiqueAtlasClientBootstrap::init);
     }
 

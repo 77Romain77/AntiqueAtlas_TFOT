@@ -16,6 +16,12 @@
   "gui.antiqueatlas.maps.delete": "Supprimer",
   "gui.antiqueatlas.maps.deleteConfirm": "Confirmer",
   "gui.antiqueatlas.maps.open": "Ouvrir la carte",
+  "gui.antiqueatlas.config.title": "Réglages client d’Antique Atlas",
+  "gui.antiqueatlas.config.itemRequired": "Livre renommé obligatoire : %s",
+  "gui.antiqueatlas.config.deathMarker": "Marqueur de mort automatique : %s",
+  "gui.antiqueatlas.config.saveBrowsing": "Mémoriser la position : %s",
+  "gui.antiqueatlas.config.scanRadius": "Rayon d’analyse : %s",
+  "gui.antiqueatlas.config.scanBudget": "Budget d’analyse : %s",
 
   "gui.antiqueatlas.marker.label": "Nom :",
   "gui.antiqueatlas.marker.type": "Type :",

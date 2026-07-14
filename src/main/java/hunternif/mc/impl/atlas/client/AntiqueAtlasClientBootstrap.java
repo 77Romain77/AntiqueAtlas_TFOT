@@ -1,8 +1,5 @@
 package hunternif.mc.impl.atlas.client;
 
-import com.stereowalker.unionlib.api.collectors.InsertCollector;
-import com.stereowalker.unionlib.api.collectors.ReloadListeners;
-import com.stereowalker.unionlib.api.keymaps.KeyMappingCollector;
 import hunternif.mc.impl.atlas.AntiqueAtlasClientSegment;
 import hunternif.mc.impl.atlas.ClientProxy;
 import net.minecraftforge.client.ConfigScreenHandler;
@@ -17,9 +14,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 /** Registers only client events, without creating a Forge network channel. */
 public final class AntiqueAtlasClientBootstrap {
     private static final AntiqueAtlasClientSegment SEGMENT = new AntiqueAtlasClientSegment();
-    private static final KeyMappingCollector KEY_MAPPINGS = new KeyMappingCollector();
-    private static final ReloadListeners RELOAD_LISTENERS = new ReloadListeners();
-    private static final InsertCollector INSERTS = new InsertCollector();
+    private static final ClientProxy CLIENT_PROXY = new ClientProxy();
     private static boolean initialized;
 
     private AntiqueAtlasClientBootstrap() {
@@ -28,10 +23,6 @@ public final class AntiqueAtlasClientBootstrap {
     public static void init() {
         if (initialized) return;
         initialized = true;
-
-        SEGMENT.setupKeymappings(KEY_MAPPINGS);
-        SEGMENT.registerInserts(INSERTS);
-        new ClientProxy().initClient(RELOAD_LISTENERS);
 
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(AntiqueAtlasClientBootstrap::registerKeyMappings);
@@ -44,15 +35,15 @@ public final class AntiqueAtlasClientBootstrap {
     }
 
     private static void registerKeyMappings(RegisterKeyMappingsEvent event) {
-        KEY_MAPPINGS.registerAll(event);
+        event.register(KeyHandler.ATLAS_KEYMAPPING);
     }
 
     private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
-        RELOAD_LISTENERS.listeners().forEach(event::registerReloadListener);
+        CLIENT_PROXY.registerClientReloadListeners(event::registerReloadListener);
     }
 
     private static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-        INSERTS.clientTickFinishHandlers().forEach(Runnable::run);
+        AntiqueAtlasClientSegment.onClientTick();
     }
 }

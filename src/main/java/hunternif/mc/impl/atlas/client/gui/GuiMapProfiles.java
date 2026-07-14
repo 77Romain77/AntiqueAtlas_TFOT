@@ -26,10 +26,10 @@ public class GuiMapProfiles extends Screen {
 
     @Override
     protected void init() {
-        rebuildWidgets();
+        refreshWidgets();
     }
 
-    private void rebuildWidgets() {
+    private void refreshWidgets() {
         clearWidgets();
         List<ClientMapManager.ProfileInfo> profiles = maps.getProfiles();
         if (selectedProfileId == null || profiles.stream().noneMatch(profile -> profile.id().equals(selectedProfileId))) {
@@ -46,7 +46,7 @@ public class GuiMapProfiles extends Screen {
             addRenderableWidget(Button.builder(label, button -> {
                 selectedProfileId = profile.id();
                 deleteArmed = false;
-                rebuildWidgets();
+                refreshWidgets();
             }).bounds(listX, listY + i * 23, 300, 20).build());
         }
 
@@ -63,14 +63,14 @@ public class GuiMapProfiles extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("gui.antiqueatlas.maps.rename"), button -> {
             if (maps.renameProfile(selectedProfileId, nameField.getValue())) {
                 deleteArmed = false;
-                rebuildWidgets();
+                refreshWidgets();
             }
         }).bounds(width / 2 + 55, height - 92, 95, 20).build());
 
         addRenderableWidget(Button.builder(Component.translatable("gui.antiqueatlas.maps.create"), button -> {
             selectedProfileId = maps.createProfile();
             deleteArmed = false;
-            rebuildWidgets();
+            refreshWidgets();
         }).bounds(width / 2 - 150, height - 66, 95, 20).build());
 
         Button deleteButton = Button.builder(Component.translatable(deleteArmed
@@ -78,11 +78,11 @@ public class GuiMapProfiles extends Screen {
                         : "gui.antiqueatlas.maps.delete"), button -> {
             if (!deleteArmed) {
                 deleteArmed = true;
-                rebuildWidgets();
+                refreshWidgets();
             } else if (maps.deleteProfile(selectedProfileId)) {
                 selectedProfileId = maps.getActiveProfileId();
                 deleteArmed = false;
-                rebuildWidgets();
+                refreshWidgets();
             }
         }).bounds(width / 2 - 50, height - 66, 95, 20).build();
         deleteButton.active = profiles.size() > 1;
