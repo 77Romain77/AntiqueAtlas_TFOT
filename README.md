@@ -6,6 +6,8 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
 ## Fonctionnement
 
 - `M` ouvre ou ferme la carte complète ; aucune minimap permanente n’est affichée.
+- Un clic droit avec un livre-atlas en main ouvre également la carte. Un coffre,
+  une porte ou une autre interaction utilisable conserve la priorité.
 - `Maj` + `M` ouvre le gestionnaire de cartes du serveur courant.
 - Chaque adresse de serveur possède ses propres cartes locales.
 - Il est possible de créer, renommer, sélectionner et supprimer plusieurs cartes.
@@ -72,6 +74,8 @@ le JAR dans l’artefact `antique-atlas-tfot-forge-1.20.1`.
 4. Changer de dimension et vérifier que seule la dimension actuelle est affichée.
 5. Tester la création, le renommage et la suppression de plusieurs cartes.
 6. Tester les deux valeurs de `itemNeeded`.
+7. Tester le clic droit dans le vide, puis sur un coffre, en main principale et
+   en main secondaire.
 
 ## Crédits et licence
 
