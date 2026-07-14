@@ -9,6 +9,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /** Registers only client events, without creating a Forge network channel. */
@@ -25,6 +26,7 @@ public final class AntiqueAtlasClientBootstrap {
         initialized = true;
 
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modBus.addListener(AntiqueAtlasClientBootstrap::clientSetup);
         modBus.addListener(AntiqueAtlasClientBootstrap::registerKeyMappings);
         modBus.addListener(AntiqueAtlasClientBootstrap::registerReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(AntiqueAtlasClientBootstrap::onClientTick);
@@ -32,6 +34,10 @@ public final class AntiqueAtlasClientBootstrap {
         ModLoadingContext.get().registerExtensionPoint(
                 ConfigScreenHandler.ConfigScreenFactory.class,
                 () -> new ConfigScreenHandler.ConfigScreenFactory(SEGMENT::getConfigScreen));
+    }
+
+    private static void clientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(ClientAtlasItem::registerModelProperty);
     }
 
     private static void registerKeyMappings(RegisterKeyMappingsEvent event) {

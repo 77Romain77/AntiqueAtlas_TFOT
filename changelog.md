@@ -1,4 +1,4 @@
-# Antique Atlas TFOT 8.2.0-tfot.1
+# Antique Atlas TFOT 8.2.0-tfot.2
 
 - Conversion en mod Forge 1.20.1 entièrement côté client.
 - Suppression du canal réseau obligatoire, des événements serveur, du scan serveur
@@ -14,7 +14,10 @@
 - `M` ouvre la carte ; `Maj` + `M` ouvre le gestionnaire de cartes.
 - Aucune minimap permanente.
 - L’option `itemNeeded` reste disponible : elle requiert désormais un livre vanilla
-  renommé `Antique Atlas`, ce qui évite tout objet personnalisé côté serveur.
+  renommé `Antique Atlas` ou portant le tag NBT `antiqueatlas:1b`, ce qui évite
+  tout objet personnalisé côté serveur.
+- Les livres reconnus utilisent désormais la texture d’Antique Atlas dans
+  l’inventaire et la barre rapide.
 - Recettes et objets réseau historiques désactivés dans cette édition client.
 - Métadonnées, documentation, traductions française/anglaise et CI mises à jour.
 - Écran de configuration client autonome et fichier `antiqueatlas-client.json`,

@@ -34,9 +34,20 @@ toutes les cinq secondes, afin de ne pas bloquer le rendu.
 `itemNeeded = false` (par défaut) permet d’ouvrir la carte directement avec `M`.
 
 Avec `itemNeeded = true`, le joueur doit avoir dans son inventaire un **livre
-vanilla renommé `Antique Atlas`**. Aucun objet personnalisé n’est enregistré :
-le client reste ainsi compatible avec un serveur qui ne possède pas le mod.
-Tenir ce livre affiche la carte dans les mains, uniquement à ce moment-là.
+vanilla renommé `Antique Atlas`**, ou un livre portant le tag NBT booléen
+`antiqueatlas`. Le livre reconnu utilise l’icône d’Antique Atlas dans
+l’inventaire et la barre rapide. Le tag permet de conserver cette apparence et
+ce comportement avec un nom personnalisé :
+
+```mcfunction
+/give @s minecraft:book{antiqueatlas:1b}
+```
+
+Aucun objet personnalisé n’est enregistré : le client reste ainsi compatible
+avec un serveur qui ne possède pas le mod. Le tag peut être fourni par une
+commande, un datapack ou un autre système vanilla ; la méthode par renommage
+reste disponible sans permission particulière. Tenir ce livre affiche la carte
+dans les mains, uniquement à ce moment-là.
 Les réglages sont accessibles depuis le bouton **Config** de la liste des mods et
 sont enregistrés dans `.minecraft/config/antiqueatlas-client.json`.
 

@@ -17,7 +17,7 @@
   "gui.antiqueatlas.maps.deleteConfirm": "Confirmer",
   "gui.antiqueatlas.maps.open": "Ouvrir la carte",
   "gui.antiqueatlas.config.title": "Réglages client d’Antique Atlas",
-  "gui.antiqueatlas.config.itemRequired": "Livre renommé obligatoire : %s",
+  "gui.antiqueatlas.config.itemRequired": "Livre-atlas obligatoire : %s",
   "gui.antiqueatlas.config.deathMarker": "Marqueur de mort automatique : %s",
   "gui.antiqueatlas.config.saveBrowsing": "Mémoriser la position : %s",
   "gui.antiqueatlas.config.scanRadius": "Rayon d’analyse : %s",
@@ -48,7 +48,7 @@
 
   "key.openatlas.desc": "Ouvrir l’Atlas",
   "key.antiqueatlas.category": "Antique Atlas",
-  "message.antiqueatlas.atlas_required": "Renommez un livre vanilla « Antique Atlas » pour ouvrir la carte",
+  "message.antiqueatlas.atlas_required": "Il faut un livre nommé « Antique Atlas » ou marqué comme atlas pour ouvrir la carte",
 
   "text.autoconfig.antiqueatlas.title": "Antique Atlas",
   "text.autoconfig.antiqueatlas.category.gameplay": "Gameplay",
