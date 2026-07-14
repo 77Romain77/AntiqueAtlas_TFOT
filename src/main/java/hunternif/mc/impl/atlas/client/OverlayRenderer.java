@@ -11,9 +11,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import hunternif.mc.api.client.AtlasClientAPI;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.client.gui.GuiAtlas;
+import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import hunternif.mc.impl.atlas.core.WorldData;
-import hunternif.mc.impl.atlas.item.AntiqueAtlasItems;
-import hunternif.mc.impl.atlas.item.AtlasItem;
 import hunternif.mc.impl.atlas.marker.DimensionMarkersData;
 import hunternif.mc.impl.atlas.marker.Marker;
 import hunternif.mc.impl.atlas.marker.MarkersData;
@@ -50,9 +49,8 @@ public class OverlayRenderer {
         this.player = Minecraft.getInstance().player;
         this.world = Minecraft.getInstance().level;
 
-        if (!atlas.isEmpty() && atlas.getItem() == AntiqueAtlasItems.Items.ATLAS) {
-            int atlasID = AtlasItem.getAtlasID(atlas);
-            drawMinimap(matrices, atlasID, vertexConsumer, light);
+        if (ClientAtlasItem.isAtlas(atlas) && ClientMapManager.getInstance().isReady()) {
+            drawMinimap(matrices, ClientMapManager.getInstance().getActiveAtlasId(), vertexConsumer, light);
         }
     }
 

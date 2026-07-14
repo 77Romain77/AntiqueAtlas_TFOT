@@ -26,13 +26,13 @@ public class AntiqueAtlasConfig implements ConfigObject {
 
     @UnionConfig.Entry(group = "Gameplay", name = "autoNetherPortalMarkers", 
     		translatable = "text.autoconfig.antiqueatlas.option.autoNetherPortalMarkers", side = ConfigSide.Shared)
-    @UnionConfig.Comment(comment = {"Whether to add global markers for Nether Portals."})
-    public boolean autoNetherPortalMarkers = true;
+    @UnionConfig.Comment(comment = {"Legacy option kept for config compatibility. The client-only build does not inspect portal structures."})
+    public boolean autoNetherPortalMarkers = false;
 
     @UnionConfig.Entry(group = "Gameplay", name = "itemNeeded", 
     		translatable = "text.autoconfig.antiqueatlas.option.itemNeeded", side = ConfigSide.Shared)
-    @UnionConfig.Comment(comment = {"Player will need to craft atlas item to use atlas."})
-    public boolean itemNeeded = true;
+    @UnionConfig.Comment(comment = {"Require a vanilla book renamed 'Antique Atlas' to scan and open the map."})
+    public boolean itemNeeded = false;
 
     //============ Interface settings =============
     @UnionConfig.Entry(group = "User Interface", name = "doScaleMarkers", 
@@ -65,25 +65,25 @@ public class AntiqueAtlasConfig implements ConfigObject {
     //=========== Performance settings ============
     @UnionConfig.Entry(group = "performance", name = "scanRadius", 
     		translatable = "text.autoconfig.antiqueatlas.option.scanRadius", side = ConfigSide.Shared)
-    @UnionConfig.Comment(comment = {"The radius of the area around the player which is scanned by the Atlas at regular intervals.\nNote that this will not force faraway chunks to load, unless force_chunk_loading is enabled.\nLower value gives better performance."})
+    @UnionConfig.Comment(comment = {"Radius, in already-loaded client chunks, recorded around the player. This never loads server chunks."})
     @UnionConfig.Range(min = 0, max = 32)
     public int scanRadius = 11;
 
     @UnionConfig.Entry(group = "performance", name = "forceChunkLoading", 
     		translatable = "text.autoconfig.antiqueatlas.option.forceChunkLoading", side = ConfigSide.Shared)
-    @UnionConfig.Comment(comment = {"Force loading of chunks within scan radius even if it exceeds regular chunk loading distance.\nEnabling this may SEVERELY decrease performance!"})
+    @UnionConfig.Comment(comment = {"Legacy option kept for config compatibility. Client-only Atlas never force-loads chunks."})
     public boolean forceChunkLoading = false;
 
     @UnionConfig.Entry(group = "performance", name = "newScanInterval", 
     		translatable = "text.autoconfig.antiqueatlas.option.newScanInterval", side = ConfigSide.Shared)
-    @UnionConfig.Comment(comment = {"Time in seconds between two scans of the area.\nHigher value gives better performance."})
+    @UnionConfig.Comment(comment = {"Legacy option kept for config compatibility. New client chunks are processed through a bounded queue."})
     @UnionConfig.Range(min = 0.05, max = 60.0)
     public float newScanInterval = 1f;
 
     @UnionConfig.Entry(group = "performance", name = "doRescan", 
     		translatable = "text.autoconfig.antiqueatlas.option.doRescan", side = ConfigSide.Shared)
-    @UnionConfig.Comment(comment = {"Whether to rescan chunks in the area that have been previously mapped. This is useful in case of changes in coastline (including small ponds of water and lava), or if land disappears completely (for sky worlds).\nDisable for better performance."})
-    public boolean doRescan = true;
+    @UnionConfig.Comment(comment = {"Legacy option kept for config compatibility. Already recorded chunks are not rescanned automatically."})
+    public boolean doRescan = false;
 
     @UnionConfig.Entry(group = "performance", name = "rescanRate", 
     		translatable = "text.autoconfig.antiqueatlas.option.rescanRate", side = ConfigSide.Shared)
@@ -91,8 +91,14 @@ public class AntiqueAtlasConfig implements ConfigObject {
     @UnionConfig.Range(min = 1, max = 1000)
     public int rescanRate = 4;
 
+    @UnionConfig.Entry(group = "performance", name = "clientScanBudget",
+            translatable = "text.autoconfig.antiqueatlas.option.clientScanBudget", side = ConfigSide.Shared)
+    @UnionConfig.Comment(comment = {"Maximum number of newly received chunks analysed per client tick. Lower values reduce client frame spikes."})
+    @UnionConfig.Range(min = 1, max = 64)
+    public int clientScanBudget = 8;
+
     @UnionConfig.Entry(group = "performance", name = "markerLimit", 
-    		translatable = "text.autoconfig.antiqueatlas.option.maxScale", side = ConfigSide.Shared)
+			translatable = "text.autoconfig.antiqueatlas.option.markerLimit", side = ConfigSide.Shared)
     @UnionConfig.Comment(comment = {"The maximum number of markers a particular atlas can hold."})
     //@Setting.Constrain.Range(min = 0, max = 2147483647)
     public int markerLimit = 1024;
@@ -100,12 +106,12 @@ public class AntiqueAtlasConfig implements ConfigObject {
     @UnionConfig.Entry(group = "performance", name = "doScanPonds", 
     		translatable = "text.autoconfig.antiqueatlas.option.doScanPonds", side = ConfigSide.Shared)
     @UnionConfig.Comment(comment = {"Whether to perform additional scanning to locate small ponds of water or lava.\nDisable for better performance."})
-    public boolean doScanPonds = true;
+    public boolean doScanPonds = false;
 
     @UnionConfig.Entry(group = "performance", name = "doScanRavines", 
     		translatable = "text.autoconfig.antiqueatlas.option.doScanRavines", side = ConfigSide.Shared)
     @UnionConfig.Comment(comment = {"Whether to perform additional scanning to locate ravines.\nDisable for better performance."})
-    public boolean doScanRavines = true;
+    public boolean doScanRavines = false;
 
     @UnionConfig.Entry(group = "performance", name = "debugRender", 
     		translatable = "text.autoconfig.antiqueatlas.option.debugRender", side = ConfigSide.Shared)
@@ -115,7 +121,7 @@ public class AntiqueAtlasConfig implements ConfigObject {
     @UnionConfig.Entry(group = "performance", name = "resourcePackLogging", 
     		translatable = "text.autoconfig.antiqueatlas.option.resourcePackLogging", side = ConfigSide.Shared)
     @UnionConfig.Comment(comment = {"If true, all resource pack loading information will be logged during start and reload."})
-    public boolean resourcePackLogging = true;
+    public boolean resourcePackLogging = false;
 
     @UnionConfig.Entry(group = "appearance", name = "tileSize", 
     		translatable = "text.autoconfig.antiqueatlas.option.tileSize", side = ConfigSide.Shared)

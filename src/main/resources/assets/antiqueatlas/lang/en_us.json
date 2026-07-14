@@ -9,6 +9,13 @@
   "gui.antiqueatlas.exportImage": "Export image",
   "gui.antiqueatlas.hideMarkers": "Hide markers",
   "gui.antiqueatlas.showMarkers": "Show markers",
+  "gui.antiqueatlas.maps.title": "Local maps",
+  "gui.antiqueatlas.maps.name": "Map name",
+  "gui.antiqueatlas.maps.rename": "Rename",
+  "gui.antiqueatlas.maps.create": "New map",
+  "gui.antiqueatlas.maps.delete": "Delete",
+  "gui.antiqueatlas.maps.deleteConfirm": "Confirm delete",
+  "gui.antiqueatlas.maps.open": "Open map",
 
   "gui.antiqueatlas.marker.label": "Label:",
   "gui.antiqueatlas.marker.type": "Type:",
@@ -38,7 +45,7 @@
 
   "key.openatlas.desc": "Open Atlas",
   "key.antiqueatlas.category": "Antique Atlas",
-  "message.antiqueatlas.atlas_required": "You need an Antique Atlas to open the map",
+  "message.antiqueatlas.atlas_required": "Rename a vanilla book to 'Antique Atlas' to open the map",
 
   "text.autoconfig.antiqueatlas.title":  "Antique Atlas",
   "text.autoconfig.antiqueatlas.category.gameplay":  "Gameplay",
@@ -59,6 +66,7 @@
   "text.autoconfig.antiqueatlas.option.doReverseWheelZoom": "Reversed mouse wheel zoom",
 
   "text.autoconfig.antiqueatlas.option.scanRadius": "Scan radius",
+  "text.autoconfig.antiqueatlas.option.clientScanBudget": "Chunks scanned per client tick",
   "text.autoconfig.antiqueatlas.option.forceChunkLoading": "Force chunk loading",
   "text.autoconfig.antiqueatlas.option.newScanInterval": "Scan interval",
   "text.autoconfig.antiqueatlas.option.doRescan": "Rescan",

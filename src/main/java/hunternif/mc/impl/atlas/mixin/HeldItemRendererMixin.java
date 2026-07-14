@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
+import hunternif.mc.impl.atlas.client.ClientAtlasItem;
 import hunternif.mc.impl.atlas.client.OverlayRenderer;
-import hunternif.mc.impl.atlas.item.AntiqueAtlasItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -47,7 +47,7 @@ public abstract class HeldItemRendererMixin {
 
     @Inject(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 0), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     private void renderAtlas(AbstractClientPlayer player, float tickDelta, float pitch, InteractionHand hand, float swingProgress, ItemStack item, float equipProgress, PoseStack matrices, MultiBufferSource vertexConsumers, int light, CallbackInfo ci, boolean bl, HumanoidArm arm) {
-        if (item.getItem() == AntiqueAtlasItems.Items.ATLAS) {
+        if (ClientAtlasItem.isAtlas(item)) {
             if (bl && this.offHandItem.isEmpty()) {
                 renderAtlasInBothHands(matrices, vertexConsumers, light, pitch, equipProgress, swingProgress);
             } else {

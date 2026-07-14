@@ -8,8 +8,6 @@
   "client": [
     "HeldItemRendererMixin",
     "MinecraftClientMixin",
-    "MixinEntity",
-    "GlDebugMixin",
     "MixinPlayerEntityDeath"
   ],
   "injectors": {

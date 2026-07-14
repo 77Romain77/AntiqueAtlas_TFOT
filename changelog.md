@@ -1,16 +1,19 @@
-# Antique Atlas TFOT 8.1.0-tfot.1
+# Antique Atlas TFOT 8.2.0-tfot.1
 
-- Ajout de la touche `M` dans les deux modes de configuration.
-- En mode `itemNeeded = true`, la touche vérifie que le joueur possède un atlas.
-- Suppression de la minimap permanente à l’écran.
-- Correction de la synchronisation en direct de la carte en mode sans objet.
-- Correction d’un format de paquet réseau incompatible entre l’écriture et la lecture.
-- Validation renforcée des requêtes de marqueurs, de tuiles et de position de navigation.
-- Envoi des mises à jour d’atlas uniquement aux joueurs concernés.
-- Nettoyage des caches de carte lors de la déconnexion afin d’éviter les données fantômes entre serveurs.
-- Protection des valeurs d’analyse invalides pouvant provoquer une division par zéro.
-- Traduction française complétée et libellés de l’interface rafraîchis à chaque ouverture.
-- Build GitHub Actions modernisé pour Java 17 avec publication automatique des JAR.
-- Suppression d’un ancien mixin de recette vide qui empêchait la compilation Forge 1.20.1.
-- Progression unifiée par joueur : l’objet contrôle l’accès mais ne possède plus les données de carte.
-- Recettes et format du pack corrigés pour Minecraft 1.20.1 ; anciennes recettes de partage retirées.
+- Conversion en mod Forge 1.20.1 entièrement côté client.
+- Suppression du canal réseau obligatoire, des événements serveur, du scan serveur
+  et de l’enregistrement `SavedData` utilisé par le serveur.
+- Compatibilité prévue avec les serveurs ne possédant ni Antique Atlas ni ses données.
+- Stockage local séparé par adresse de serveur et par profil de carte.
+- Gestion de plusieurs cartes nommées : création, renommage, sélection et suppression.
+- Stockage terrain régional compressé en zones de `32 × 32` chunks avec palette.
+- Sauvegardes terrain asynchrones et regroupées toutes les cinq secondes.
+- Scanner client borné : uniquement les chunks déjà chargés, sans chargement forcé.
+- Marqueurs, marqueurs de mort et position de navigation enregistrés localement.
+- Affichage limité à la dimension actuelle, avec données distinctes par dimension.
+- `M` ouvre la carte ; `Maj` + `M` ouvre le gestionnaire de cartes.
+- Aucune minimap permanente.
+- L’option `itemNeeded` reste disponible : elle requiert désormais un livre vanilla
+  renommé `Antique Atlas`, ce qui évite tout objet personnalisé côté serveur.
+- Recettes et objets réseau historiques désactivés dans cette édition client.
+- Métadonnées, documentation, traductions française/anglaise et CI mises à jour.

@@ -8,7 +8,10 @@ import com.stereowalker.unionlib.mod.ClientSegment;
 import com.stereowalker.unionlib.util.VersionHelper;
 
 import hunternif.mc.impl.atlas.client.KeyHandler;
+import hunternif.mc.impl.atlas.client.ClientWorldScanner;
 import hunternif.mc.impl.atlas.client.gui.GuiAtlas;
+import hunternif.mc.impl.atlas.client.gui.GuiMapProfiles;
+import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 public class AntiqueAtlasClientSegment extends ClientSegment {
 
     private static GuiAtlas guiAtlas;
+    private static final ClientWorldScanner CLIENT_SCANNER = new ClientWorldScanner();
 
     public static GuiAtlas getAtlasGUI() {
         if (guiAtlas == null) {
@@ -28,6 +32,14 @@ public class AntiqueAtlasClientSegment extends ClientSegment {
 
     public static void resetAtlasGUI() {
         guiAtlas = null;
+    }
+
+    public static void resetClientScanner() {
+        CLIENT_SCANNER.reset();
+    }
+
+    public static void openMapProfiles(Screen parent) {
+        Minecraft.getInstance().setScreen(new GuiMapProfiles(parent));
     }
 
     public static void openAtlasGUI(ItemStack stack) {
@@ -64,7 +76,10 @@ public class AntiqueAtlasClientSegment extends ClientSegment {
 	@Override
 	public void registerInserts(InsertCollector collector) {
 		collector.addInsert(ClientInserts.CLIENT_TICK_FINISH, ()->{
-			KeyHandler.onClientTick(Minecraft.getInstance());
+			Minecraft minecraft = Minecraft.getInstance();
+			ClientMapManager.getInstance().tick(minecraft);
+			CLIENT_SCANNER.tick(minecraft);
+			KeyHandler.onClientTick(minecraft);
 		});
 	}
 }

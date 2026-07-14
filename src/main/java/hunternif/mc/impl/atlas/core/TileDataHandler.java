@@ -21,6 +21,7 @@ public class TileDataHandler {
     private static final String ATLAS_DATA_PREFIX = "aAtlas_";
 
     private final Map<String, AtlasData> atlasDataClientCache = new ConcurrentHashMap<>();
+    private AtlasData activeClientData;
 
     /**
      * Loads data for the given atlas ID or creates a new one.
@@ -40,9 +41,8 @@ public class TileDataHandler {
         String key = getAtlasDataKey(atlasID);
 
         if (world.isClientSide) {
-            // Since atlas data doesn't really belong to a single world-dimension,
-            // it can be cached. This should fix #67
-            return atlasDataClientCache.computeIfAbsent(key, s -> new AtlasData());
+            if (activeClientData == null) activeClientData = new AtlasData();
+            return activeClientData;
         } else {
             DimensionDataStorage manager = ((ServerLevel) world).getDataStorage();
             return manager.computeIfAbsent(AtlasData::fromNbt, AtlasData::new, key);
@@ -64,5 +64,12 @@ public class TileDataHandler {
      */
     public void onClientConnectedToServer(boolean isRemote) {
         atlasDataClientCache.clear();
+        activeClientData = null;
+    }
+
+    /** Installs the currently selected local map profile. Client side only. */
+    public void setClientData(AtlasData data) {
+        atlasDataClientCache.clear();
+        activeClientData = data;
     }
 }

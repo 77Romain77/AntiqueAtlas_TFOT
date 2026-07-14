@@ -10,13 +10,13 @@ import hunternif.mc.impl.atlas.client.gui.core.GuiStates.IState;
 import hunternif.mc.impl.atlas.client.gui.core.GuiStates.SimpleState;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
 import hunternif.mc.impl.atlas.client.texture.TileTexture;
+import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import hunternif.mc.impl.atlas.core.WorldData;
 import hunternif.mc.impl.atlas.event.MarkerClickedCallback;
 import hunternif.mc.impl.atlas.event.MarkerHoveredCallback;
 import hunternif.mc.impl.atlas.marker.DimensionMarkersData;
 import hunternif.mc.impl.atlas.marker.Marker;
 import hunternif.mc.impl.atlas.marker.MarkersData;
-import hunternif.mc.impl.atlas.network.packet.c2s.play.PutBrowsingPositionC2SPacket;
 import hunternif.mc.impl.atlas.registry.MarkerRenderInfo;
 import hunternif.mc.impl.atlas.registry.MarkerType;
 import hunternif.mc.impl.atlas.util.*;
@@ -1187,8 +1187,7 @@ public class GuiAtlas extends GuiComponent {
         removeChild(blinkingIcon);
         // Keyboard.enableRepeatEvents(false);
         biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);
-
-        new PutBrowsingPositionC2SPacket(getAtlasID(), player.getCommandSenderWorld().dimension(), mapOffsetX, mapOffsetY, mapScale).send();
+        ClientMapManager.getInstance().markStateDirty();
     }
 
     /**
@@ -1247,6 +1246,6 @@ public class GuiAtlas extends GuiComponent {
      * The map belongs to the player. The atlas item only controls access.
      */
     private int getAtlasID() {
-        return player.getUUID().hashCode();
+        return ClientMapManager.getInstance().getActiveAtlasId();
     }
 }

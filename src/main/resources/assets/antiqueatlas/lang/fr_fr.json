@@ -9,6 +9,13 @@
   "gui.antiqueatlas.exportImage": "Exporter en PNG",
   "gui.antiqueatlas.hideMarkers": "Masquer les marqueurs",
   "gui.antiqueatlas.showMarkers": "Afficher les marqueurs",
+  "gui.antiqueatlas.maps.title": "Cartes locales",
+  "gui.antiqueatlas.maps.name": "Nom de la carte",
+  "gui.antiqueatlas.maps.rename": "Renommer",
+  "gui.antiqueatlas.maps.create": "Nouvelle carte",
+  "gui.antiqueatlas.maps.delete": "Supprimer",
+  "gui.antiqueatlas.maps.deleteConfirm": "Confirmer",
+  "gui.antiqueatlas.maps.open": "Ouvrir la carte",
 
   "gui.antiqueatlas.marker.label": "Nom :",
   "gui.antiqueatlas.marker.type": "Type :",
@@ -35,7 +42,7 @@
 
   "key.openatlas.desc": "Ouvrir l’Atlas",
   "key.antiqueatlas.category": "Antique Atlas",
-  "message.antiqueatlas.atlas_required": "Vous devez posséder un Atlas Antique pour ouvrir la carte",
+  "message.antiqueatlas.atlas_required": "Renommez un livre vanilla « Antique Atlas » pour ouvrir la carte",
 
   "text.autoconfig.antiqueatlas.title": "Antique Atlas",
   "text.autoconfig.antiqueatlas.category.gameplay": "Gameplay",
@@ -54,6 +61,7 @@
   "text.autoconfig.antiqueatlas.option.maxScale": "Zoom maximal",
   "text.autoconfig.antiqueatlas.option.doReverseWheelZoom": "Inverser la molette de zoom",
   "text.autoconfig.antiqueatlas.option.scanRadius": "Rayon d’exploration",
+  "text.autoconfig.antiqueatlas.option.clientScanBudget": "Chunks analysés par tick client",
   "text.autoconfig.antiqueatlas.option.forceChunkLoading": "Forcer le chargement des chunks",
   "text.autoconfig.antiqueatlas.option.newScanInterval": "Intervalle d’analyse",
   "text.autoconfig.antiqueatlas.option.doRescan": "Réexaminer les chunks connus",

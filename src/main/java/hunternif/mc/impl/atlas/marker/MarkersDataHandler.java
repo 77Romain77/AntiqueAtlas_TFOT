@@ -22,6 +22,7 @@ public class MarkersDataHandler {
     private static final String MARKERS_DATA_PREFIX = "aaMarkers_";
 
     private final Map<String, MarkersData> markersDataClientCache = new ConcurrentHashMap<>();
+    private MarkersData activeClientData;
 
     /**
      * Loads data for the given atlas or creates a new one.
@@ -41,9 +42,8 @@ public class MarkersDataHandler {
         if (world == null) return null;
         String key = getMarkersDataKey(atlasID);
         if (world.isClientSide) {
-            // Since atlas data doesn't really belong to a single world-dimension,
-            // it can be cached. This should fix #67
-            return markersDataClientCache.computeIfAbsent(key + world.dimension(), s -> new MarkersData());
+            if (activeClientData == null) activeClientData = new MarkersData();
+            return activeClientData;
         } else {
             DimensionDataStorage manager = ((ServerLevel) world).getDataStorage();
             return manager.computeIfAbsent(MarkersData::fromNbt, MarkersData::new, key);
@@ -52,6 +52,7 @@ public class MarkersDataHandler {
 
     public MarkersData getMarkersDataCached(int atlasID, ResourceKey<Level> world)
     {
+        if (activeClientData != null) return activeClientData;
         String key = getMarkersDataKey(atlasID);
         return markersDataClientCache.computeIfAbsent(key + world, s -> new MarkersData());
     }
@@ -71,5 +72,12 @@ public class MarkersDataHandler {
      */
     public void onClientConnectedToServer(boolean ignoredIsRemote) {
         markersDataClientCache.clear();
+        activeClientData = null;
+    }
+
+    /** Installs the currently selected local map profile. Client side only. */
+    public void setClientData(MarkersData data) {
+        markersDataClientCache.clear();
+        activeClientData = data;
     }
 }
