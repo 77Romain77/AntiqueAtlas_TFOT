@@ -10,7 +10,6 @@ import hunternif.mc.impl.atlas.registry.MarkerType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
@@ -18,7 +17,6 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 /** In-atlas multi-select panel controlling which marker types are rendered. */
 public final class GuiMarkerFilter extends GuiComponent {
@@ -67,7 +65,7 @@ public final class GuiMarkerFilter extends GuiComponent {
         for (MarkerType type : types) {
             ResourceLocation id = MarkerType.REGISTRY.getKey(type);
             typeIds.add(id);
-            MarkerFilterButton markerButton = new MarkerFilterButton(type, markerName(id));
+            MarkerFilterButton markerButton = new MarkerFilterButton(type);
             markerButton.setSelected(MarkerVisibility.isVisible(id));
             markerButton.addListener(button -> MarkerVisibility.setVisible(id, markerButton.isMarkerVisible()));
             markerButtons.add(markerButton);
@@ -126,48 +124,11 @@ public final class GuiMarkerFilter extends GuiComponent {
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
-    private static Component markerName(ResourceLocation id) {
-        String camelCase = toLowerCamel(id.getPath());
-        String translationKey = "gui.antiqueatlas.marker." + camelCase;
-        if (I18n.exists(translationKey)) return Component.translatable(translationKey);
-
-        String[] words = id.getPath().split("[_./-]+");
-        StringBuilder fallback = new StringBuilder();
-        for (String word : words) {
-            if (word.isEmpty()) continue;
-            if (!fallback.isEmpty()) fallback.append(' ');
-            fallback.append(word.substring(0, 1).toUpperCase(Locale.ROOT));
-            if (word.length() > 1) fallback.append(word.substring(1).toLowerCase(Locale.ROOT));
-        }
-        if (!id.getNamespace().equals("antiqueatlas")) {
-            fallback.insert(0, id.getNamespace() + ": ");
-        }
-        return Component.literal(fallback.toString());
-    }
-
-    private static String toLowerCamel(String value) {
-        StringBuilder result = new StringBuilder();
-        boolean uppercaseNext = false;
-        for (char character : value.toCharArray()) {
-            if (character == '_' || character == '-' || character == '/' || character == '.') {
-                uppercaseNext = true;
-            } else if (uppercaseNext) {
-                result.append(Character.toUpperCase(character));
-                uppercaseNext = false;
-            } else {
-                result.append(character);
-            }
-        }
-        return result.toString();
-    }
-
     private static final class MarkerFilterButton extends GuiToggleButton {
         private final MarkerType markerType;
-        private final Component name;
 
-        private MarkerFilterButton(MarkerType markerType, Component name) {
+        private MarkerFilterButton(MarkerType markerType) {
             this.markerType = markerType;
-            this.name = name;
             setSize(FRAME_SIZE, FRAME_SIZE);
         }
 
@@ -186,7 +147,7 @@ public final class GuiMarkerFilter extends GuiComponent {
                 Component status = Component.translatable(isSelected()
                         ? "gui.antiqueatlas.markerFilter.visible"
                         : "gui.antiqueatlas.markerFilter.hidden");
-                drawTooltip(List.of(name, status), Minecraft.getInstance().font);
+                drawTooltip(List.of(status), Minecraft.getInstance().font);
             }
             super.render(graphics, mouseX, mouseY, partialTick);
         }

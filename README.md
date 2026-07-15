@@ -24,6 +24,9 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
 - La colonne de gauche regroupe les marqueurs par icône. Son survol indique le
   nombre de marqueurs du groupe et un clic ouvre leur liste défilable, sans
   afficher leurs coordonnées.
+- Les icônes TFOT supplémentaires couvrent notamment les quêtes, PNJ, boutiques,
+  bateaux, cartes et artéfacts. Elles sont normalisées à la taille des marqueurs
+  historiques ; le marqueur Portail du Nether a été retiré.
 - Le marque-page **Actualiser la zone** permet de réexaminer ponctuellement les
   chunks déjà cartographiés et chargés autour du joueur lorsqu’une mise à jour a
   modifié le monde. Le bouton reste bloqué jusqu’à la fin de l’opération.

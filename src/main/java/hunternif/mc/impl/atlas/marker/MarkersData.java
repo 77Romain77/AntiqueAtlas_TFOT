@@ -46,6 +46,7 @@ public class MarkersData extends SavedData {
 	private static final String TAG_MARKER_X = "x";
 	private static final String TAG_MARKER_Y = "y";
 	private static final String TAG_MARKER_VISIBLE_AHEAD = "visAh";
+	private static final ResourceLocation REMOVED_NETHER_PORTAL_MARKER = AntiqueAtlas.id("nether_portal");
 
 	/** Markers are stored in lists within square areas this many MC chunks
 	 * across. */
@@ -111,9 +112,14 @@ public class MarkersData extends SavedData {
 					data.largestID.set(id);
 				}
 
+				ResourceLocation markerType = ResourceLocations.parse(markerTag.getString(TAG_MARKER_TYPE));
+				if (markerType.equals(REMOVED_NETHER_PORTAL_MARKER)) {
+					continue;
+				}
+
 				Marker marker = new Marker(
 						id,
-						ResourceLocations.parse(markerTag.getString(TAG_MARKER_TYPE)),
+						markerType,
 						Component.Serializer.fromJson(markerTag.getString(TAG_MARKER_LABEL)),
 						world,
 						markerTag.getInt(TAG_MARKER_X),

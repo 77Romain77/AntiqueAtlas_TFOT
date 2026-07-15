@@ -1,4 +1,22 @@
-# Antique Atlas TFOT 8.2.0-tfot.12
+# Antique Atlas TFOT 8.2.0-tfot.13
+
+- Ajout de quatorze types de marqueurs TFOT : parchemin d’artéfact, bague,
+  bateau, chapitre, crochet, point d’exclamation, lingot d’or, carte, PNJ,
+  quête, boutique, pelle, étoile et inconnu.
+- Toutes les nouvelles textures conservent un canevas `32 × 32`, mais leur
+  dessin visible est ramené à environ `14–16` pixels afin de correspondre à la
+  taille des marqueurs historiques dans la carte et dans les menus.
+- L’image de PNJ fournie séparément étant identique à celle du ZIP, elle n’est
+  enregistrée qu’une seule fois sous le type `PNJ`.
+- Suppression du marqueur **Portail du Nether**, de son ancienne option
+  automatique et du code serveur historique associé. Les anciens marqueurs de
+  ce type ne sont plus chargés dans les cartes locales.
+- Le filtre des marqueurs n’affiche plus le nom du type au survol : seule
+  l’indication **Visible** ou **Masqué** est conservée.
+- Le grand symbole du bouton **Actualiser la zone** est légèrement décalé vers
+  le haut et la droite afin d’être visuellement centré dans son marque-page.
+
+## 8.2.0-tfot.12
 
 - Le survol d’une catégorie de marqueurs affiche uniquement son compteur, sans
   répéter le nom du type d’icône.

@@ -9,7 +9,6 @@ public class AntiqueAtlasConfig {
     public boolean doSaveBrowsingPos = true;
     public boolean autoDeathMarker = true;
     public boolean autoVillageMarkers = false;
-    public boolean autoNetherPortalMarkers = false;
     public boolean itemNeeded = false;
 
     // Interface

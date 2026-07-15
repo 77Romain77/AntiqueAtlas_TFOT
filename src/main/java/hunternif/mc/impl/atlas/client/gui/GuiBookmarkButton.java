@@ -18,6 +18,8 @@ public class GuiBookmarkButton extends GuiToggleButton {
     private static final int WIDTH = 21;
     private static final int HEIGHT = 18;
     private static final float TEXT_ICON_SCALE = 3.0F;
+    private static final float TEXT_ICON_OFFSET_X = 1.5F;
+    private static final float TEXT_ICON_OFFSET_Y = -2.0F;
 
     private final int colorIndex;
     private ITexture iconTexture;
@@ -79,8 +81,8 @@ public class GuiBookmarkButton extends GuiToggleButton {
             iconTexture.draw(matrices, getGuiX() + 2 + hoverOffset, getGuiY() + 1);
         } else if (iconText != null) {
             matrices.pose().pushPose();
-            matrices.pose().translate(getGuiX() + WIDTH / 2F + hoverOffset,
-                    getGuiY() + HEIGHT / 2F, 0);
+            matrices.pose().translate(getGuiX() + WIDTH / 2F + hoverOffset + TEXT_ICON_OFFSET_X,
+                    getGuiY() + HEIGHT / 2F + TEXT_ICON_OFFSET_Y, 0);
             matrices.pose().scale(TEXT_ICON_SCALE, TEXT_ICON_SCALE, 1.0F);
             matrices.drawCenteredString(Minecraft.getInstance().font, iconText, 0,
                     -Minecraft.getInstance().font.lineHeight / 2,

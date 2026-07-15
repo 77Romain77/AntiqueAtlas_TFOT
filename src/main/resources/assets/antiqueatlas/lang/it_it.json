@@ -13,7 +13,6 @@
   "gui.antiqueatlas.marker.label": "Etichetta:",
   "gui.antiqueatlas.marker.type": "Tipo:",
   "gui.antiqueatlas.marker.village": "Villaggio",
-  "gui.antiqueatlas.marker.netherPortal": "Portale degli Inferi",
 
   "gui.antiqueatlas.export.opening": "Aprendo la pagina di dialogo...",
   "gui.antiqueatlas.export.selectFile": "Seleziona dove salvare il file PNG",
