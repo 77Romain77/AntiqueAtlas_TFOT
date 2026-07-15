@@ -11,6 +11,9 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
 - Le bouton **Maps** de l’atlas ouvre le gestionnaire de cartes ; aucun second
   raccourci clavier n’est ajouté aux contrôles.
 - Chaque adresse de serveur possède ses propres cartes locales.
+- Les cartes sont liées au pseudo de connexion Minecraft : un transfert complet
+  vers un nouveau PC fonctionne avec le même pseudo, tandis qu’un autre pseudo
+  reçoit un espace vide et ne peut pas charger les profils ou régions copiés.
 - Il est possible de créer, renommer, sélectionner et supprimer plusieurs cartes.
   La carte active est indiquée dans la liste et chaque autre carte possède son
   propre bouton **Ouvrir**. La liste est défilable lorsqu’elle dépasse la place
@@ -41,6 +44,7 @@ Les fichiers se trouvent dans :
 ```text
 .minecraft/config/antiqueatlas/servers/<adresse-hachée>/
 ├── maps.json
+├── players/<pseudo-haché>/...  (uniquement si plusieurs pseudos utilisent ce serveur)
 └── maps/<profil>/
     ├── profile.dat
     └── dimensions/<namespace>/<dimension>/terrain/r.<x>.<z>.dat
@@ -49,6 +53,14 @@ Les fichiers se trouvent dans :
 Une région contient au maximum `32 × 32` chunks avec une palette compressée.
 Les écritures de régions sont effectuées sur un thread client dédié et regroupées
 toutes les cinq secondes, afin de ne pas bloquer le rendu.
+
+Chaque profil possède un identifiant aléatoire et une empreinte SHA-256 calculée
+depuis le pseudo normalisé. Chaque région possède sa propre empreinte couvrant
+aussi la dimension, les coordonnées et le contenu du terrain. Il ne s’agit pas
+d’un chiffrement inviolable : cette liaison vise à empêcher le simple échange de
+fichiers sans ajouter de service ou de mod côté serveur. Les anciennes cartes sont
+liées une seule fois au pseudo qui les ouvre après la mise à jour ; la conversion
+des régions est réalisée sur le thread de sauvegarde.
 
 ## Objet optionnel
 
@@ -107,6 +119,9 @@ le JAR dans l’artefact `antique-atlas-tfot-forge-1.20.1`.
    que chaque carte retrouve ses propres choix.
 9. Utiliser **Actualiser la zone** et vérifier la progression, le verrouillage du
    bouton et le message final indiquant le nombre de chunks modifiés.
+10. Copier une sauvegarde sur une seconde installation : vérifier qu’elle charge
+    avec le même pseudo, puis qu’un pseudo différent obtient son propre espace et
+    ne peut pas ouvrir les profils ou régions copiés.
 
 ## Crédits et licence
 

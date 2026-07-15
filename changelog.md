@@ -1,4 +1,25 @@
-# Antique Atlas TFOT 8.2.0-tfot.13
+# Antique Atlas TFOT 8.2.0-tfot.14
+
+- Les sauvegardes locales sont désormais liées au pseudo de connexion
+  Minecraft normalisé, et restent donc transférables vers un autre PC lorsque
+  le joueur conserve exactement le même pseudo.
+- Chaque profil reçoit un identifiant aléatoire et une empreinte SHA-256. Les
+  marqueurs, filtres et positions de navigation de `profile.dat` sont refusés
+  lorsque cette empreinte ne correspond pas au pseudo actuel.
+- Chaque fichier de région possède également une empreinte couvrant le profil,
+  la dimension, ses coordonnées et tout son contenu. Copier seulement les
+  régions dans une autre carte ne permet donc pas de récupérer le terrain.
+- Si plusieurs pseudos utilisent la même installation, leurs racines de cartes
+  sont isolées automatiquement sans supprimer ni modifier celles du premier
+  joueur.
+- Les anciens profils sont attribués au pseudo présent lors du premier lancement
+  de cette version. Seules les petites en-têtes sont traitées immédiatement ;
+  les régions de chaque carte sont liées une fois en arrière-plan lorsqu’elle
+  est ouverte.
+- Les empreintes ne sont calculées qu’au chargement et à l’écriture des fichiers :
+  aucun travail supplémentaire n’est effectué pendant le rendu ou à chaque tick.
+
+## 8.2.0-tfot.13
 
 - Ajout de quatorze types de marqueurs TFOT : parchemin d’artéfact, bague,
   bateau, chapitre, crochet, point d’exclamation, lingot d’or, carte, PNJ,
