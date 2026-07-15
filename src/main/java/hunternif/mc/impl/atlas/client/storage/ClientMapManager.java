@@ -131,8 +131,18 @@ public final class ClientMapManager {
         return List.copyOf(profiles.values());
     }
 
+    public int getMaxProfiles() {
+        return Math.max(1, AntiqueAtlas.CONFIG.maxMaps);
+    }
+
+    public boolean canCreateProfile() {
+        return serverFolder != null && profiles.size() < getMaxProfiles();
+    }
+
     public String createProfile() {
         ensureReady();
+        if (!canCreateProfile()) return null;
+
         int number = 1;
         String id;
         do {

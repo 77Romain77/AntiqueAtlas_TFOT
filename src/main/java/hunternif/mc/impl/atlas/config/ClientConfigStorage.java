@@ -68,6 +68,7 @@ public final class ClientConfigStorage {
         config.scanRadius = clamp(config.scanRadius, 0, 32);
         config.clientScanBudget = clamp(config.clientScanBudget, 1, 64);
         config.markerLimit = Math.max(0, config.markerLimit);
+        config.maxMaps = Math.max(1, config.maxMaps);
         config.tileSize = clamp(config.tileSize, 1, 10);
         config.markerSize = Math.max(0, config.markerSize);
         config.playerIconWidth = Math.max(0, config.playerIconWidth);

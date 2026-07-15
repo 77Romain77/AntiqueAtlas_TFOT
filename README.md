@@ -13,7 +13,8 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
 - Chaque adresse de serveur possède ses propres cartes locales.
 - Il est possible de créer, renommer, sélectionner et supprimer plusieurs cartes.
   La carte active est indiquée dans la liste et chaque autre carte possède son
-  propre bouton **Ouvrir**.
+  propre bouton **Ouvrir**. La liste est défilable lorsqu’elle dépasse la place
+  disponible.
 - La carte affiche uniquement la dimension où se trouve actuellement le joueur.
 - Les données des dimensions sont séparées en interne pour éviter les collisions.
 - Les marqueurs, la position de navigation et les tuiles sont sauvegardés localement.
@@ -60,6 +61,8 @@ reste disponible sans permission particulière. Tenir ce livre affiche la carte
 dans les mains, uniquement à ce moment-là.
 Les réglages sont accessibles depuis le bouton **Config** de la liste des mods et
 sont enregistrés dans `.minecraft/config/antiqueatlas-client.json`.
+`maxMaps` limite uniquement la création de nouvelles cartes (`10` par défaut) ;
+réduire cette valeur ne supprime jamais une carte déjà enregistrée.
 
 ## Prérequis et build
 

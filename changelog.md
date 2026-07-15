@@ -1,4 +1,17 @@
-# Antique Atlas TFOT 8.2.0-tfot.7
+# Antique Atlas TFOT 8.2.0-tfot.8
+
+- La liste de l’écran **Maps** s’adapte à la hauteur disponible et devient
+  défilable à la molette ou avec sa barre de défilement.
+- Les boutons **Nouvelle carte**, **Supprimer**, **Retour** et **Renommer** ont
+  maintenant exactement la même largeur.
+- Ajout de la limite configurable `maxMaps`, fixée à `10` par défaut dans
+  `config/antiqueatlas-client.json`.
+- Atteindre la limite ne supprime aucune carte existante : seule la création est
+  bloquée. Le bouton **Nouvelle carte** est alors grisé et explique au survol
+  qu’une carte doit être supprimée avant d’en créer une autre.
+- Le compteur de cartes et la limite sont affichés en haut du gestionnaire.
+
+## 8.2.0-tfot.7
 
 - Génération automatique de textures dédiées au rendu de l’atlas tenu en main
   avec Iris/Oculus :

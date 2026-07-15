@@ -22,6 +22,7 @@ public class AntiqueAtlasConfig {
     public double minScale = 1.0 / 32.0;
     public double maxScale = 4.0;
     public boolean doReverseWheelZoom = false;
+    public int maxMaps = 10;
 
     // Performance and legacy-compatible values
     public int scanRadius = 11;

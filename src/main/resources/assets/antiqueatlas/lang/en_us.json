@@ -18,6 +18,8 @@
   "gui.antiqueatlas.maps.open": "Open",
   "gui.antiqueatlas.maps.active": "Active",
   "gui.antiqueatlas.maps.manage": "Manage maps",
+  "gui.antiqueatlas.maps.count": "%s / %s maps",
+  "gui.antiqueatlas.maps.limitReached": "Map limit reached (%s). Delete a map before creating another.",
   "gui.antiqueatlas.markerFilter.title": "Marker filters",
   "gui.antiqueatlas.markerFilter.help": "Click a marker type to show or hide it",
   "gui.antiqueatlas.markerFilter.showAll": "Show all",
@@ -78,6 +80,7 @@
   "text.autoconfig.antiqueatlas.option.minScale": "Minimum zoom level",
   "text.autoconfig.antiqueatlas.option.maxScale": "Maximum zoom level",
   "text.autoconfig.antiqueatlas.option.doReverseWheelZoom": "Reversed mouse wheel zoom",
+  "text.autoconfig.antiqueatlas.option.maxMaps": "Maximum number of maps",
 
   "text.autoconfig.antiqueatlas.option.scanRadius": "Scan radius",
   "text.autoconfig.antiqueatlas.option.clientScanBudget": "Chunks scanned per client tick",
