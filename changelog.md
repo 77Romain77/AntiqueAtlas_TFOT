@@ -1,4 +1,14 @@
-# Antique Atlas TFOT 8.2.0-tfot.4
+# Antique Atlas TFOT 8.2.0-tfot.5
+
+- Correction forcée du modèle des livres reconnus comme atlas : l’icône
+  Antique Atlas est désormais sélectionnée directement par le moteur de rendu
+  pour le nom personnalisé comme pour le tag NBT.
+- Remplacement du bouton d’export PNG par l’accès au gestionnaire **Maps**.
+- Suppression de la variante `Maj` + `M` ; seul le raccourci configurable `M`
+  reste enregistré dans les contrôles.
+- Le gestionnaire s’intitule simplement **Maps** et n’affiche plus l’adresse du serveur.
+- Remplacement du masquage global des marqueurs par un filtre persistant par type,
+  avec actions « Tout afficher » et « Tout masquer ».
 
 - Conversion en mod Forge 1.20.1 entièrement côté client.
 - Suppression du canal réseau obligatoire, des événements serveur, du scan serveur
@@ -13,7 +23,7 @@
 - Scanner client borné : uniquement les chunks déjà chargés, sans chargement forcé.
 - Marqueurs, marqueurs de mort et position de navigation enregistrés localement.
 - Affichage limité à la dimension actuelle, avec données distinctes par dimension.
-- `M` ouvre la carte ; `Maj` + `M` ouvre le gestionnaire de cartes.
+- `M` ouvre la carte ; le gestionnaire de cartes est accessible depuis l’atlas.
 - Aucune minimap permanente.
 - L’option `itemNeeded` reste disponible : elle requiert désormais un livre vanilla
   renommé `Antique Atlas` ou portant le tag NBT `antiqueatlas:1b`, ce qui évite

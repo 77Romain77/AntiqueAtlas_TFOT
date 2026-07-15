@@ -8,12 +8,15 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
 - `M` ouvre ou ferme la carte complète ; aucune minimap permanente n’est affichée.
 - Un clic droit avec un livre-atlas en main ouvre également la carte. Un coffre,
   une porte ou une autre interaction utilisable conserve la priorité.
-- `Maj` + `M` ouvre le gestionnaire de cartes du serveur courant.
+- Le bouton **Maps** de l’atlas ouvre le gestionnaire de cartes ; aucun second
+  raccourci clavier n’est ajouté aux contrôles.
 - Chaque adresse de serveur possède ses propres cartes locales.
 - Il est possible de créer, renommer, sélectionner et supprimer plusieurs cartes.
 - La carte affiche uniquement la dimension où se trouve actuellement le joueur.
 - Les données des dimensions sont séparées en interne pour éviter les collisions.
 - Les marqueurs, la position de navigation et les tuiles sont sauvegardés localement.
+- Le bouton de filtre permet d’afficher ou masquer chaque type de marqueur ; le
+  choix est conservé dans la configuration client.
 - Le scanner ne lit que les chunks déjà reçus et chargés par le client, avec un
   budget configurable ; il ne force jamais le chargement d’un chunk serveur.
 

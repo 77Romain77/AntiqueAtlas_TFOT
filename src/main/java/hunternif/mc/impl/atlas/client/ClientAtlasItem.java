@@ -1,8 +1,8 @@
 package hunternif.mc.impl.atlas.client;
 
 import hunternif.mc.impl.atlas.AntiqueAtlas;
-import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -13,6 +13,7 @@ import java.util.Locale;
 /** Recognises a vanilla book renamed or tagged as an atlas. No custom item is registered. */
 public final class ClientAtlasItem {
     public static final String ATLAS_NBT_TAG = "antiqueatlas";
+    public static final ResourceLocation ATLAS_MODEL = AntiqueAtlas.id("item/antique_atlas");
 
     private static final List<String> ACCEPTED_NAMES = List.of(
             "antique atlas",
@@ -34,15 +35,6 @@ public final class ClientAtlasItem {
 
         String name = stack.getHoverName().getString().strip().toLowerCase(Locale.ROOT);
         return ACCEPTED_NAMES.stream().anyMatch(name::equals);
-    }
-
-    /**
-     * Adds a model predicate to the vanilla book. The matching model override is
-     * defined in {@code assets/minecraft/models/item/book.json}.
-     */
-    public static void registerModelProperty() {
-        ItemProperties.register(Items.BOOK, AntiqueAtlas.id("atlas"),
-                (stack, level, entity, seed) -> isAtlas(stack) ? 1.0F : 0.0F);
     }
 
     public static ItemStack find(Player player) {

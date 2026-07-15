@@ -18,7 +18,7 @@ public class KeyHandler {
 
     public static void onClientTick(Minecraft client) {
         while (ATLAS_KEYMAPPING.consumeClick()) {
-            toggleAtlas(client, ItemStack.EMPTY, Screen.hasShiftDown());
+            toggleAtlas(client, ItemStack.EMPTY);
         }
     }
 
@@ -27,7 +27,7 @@ public class KeyHandler {
      * A non-empty held atlas is preferred so the GUI keeps the same item context
      * as the historical custom Atlas item.
      */
-    public static boolean toggleAtlas(Minecraft client, ItemStack heldAtlas, boolean showProfiles) {
+    public static boolean toggleAtlas(Minecraft client, ItemStack heldAtlas) {
         Screen currentScreen = client.screen;
         if (currentScreen instanceof GuiAtlas || currentScreen instanceof GuiMapProfiles) {
             currentScreen.onClose();
@@ -36,11 +36,6 @@ public class KeyHandler {
         if (currentScreen != null || client.player == null || !ClientMapManager.getInstance().isReady()) {
             return false;
         }
-        if (showProfiles) {
-            AntiqueAtlasClientSegment.openMapProfiles(null);
-            return true;
-        }
-
         if (ClientAtlasItem.isAtlas(heldAtlas)) {
             AntiqueAtlasClientSegment.openAtlasGUI(heldAtlas);
             return true;

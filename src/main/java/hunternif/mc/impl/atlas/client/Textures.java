@@ -44,9 +44,8 @@ public class Textures {
 
             ICON_ADD_MARKER = icon("add_marker.png"),
             ICON_DELETE_MARKER = icon("del_marker.png"),
-            ICON_SHOW_MARKERS = icon("show_markers.png"),
             ICON_HIDE_MARKERS = icon("hide_markers.png"),
-            ICON_EXPORT = icon("export.png");
+            ICON_MAPS = new IconTexture(ResourceLocations.parse(MOD_PREFIX + "textures/item/antique_atlas.png"));
 
     public static final ResourceLocation EXPORTED_BG = ResourceLocations.parse(GUI + "exported_bg.png");
 

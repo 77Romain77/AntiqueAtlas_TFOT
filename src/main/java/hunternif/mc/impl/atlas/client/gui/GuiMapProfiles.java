@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
-/** Small local-only menu used to select and name maps for the current server. */
+/** Small local-only menu used to select and name map profiles. */
 public class GuiMapProfiles extends Screen {
     private final Screen parent;
     private final ClientMapManager maps = ClientMapManager.getInstance();
@@ -102,7 +102,6 @@ public class GuiMapProfiles extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         graphics.drawCenteredString(font, title, width / 2, 14, 0xFFFFFF);
-        graphics.drawCenteredString(font, Component.literal(maps.getServerAddress()), width / 2, 28, 0xA0A0A0);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

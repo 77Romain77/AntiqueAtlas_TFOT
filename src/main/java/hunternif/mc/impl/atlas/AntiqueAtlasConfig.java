@@ -1,5 +1,8 @@
 package hunternif.mc.impl.atlas;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Plain client configuration serialized by {@code ClientConfigStorage}.
  * Keeping this as a simple data object avoids loading an external config mod.
@@ -14,6 +17,7 @@ public class AntiqueAtlasConfig {
 
     // Interface
     public boolean doScaleMarkers = false;
+    public List<String> hiddenMarkerTypes = new ArrayList<>();
     public double defaultScale = 0.5;
     public double minScale = 1.0 / 32.0;
     public double maxScale = 4.0;
