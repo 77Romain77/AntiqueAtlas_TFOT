@@ -17,12 +17,10 @@ final class GuiMarkerGroupBookmark extends GuiToggleButton {
     private static final int COLOR_INDEX = 3;
 
     private final ITexture iconTexture;
-    private final Component name;
     private final int markerCount;
 
-    GuiMarkerGroupBookmark(MarkerType markerType, Component name, int markerCount) {
+    GuiMarkerGroupBookmark(MarkerType markerType, int markerCount) {
         this.iconTexture = markerType.getTexture();
-        this.name = name;
         this.markerCount = markerCount;
         setSize(WIDTH, HEIGHT);
     }
@@ -44,7 +42,7 @@ final class GuiMarkerGroupBookmark extends GuiToggleButton {
             Component count = markerCount == 1
                     ? Component.translatable("gui.antiqueatlas.markerGroup.count.one")
                     : Component.translatable("gui.antiqueatlas.markerGroup.count.many", markerCount);
-            drawTooltip(List.of(name, count), Minecraft.getInstance().font);
+            drawTooltip(List.of(count), Minecraft.getInstance().font);
         }
     }
 }

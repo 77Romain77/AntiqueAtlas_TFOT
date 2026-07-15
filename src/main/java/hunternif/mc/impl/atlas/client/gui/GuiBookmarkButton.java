@@ -17,7 +17,7 @@ import net.minecraft.network.chat.Component;
 public class GuiBookmarkButton extends GuiToggleButton {
     private static final int WIDTH = 21;
     private static final int HEIGHT = 18;
-    private static final float TEXT_ICON_SCALE = 1.6F;
+    private static final float TEXT_ICON_SCALE = 3.0F;
 
     private final int colorIndex;
     private ITexture iconTexture;

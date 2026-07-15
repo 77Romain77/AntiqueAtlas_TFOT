@@ -311,6 +311,7 @@ public class GuiAtlas extends GuiComponent {
                 biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);
                 ClientMapManager.getInstance().markStateDirty();
             }
+            closeMarkerGroupList();
             AntiqueAtlasClientSegment.openMapProfiles(this);
         });
 
@@ -494,7 +495,7 @@ public class GuiAtlas extends GuiComponent {
             ResourceLocation markerTypeId = entry.getKey();
             MarkerType markerType = MarkerType.REGISTRY.get(markerTypeId);
             GuiMarkerGroupBookmark bookmark = new GuiMarkerGroupBookmark(markerType,
-                    GuiMarkerFilter.markerName(markerTypeId), entry.getValue().size());
+                    entry.getValue().size());
             bookmark.setSelected(markerTypeId.equals(selectedMarkerGroup));
             bookmark.addListener(button -> selectMarkerGroup(markerTypeId));
 
@@ -507,10 +508,20 @@ public class GuiAtlas extends GuiComponent {
     }
 
     private void selectMarkerGroup(ResourceLocation markerTypeId) {
-        selectedMarkerGroup = markerTypeId.equals(selectedMarkerGroup) ? null : markerTypeId;
+        if (markerTypeId.equals(selectedMarkerGroup)) {
+            closeMarkerGroupList();
+            return;
+        }
+        selectedMarkerGroup = markerTypeId;
         markerGroupBookmarks.forEach((id, bookmark) ->
                 bookmark.setSelected(id.equals(selectedMarkerGroup)));
         updateSelectedMarkerBookmarks();
+    }
+
+    private void closeMarkerGroupList() {
+        selectedMarkerGroup = null;
+        markerGroupBookmarks.values().forEach(bookmark -> bookmark.setSelected(false));
+        markerBookmarks.removeAllContent();
     }
 
     private void updateSelectedMarkerBookmarks() {
@@ -1189,6 +1200,7 @@ public class GuiAtlas extends GuiComponent {
 
     @Override
     public void onClose() {
+        closeMarkerGroupList();
         super.onClose();
         markerFinalizer.closeChild();
         if (markerFilter.getParent() != null) markerFilter.closeChild();

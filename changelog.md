@@ -1,4 +1,14 @@
-# Antique Atlas TFOT 8.2.0-tfot.11
+# Antique Atlas TFOT 8.2.0-tfot.12
+
+- Le survol d’une catégorie de marqueurs affiche uniquement son compteur, sans
+  répéter le nom du type d’icône.
+- La catégorie ouverte et sa liste sont systématiquement refermées quand le
+  joueur ferme l’atlas ; chaque nouvelle ouverture repart donc avec la seule
+  colonne des catégories.
+- Le symbole du bouton **Actualiser la zone** est encore agrandi afin d’occuper
+  visuellement la même place que les autres icônes de marque-page.
+
+## 8.2.0-tfot.11
 
 - La colonne gauche regroupe désormais les marqueurs par type d’icône au lieu
   d’afficher immédiatement tous les marqueurs de la dimension.

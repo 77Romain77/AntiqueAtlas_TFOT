@@ -126,7 +126,7 @@ public final class GuiMarkerFilter extends GuiComponent {
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
-    static Component markerName(ResourceLocation id) {
+    private static Component markerName(ResourceLocation id) {
         String camelCase = toLowerCamel(id.getPath());
         String translationKey = "gui.antiqueatlas.marker." + camelCase;
         if (I18n.exists(translationKey)) return Component.translatable(translationKey);
