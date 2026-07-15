@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.stereowalker.unionlib.network.protocol.game.ClientboundUnionPacket;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.core.TileDataStorage;
+import hunternif.mc.impl.atlas.network.LegacyClientboundPacket;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
@@ -21,19 +20,17 @@ import net.minecraft.world.level.Level;
  * @author Hunternif
  * @author Haven King
  */
-public class PutGlobalTileS2CPacket extends ClientboundUnionPacket {
+public class PutGlobalTileS2CPacket extends LegacyClientboundPacket {
 	public static final ResourceLocation ID = AntiqueAtlas.id("packet", "s2c", "global_tile", "put");
 	ResourceKey<Level> world;
 	List<Map.Entry<ChunkPos, ResourceLocation>> tiles;
 
 	public PutGlobalTileS2CPacket(ResourceKey<Level> world, List<Map.Entry<ChunkPos, ResourceLocation>> tiles) {
-		super(AntiqueAtlas.instance.channel);
 		this.world = world;
 		this.tiles = tiles;
 	}
 	
 	public PutGlobalTileS2CPacket(ResourceKey<Level> world, int chunkX, int chunkZ, ResourceLocation tileId) {
-		super(AntiqueAtlas.instance.channel);
 		this.world = world;
 		this.tiles = new ArrayList<>();
 		this.tiles.add(new Map.Entry<ChunkPos, ResourceLocation>() {
@@ -53,7 +50,6 @@ public class PutGlobalTileS2CPacket extends ClientboundUnionPacket {
 	}
 	
 	public PutGlobalTileS2CPacket(FriendlyByteBuf byteBuf) {
-		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
 		this.tiles = new ArrayList<>();
 		int max = byteBuf.readVarInt();

@@ -3,10 +3,9 @@ package hunternif.mc.impl.atlas.network.packet.s2c.play;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.stereowalker.unionlib.network.protocol.game.ClientboundUnionPacket;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.core.AtlasData;
+import hunternif.mc.impl.atlas.network.LegacyClientboundPacket;
 import hunternif.mc.impl.atlas.core.TileInfo;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -15,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-public class DimensionUpdateS2CPacket extends ClientboundUnionPacket {
+public class DimensionUpdateS2CPacket extends LegacyClientboundPacket {
 	public static final ResourceLocation ID = AntiqueAtlas.id("packet", "s2c", "dimension", "update");
 	
 	int atlasID;
@@ -23,14 +22,12 @@ public class DimensionUpdateS2CPacket extends ClientboundUnionPacket {
 	Collection<TileInfo> tiles;
 
 	public DimensionUpdateS2CPacket(int atlasID, ResourceKey<Level> world, Collection<TileInfo> tiles) {
-		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.world = world;
 		this.tiles = tiles;
 	}
 	
 	public DimensionUpdateS2CPacket(FriendlyByteBuf byteBuf) {
-		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
 		int tileCount = byteBuf.readVarInt();

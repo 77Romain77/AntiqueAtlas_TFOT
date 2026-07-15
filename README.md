@@ -56,8 +56,11 @@ sont enregistrés dans `.minecraft/config/antiqueatlas-client.json`.
 ## Prérequis et build
 
 - Minecraft `1.20.1` ;
-- Forge `47.x` ;
-- UnionLib `12.0.18` à `< 12.1.0`, installé uniquement sur le client.
+- Forge `47.x`.
+
+Cette édition n’utilise plus UnionLib. Il faut retirer UnionLib du dossier
+`mods` lorsqu’aucun autre mod ne l’exige, sinon son propre canal réseau peut
+continuer à imposer sa présence sur le serveur.
 
 ```bash
 ./gradlew --no-daemon clean build
@@ -68,7 +71,7 @@ le JAR dans l’artefact `antique-atlas-tfot-forge-1.20.1`.
 
 ## Vérifications conseillées
 
-1. Installer Antique Atlas TFOT et UnionLib uniquement sur le client.
+1. Installer uniquement Antique Atlas TFOT sur le client.
 2. Rejoindre un serveur Forge 1.20.1 dépourvu du mod.
 3. Explorer, fermer Minecraft, se reconnecter et vérifier la persistance.
 4. Changer de dimension et vérifier que seule la dimension actuelle est affichée.

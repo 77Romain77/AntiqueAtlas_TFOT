@@ -5,6 +5,7 @@ import hunternif.mc.impl.atlas.client.texture.ITexture;
 import hunternif.mc.impl.atlas.client.texture.TileTexture;
 import hunternif.mc.impl.atlas.resource.ResourceReloadListener;
 import hunternif.mc.impl.atlas.util.Log;
+import hunternif.mc.impl.atlas.util.ResourceLocations;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -18,9 +19,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import com.stereowalker.unionlib.resource.ReloadListener;
-import com.stereowalker.unionlib.util.VersionHelper;
-
 /**
  * Reads all png files available under assets/(?modid)/textures/gui/tiles/(?tex).png as Textures that
  * are referenced by the TextureSets.
@@ -29,7 +27,7 @@ import com.stereowalker.unionlib.util.VersionHelper;
  * - The identifier of the physical location in modid:texture/gui/tiles/tex.png
  * - The logical identifier modid:tex referenced by TextureSets
  */
-public class TextureConfig implements ResourceReloadListener<Map<ResourceLocation, ITexture>>, ReloadListener {
+public class TextureConfig implements ResourceReloadListener<Map<ResourceLocation, ITexture>> {
     public static final ResourceLocation ID = AntiqueAtlas.id("textures");
     private final Map<ResourceLocation, ITexture> texture_map;
 
@@ -47,7 +45,7 @@ public class TextureConfig implements ResourceReloadListener<Map<ResourceLocatio
                 try {
 
                     // texture_id is the logical identifier, as it will be referenced by TextureSets
-                    ResourceLocation texture_id = VersionHelper.toLoc(
+                    ResourceLocation texture_id = ResourceLocations.of(
                             id.getKey().getNamespace(),
                             id.getKey().getPath().replace("textures/gui/tiles/", "").replace(".png", "")
                     );

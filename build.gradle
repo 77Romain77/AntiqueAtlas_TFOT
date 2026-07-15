@@ -18,7 +18,6 @@ apply plugin: 'org.spongepowered.mixin'
 
 // Should exist on all loaders and is loader specific
 repositories {
-	maven {url "https://modmaven.dev/" }// UnionLib
 	maven {url "https://girafi.dk/maven/"}
 	maven {url "https://www.cursemaven.com"} //CurseForge
     maven {url = "https://repo.spongepowered.org/maven"} // mixin
@@ -29,9 +28,6 @@ dependencies {
 	annotationProcessor "org.spongepowered:mixin:"+modMixinVersion+":processor"
 	implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 	
-	implementation fg.deobf("com.stereowalker.unionlib:UnionLib:${_minecraft_version}-${_unionlib_version}-${_loader}") {
-        exclude group: "net.minecraftforge", module: "forge"
-    }
     minecraftLibrary ("org.tomlj:tomlj:1.0.0") {
     	exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }

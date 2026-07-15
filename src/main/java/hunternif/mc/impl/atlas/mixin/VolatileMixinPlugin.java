@@ -7,7 +7,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
-import com.stereowalker.unionlib.forge.PlatformHelper;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 public class VolatileMixinPlugin implements IMixinConfigPlugin {
     @Override
@@ -20,7 +20,7 @@ public class VolatileMixinPlugin implements IMixinConfigPlugin {
     }
 
     public static boolean isDevelopmentEnvironment() {
-        return PlatformHelper.isDevEnvironment();
+        return !FMLEnvironment.production;
     }
 
     @Override

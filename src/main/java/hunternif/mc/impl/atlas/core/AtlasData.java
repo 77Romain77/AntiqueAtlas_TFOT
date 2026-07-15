@@ -8,10 +8,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.stereowalker.unionlib.util.VersionHelper;
-
 import hunternif.mc.impl.atlas.network.packet.s2c.play.MapDataS2CPacket;
 import hunternif.mc.impl.atlas.util.Log;
+import hunternif.mc.impl.atlas.util.ResourceLocations;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -73,7 +72,7 @@ public class AtlasData extends SavedData {
         for (int d = 0; d < worldMapList.size(); d++) {
             CompoundTag worldTag = worldMapList.getCompound(d);
             ResourceKey<Level> worldID;
-            worldID = ResourceKey.create(Registries.DIMENSION, VersionHelper.toLoc(worldTag.getString(TAG_WORLD_ID)));
+            worldID = ResourceKey.create(Registries.DIMENSION, ResourceLocations.parse(worldTag.getString(TAG_WORLD_ID)));
             ListTag dimensionTag = (ListTag) worldTag.get(TAG_VISITED_CHUNKS);
             WorldData dimData = this.getWorldData(worldID);
             dimData.readFromNBT(dimensionTag);

@@ -3,12 +3,10 @@ package hunternif.mc.impl.atlas.client;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.stereowalker.unionlib.resource.ReloadListener;
-import com.stereowalker.unionlib.util.VersionHelper;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.resource.ResourceReloadListener;
 import hunternif.mc.impl.atlas.util.Log;
+import hunternif.mc.impl.atlas.util.ResourceLocations;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -23,7 +21,7 @@ import java.util.concurrent.Executor;
 /**
  * Saves texture set names with the lists of texture variations.
  */
-public class TextureSetConfig implements ResourceReloadListener<Collection<TextureSet>>, ReloadListener {
+public class TextureSetConfig implements ResourceReloadListener<Collection<TextureSet>> {
     public static final ResourceLocation ID = AntiqueAtlas.id("texture_sets");
     private static final int VERSION = 1;
     private static final JsonParser PARSER = new JsonParser();
@@ -40,7 +38,7 @@ public class TextureSetConfig implements ResourceReloadListener<Collection<Textu
 
             try {
                 for (Entry<ResourceLocation, Resource> id : manager.listResources("atlas/texture_sets", (s) -> s.toString().endsWith(".json")).entrySet()) {
-                    ResourceLocation texture_id = VersionHelper.toLoc(
+                    ResourceLocation texture_id = ResourceLocations.of(
                             id.getKey().getNamespace(),
                             id.getKey().getPath().replace("atlas/texture_sets/", "").replace(".json", "")
                     );
@@ -65,7 +63,7 @@ public class TextureSetConfig implements ResourceReloadListener<Collection<Textu
 
                             for (Entry<String, JsonElement> entry : data.getAsJsonObject("textures").entrySet()) {
                                 for (int i = 0; i < entry.getValue().getAsInt(); i++) {
-                                    textures.add(VersionHelper.toLoc(entry.getKey()));
+                                    textures.add(ResourceLocations.parse(entry.getKey()));
                                 }
                             }
 
@@ -81,7 +79,7 @@ public class TextureSetConfig implements ResourceReloadListener<Collection<Textu
                                     throw new RuntimeException("The `shore` entry is missing a water entry.");
                                 }
 
-                                set = new TextureSet.TextureSetShore(texture_id, VersionHelper.toLoc(shore.get("water").getAsString()), textures.toArray(textureArray));
+                                set = new TextureSet.TextureSetShore(texture_id, ResourceLocations.parse(shore.get("water").getAsString()), textures.toArray(textureArray));
                             }
 
                             if (data.has("stitch")) {
@@ -90,13 +88,13 @@ public class TextureSetConfig implements ResourceReloadListener<Collection<Textu
 
                                     switch (to) {
                                         case "both":
-                                            set.stitchTo(VersionHelper.toLoc(entry.getKey()));
+                                            set.stitchTo(ResourceLocations.parse(entry.getKey()));
                                             break;
                                         case "horizontal":
-                                            set.stitchToHorizontal(VersionHelper.toLoc(entry.getKey()));
+                                            set.stitchToHorizontal(ResourceLocations.parse(entry.getKey()));
                                             break;
                                         case "vertical":
-                                            set.stitchToVertical(VersionHelper.toLoc(entry.getKey()));
+                                            set.stitchToVertical(ResourceLocations.parse(entry.getKey()));
                                             break;
                                         default:
                                             throw new RuntimeException("Invalid stitch value (" + to + ") for `" + entry.getKey() + "`");

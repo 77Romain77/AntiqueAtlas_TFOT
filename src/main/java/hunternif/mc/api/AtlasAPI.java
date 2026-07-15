@@ -3,16 +3,14 @@ package hunternif.mc.api;
 import java.util.Collections;
 import java.util.List;
 
-import com.stereowalker.unionlib.util.RegistryHelper;
-import com.stereowalker.unionlib.util.VersionHelper;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.api.impl.MarkerApiImpl;
 import hunternif.mc.impl.atlas.api.impl.TileApiImpl;
-import hunternif.mc.impl.atlas.item.AtlasItem;
+import hunternif.mc.impl.atlas.client.ClientAtlasItem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * Use this class to obtain a reference to the APIs.
@@ -33,7 +31,7 @@ public class AtlasAPI {
     }
 
     public static Item getAtlasItem() {
-        return RegistryHelper.items().get(VersionHelper.toLoc("antiqueatlas:antique_atlas"));
+        return Items.BOOK;
     }
 
     /**
@@ -63,10 +61,10 @@ public class AtlasAPI {
 
     private static boolean hasAtlas(Player player) {
         for (ItemStack stack : player.getInventory().items) {
-            if (!stack.isEmpty() && stack.getItem() instanceof AtlasItem) return true;
+            if (ClientAtlasItem.isAtlas(stack)) return true;
         }
         for (ItemStack stack : player.getInventory().offhand) {
-            if (!stack.isEmpty() && stack.getItem() instanceof AtlasItem) return true;
+            if (ClientAtlasItem.isAtlas(stack)) return true;
         }
         return false;
     }

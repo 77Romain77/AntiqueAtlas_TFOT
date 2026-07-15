@@ -3,12 +3,11 @@ package hunternif.mc.impl.atlas.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.stereowalker.unionlib.util.VersionHelper;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
 import hunternif.mc.impl.atlas.client.texture.IconTexture;
 import hunternif.mc.impl.atlas.client.texture.Texture;
+import hunternif.mc.impl.atlas.util.ResourceLocations;
 import net.minecraft.resources.ResourceLocation;
 
 public class Textures {
@@ -49,18 +48,18 @@ public class Textures {
             ICON_HIDE_MARKERS = icon("hide_markers.png"),
             ICON_EXPORT = icon("export.png");
 
-    public static final ResourceLocation EXPORTED_BG = VersionHelper.toLoc(GUI + "exported_bg.png");
+    public static final ResourceLocation EXPORTED_BG = ResourceLocations.parse(GUI + "exported_bg.png");
 
     // Constructor helpers:
     private static ITexture gui(String fileName, int width, int height) {
-        return new Texture(VersionHelper.toLoc(GUI + fileName), width, height);
+        return new Texture(ResourceLocations.parse(GUI + fileName), width, height);
     }
 
     private static ITexture scaleBar(String fileName) {
-        return new Texture(VersionHelper.toLoc(GUI_SCALEBAR + fileName), 20, 8);
+        return new Texture(ResourceLocations.parse(GUI_SCALEBAR + fileName), 20, 8);
     }
 
     private static ITexture icon(String fileName) {
-        return new IconTexture(VersionHelper.toLoc(GUI_ICONS + fileName));
+        return new IconTexture(ResourceLocations.parse(GUI_ICONS + fileName));
     }
 }

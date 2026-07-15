@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-/** Lightweight client config that does not register any UnionLib network hooks. */
+/** Lightweight standalone client config with no network hooks. */
 public final class ClientConfigStorage {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path FILE = FMLPaths.CONFIGDIR.get().resolve("antiqueatlas-client.json");

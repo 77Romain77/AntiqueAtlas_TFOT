@@ -5,10 +5,9 @@ import java.util.List;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.stereowalker.unionlib.network.protocol.game.ClientboundUnionPacket;
-
 import hunternif.mc.impl.atlas.AntiqueAtlasClientSegment;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
+import hunternif.mc.impl.atlas.network.LegacyClientboundPacket;
 import hunternif.mc.impl.atlas.marker.Marker;
 import hunternif.mc.impl.atlas.marker.MarkersData;
 import hunternif.mc.impl.atlas.registry.MarkerType;
@@ -27,7 +26,7 @@ import net.minecraft.world.level.Level;
  * @author Hunternif
  * @author Haven King
  */
-public class PutMarkersS2CPacket extends ClientboundUnionPacket {
+public class PutMarkersS2CPacket extends LegacyClientboundPacket {
     public static final ResourceLocation ID = AntiqueAtlas.id("packet", "s2c", "marker", "put");
 
     private static final int GLOBAL = -1;
@@ -36,7 +35,6 @@ public class PutMarkersS2CPacket extends ClientboundUnionPacket {
 	ListMultimap<ResourceLocation, Marker.Precursor> markersByType;
 
 	public PutMarkersS2CPacket(int atlasID, ResourceKey<Level> world, Collection<Marker> markers) {
-		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.world = world;
 		markersByType = ArrayListMultimap.create();
@@ -46,7 +44,6 @@ public class PutMarkersS2CPacket extends ClientboundUnionPacket {
 	}
 	
 	public PutMarkersS2CPacket(FriendlyByteBuf byteBuf) {
-		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
         int typesLength = byteBuf.readVarInt();

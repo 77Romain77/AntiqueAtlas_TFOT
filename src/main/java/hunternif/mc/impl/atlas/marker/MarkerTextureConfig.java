@@ -12,12 +12,10 @@ import java.util.concurrent.Executor;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.stereowalker.unionlib.resource.ReloadListener;
-import com.stereowalker.unionlib.util.VersionHelper;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.registry.MarkerType;
 import hunternif.mc.impl.atlas.resource.ResourceReloadListener;
+import hunternif.mc.impl.atlas.util.ResourceLocations;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -28,7 +26,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
  *
  * @author Hunternif
  */
-public class MarkerTextureConfig implements ResourceReloadListener<Map<ResourceLocation, MarkerType>>, ReloadListener {
+public class MarkerTextureConfig implements ResourceReloadListener<Map<ResourceLocation, MarkerType>> {
     public static final ResourceLocation ID = AntiqueAtlas.id("markers");
     private static final int VERSION = 1;
     private static final JsonParser parser = new JsonParser();
@@ -39,7 +37,7 @@ public class MarkerTextureConfig implements ResourceReloadListener<Map<ResourceL
             Map<ResourceLocation, MarkerType> typeMap = new HashMap<>();
 
             for (Entry<ResourceLocation, Resource> id : manager.listResources("atlas/markers", (s) -> s.toString().endsWith(".json")).entrySet()) {
-                ResourceLocation markerId = VersionHelper.toLoc(
+                ResourceLocation markerId = ResourceLocations.of(
                         id.getKey().getNamespace(),
                         id.getKey().getPath().replace("atlas/markers/", "").replace(".json", "")
                 );

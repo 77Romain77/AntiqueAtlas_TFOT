@@ -1,9 +1,8 @@
 package hunternif.mc.impl.atlas.network.packet.s2c.play;
 
-import com.stereowalker.unionlib.network.protocol.game.ClientboundUnionPacket;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.core.AtlasData;
+import hunternif.mc.impl.atlas.network.LegacyClientboundPacket;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
@@ -16,7 +15,7 @@ import net.minecraft.world.level.Level;
  * @author Hunternif
  * @author Haven King
  */
-public class PutTileS2CPacket extends ClientboundUnionPacket {
+public class PutTileS2CPacket extends LegacyClientboundPacket {
 	public static final ResourceLocation ID = AntiqueAtlas.id("packet", "s2c", "tile", "put");
 
 	int atlasID;
@@ -25,7 +24,6 @@ public class PutTileS2CPacket extends ClientboundUnionPacket {
     ResourceLocation tile;
 
 	public PutTileS2CPacket(int atlasID, ResourceKey<Level> world, int x, int z, ResourceLocation tile) {
-		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.world = world;
 		this.x = x;
@@ -34,7 +32,6 @@ public class PutTileS2CPacket extends ClientboundUnionPacket {
 	}
 	
 	public PutTileS2CPacket(FriendlyByteBuf byteBuf) {
-		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
 		this.x = byteBuf.readVarInt();

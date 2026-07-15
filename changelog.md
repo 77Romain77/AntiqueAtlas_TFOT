@@ -1,8 +1,10 @@
-# Antique Atlas TFOT 8.2.0-tfot.3
+# Antique Atlas TFOT 8.2.0-tfot.4
 
 - Conversion en mod Forge 1.20.1 entièrement côté client.
 - Suppression du canal réseau obligatoire, des événements serveur, du scan serveur
   et de l’enregistrement `SavedData` utilisé par le serveur.
+- Suppression complète de la dépendance UnionLib et remplacement des quelques
+  utilitaires encore nécessaires par des implémentations internes sans réseau.
 - Compatibilité prévue avec les serveurs ne possédant ni Antique Atlas ni ses données.
 - Stockage local séparé par adresse de serveur et par profil de carte.
 - Gestion de plusieurs cartes nommées : création, renommage, sélection et suppression.
@@ -23,5 +25,4 @@
   conservent leur priorité.
 - Recettes et objets réseau historiques désactivés dans cette édition client.
 - Métadonnées, documentation, traductions française/anglaise et CI mises à jour.
-- Écran de configuration client autonome et fichier `antiqueatlas-client.json`,
-  sans initialiser le système réseau de la classe de base UnionLib.
+- Écran de configuration client autonome et fichier `antiqueatlas-client.json`.

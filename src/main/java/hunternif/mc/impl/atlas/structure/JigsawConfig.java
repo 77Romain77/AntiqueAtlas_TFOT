@@ -14,17 +14,15 @@ import java.util.concurrent.Executor;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.stereowalker.unionlib.resource.ReloadListener;
-import com.stereowalker.unionlib.util.VersionHelper;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.resource.ResourceReloadListener;
+import hunternif.mc.impl.atlas.util.ResourceLocations;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 
-public class JigsawConfig implements ResourceReloadListener<Map<ResourceLocation, StructurePieceTile>>, ReloadListener {
+public class JigsawConfig implements ResourceReloadListener<Map<ResourceLocation, StructurePieceTile>> {
     private static final ResourceLocation ID = AntiqueAtlas.id("structures");
 
     public static final Map<ResourceLocation, StructurePieceTile> PIECES = new ConcurrentHashMap<>();
@@ -68,7 +66,7 @@ public class JigsawConfig implements ResourceReloadListener<Map<ResourceLocation
 
                     try {
                         // strip parts to get a better id
-                        ResourceLocation piece_id = VersionHelper.toLoc(
+                        ResourceLocation piece_id = ResourceLocations.of(
                                 id.getKey().getNamespace(),
                                 id.getKey().getPath().replace("atlas/structures/", "").replace(".json", "")
                         );

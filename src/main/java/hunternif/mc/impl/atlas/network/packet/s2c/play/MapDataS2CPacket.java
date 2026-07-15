@@ -1,9 +1,8 @@
 package hunternif.mc.impl.atlas.network.packet.s2c.play;
 
-import com.stereowalker.unionlib.network.protocol.game.ClientboundUnionPacket;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.client.gui.GuiAtlas;
+import hunternif.mc.impl.atlas.network.LegacyClientboundPacket;
 import hunternif.mc.impl.atlas.core.AtlasData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -17,20 +16,18 @@ import net.minecraft.world.entity.player.Player;
  * @author Hunternif
  * @author Haven King
  */
-public class MapDataS2CPacket extends ClientboundUnionPacket {
+public class MapDataS2CPacket extends LegacyClientboundPacket {
     public static final ResourceLocation ID = AntiqueAtlas.id("packet", "s2c", "map", "data");
 
     int atlasID;
     CompoundTag data;
 
 	public MapDataS2CPacket(int atlasID, CompoundTag data) {
-		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.data = data;
 	}
 	
 	public MapDataS2CPacket(FriendlyByteBuf byteBuf) {
-		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.data = byteBuf.readNbt();
 	}

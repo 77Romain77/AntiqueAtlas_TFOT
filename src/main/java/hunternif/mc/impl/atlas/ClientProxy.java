@@ -5,8 +5,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
-import com.stereowalker.unionlib.resource.ReloadListener;
-
 import hunternif.mc.impl.atlas.client.TextureConfig;
 import hunternif.mc.impl.atlas.client.TextureSetConfig;
 import hunternif.mc.impl.atlas.client.TextureSetMap;
@@ -24,7 +22,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.biome.Biome;
 
-public class ClientProxy implements PreparableReloadListener, ReloadListener {
+public class ClientProxy implements PreparableReloadListener {
     public void registerClientReloadListeners(Consumer<PreparableReloadListener> registrar) {
         // read Textures first from assets
         TextureConfig textureConfig = new TextureConfig(Textures.TILE_TEXTURES_MAP);
@@ -89,8 +87,4 @@ public class ClientProxy implements PreparableReloadListener, ReloadListener {
         }, applyExecutor));
     }
 
-	@Override
-	public ResourceLocation id() {
-		return AntiqueAtlas.id("proxy");
-	}
 }

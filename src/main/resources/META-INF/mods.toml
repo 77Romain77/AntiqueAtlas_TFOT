@@ -25,9 +25,3 @@ description='''${mod_description}'''
     versionRange="[${minecraft_version_min},${minecraft_version_max})"
     ordering="NONE"
     side="BOTH"
-[[dependencies.${mod_id}]]
-    modId="unionlib"
-    mandatory=true
-    versionRange="[${unionlib_version_min},${unionlib_version_max})"
-    ordering="BEFORE"
-    side="CLIENT"
