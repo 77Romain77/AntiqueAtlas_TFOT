@@ -79,7 +79,8 @@ public class OverlayRenderer {
 
         // Overlay the frame so that edges of the map are smooth:
         matrices.translate(0, 0, -0.01);
-        Textures.BOOK_FRAME.drawWithLight(buffer, matrices, 0, 0, (int) (GuiAtlas.WIDTH * 1.5), (int) (GuiAtlas.HEIGHT * 1.5), light);
+        Textures.SHADER_SAFE_BOOK_FRAME.drawWithLight(buffer, matrices, 0, 0,
+                (int) (GuiAtlas.WIDTH * 1.5), (int) (GuiAtlas.HEIGHT * 1.5), light);
 
         RenderSystem.disableBlend();
     }
@@ -105,7 +106,7 @@ public class OverlayRenderer {
                 float relativeChunkPositionY = (float) (subtile.y / 2.0
                         + iteratorScope.minY - chunkPosition.z);
                 renderer.addTileCorner(
-                        TileTextureMap.instance().getTexture(subtile).getTexture(),
+                        Textures.shaderSafeTile(TileTextureMap.instance().getTexture(subtile).getTexture()),
                         shapeMiddleX
                                 + (int) Math.floor(relativeChunkPositionX
                                 * AntiqueAtlas.CONFIG.tileSize),

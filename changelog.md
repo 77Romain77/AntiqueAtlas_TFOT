@@ -1,4 +1,16 @@
-# Antique Atlas TFOT 8.2.0-tfot.6
+# Antique Atlas TFOT 8.2.0-tfot.7
+
+- Génération automatique de textures dédiées au rendu de l’atlas tenu en main
+  avec Iris/Oculus :
+  les tuiles sont précomposées sur la couleur du parchemin et n’utilisent plus
+  d’alpha intermédiaire susceptible d’être mal traité par les shader packs.
+- Le cadre tenu en main possède également une variante à alpha binaire.
+- Les textures historiques restent utilisées dans l’écran de carte : le correctif
+  shader ne modifie donc pas l’apparence de l’interface normale.
+- Correctif fondé sur le resource pack partagé par Orgamorsh dans
+  [l’issue Antique Atlas #416](https://github.com/AntiqueAtlasTeam/AntiqueAtlas/issues/416).
+
+## 8.2.0-tfot.6
 
 - `Échap` dans le filtre des marqueurs agit désormais comme le bouton **Done** :
   le filtre est retiré proprement et l’atlas reste ouvert et centré.
