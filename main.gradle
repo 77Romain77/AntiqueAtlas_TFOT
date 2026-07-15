@@ -10,75 +10,7 @@ base {
     archivesName = _mod_name
 }
 
-def shaderSafeSourceRoot = file('src/main/resources/assets/antiqueatlas/textures/gui')
-def generatedShaderSafeResources = layout.buildDirectory.dir('generated/shader-safe-resources')
-
-def generateShaderSafeTextures = tasks.register('generateShaderSafeTextures') {
-    def tileSources = fileTree(new File(shaderSafeSourceRoot, 'tiles')) {
-        include '*.png'
-    }
-    def frameSource = new File(shaderSafeSourceRoot, 'book_frame.png')
-
-    inputs.files(tileSources)
-    inputs.file(frameSource)
-    outputs.dir(generatedShaderSafeResources)
-
-    doLast {
-        File outputRoot = generatedShaderSafeResources.get().asFile
-        project.delete(outputRoot)
-
-        def writeShaderSafeTexture = { File source, File target, boolean compositeOnParchment ->
-            def input = javax.imageio.ImageIO.read(source)
-            if (input == null) {
-                throw new GradleException("Could not decode shader-safe texture source: ${source}")
-            }
-
-            def output = new java.awt.image.BufferedImage(
-                    input.width, input.height, java.awt.image.BufferedImage.TYPE_INT_ARGB)
-            for (int y = 0; y < input.height; y++) {
-                for (int x = 0; x < input.width; x++) {
-                    int argb = input.getRGB(x, y)
-                    int alpha = (argb >>> 24) & 0xFF
-                    if (alpha == 0) {
-                        output.setRGB(x, y, argb & 0x00FFFFFF)
-                        continue
-                    }
-
-                    int red = (argb >>> 16) & 0xFF
-                    int green = (argb >>> 8) & 0xFF
-                    int blue = argb & 0xFF
-                    if (compositeOnParchment) {
-                        // Matches the shader-patch resource pack: blend the ink
-                        // onto Antique Atlas' parchment colour before making it opaque.
-                        red = (red * alpha + 225 * (255 - alpha) + 127).intdiv(255)
-                        green = (green * alpha + 188 * (255 - alpha) + 127).intdiv(255)
-                        blue = (blue * alpha + 129 * (255 - alpha) + 127).intdiv(255)
-                    }
-
-                    output.setRGB(x, y, (255 << 24) | (red << 16) | (green << 8) | blue)
-                }
-            }
-
-            target.parentFile.mkdirs()
-            if (!javax.imageio.ImageIO.write(output, 'png', target)) {
-                throw new GradleException("Could not encode shader-safe texture: ${target}")
-            }
-        }
-
-        tileSources.files.each { File source ->
-            writeShaderSafeTexture(source, new File(outputRoot,
-                    "assets/antiqueatlas/textures/gui/shader_safe/tiles/${source.name}"), true)
-        }
-        writeShaderSafeTexture(frameSource, new File(outputRoot,
-                'assets/antiqueatlas/textures/gui/shader_safe/book_frame.png'), false)
-        logger.lifecycle("Generated ${tileSources.files.size() + 1} shader-safe atlas textures")
-    }
-}
-
 tasks.named('processResources', ProcessResources).configure {
-    dependsOn(generateShaderSafeTextures)
-    from(generatedShaderSafeResources)
-
     var replaceProperties = [
             minecraft_version: _minecraft_version,
             minecraft_version_min: _minecraft_version_min, minecraft_version_max: _minecraft_version_max,

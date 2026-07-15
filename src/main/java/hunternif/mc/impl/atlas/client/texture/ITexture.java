@@ -11,6 +11,13 @@ import net.minecraft.resources.ResourceLocation;
  */
 public interface ITexture {
 
+    /** Render layer used by a texture drawn inside the first-person world pass. */
+    enum LightRenderMode {
+        TEXT,
+        ENTITY_SOLID,
+        ENTITY_TRANSLUCENT
+    }
+
     /**
      * Returns path of the texture used for drawing
      *
@@ -37,4 +44,11 @@ public interface ITexture {
     void drawWithLight(MultiBufferSource consumer, PoseStack matrices, int x, int y, int width, int height, int light);
 
     void drawWithLight(MultiBufferSource consumer, PoseStack matrices, int x, int y, int width, int height, int u, int v, int regionWidth, int regionHeight, int light);
+
+    void drawWithLight(MultiBufferSource consumer, PoseStack matrices, int x, int y,
+                       int width, int height, int light, LightRenderMode renderMode);
+
+    void drawWithLight(MultiBufferSource consumer, PoseStack matrices, int x, int y,
+                       int width, int height, int u, int v, int regionWidth,
+                       int regionHeight, int light, LightRenderMode renderMode);
 }

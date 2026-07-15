@@ -15,9 +15,6 @@ public class Textures {
 
     private static final String MOD_PREFIX = AntiqueAtlas.ID + ":";
     private static final String GUI = MOD_PREFIX + "textures/gui/";
-    private static final String GUI_SHADER_SAFE = GUI + "shader_safe/";
-    private static final String TILE_PATH_PREFIX = "textures/gui/tiles/";
-    private static final String SHADER_SAFE_TILE_PATH_PREFIX = "textures/gui/shader_safe/tiles/";
     private static final String GUI_ICONS = GUI + "icons/";
     private static final String GUI_SCALEBAR = GUI + "scalebar/";
 
@@ -25,8 +22,6 @@ public class Textures {
             BOOK = gui("book.png", 310, 218),
             BOOK_FRAME = gui("book_frame.png", 310, 218),
             BOOK_FRAME_NARROW = gui("book_frame_narrow.png", 310, 218),
-            SHADER_SAFE_BOOK_FRAME = new Texture(
-                    ResourceLocations.parse(GUI_SHADER_SAFE + "book_frame.png"), 310, 218),
             BTN_ARROWS = gui("navigate_arrows.png", 24, 24),
             BTN_POSITION = gui("position.png", 24, 24),
             BOOKMARKS = gui("bookmarks.png", 84, 36),
@@ -53,21 +48,6 @@ public class Textures {
             ICON_MAPS = new IconTexture(ResourceLocations.parse(MOD_PREFIX + "textures/item/antique_atlas.png"));
 
     public static final ResourceLocation EXPORTED_BG = ResourceLocations.parse(GUI + "exported_bg.png");
-
-    /**
-     * Returns the precomposited, binary-alpha version of a built-in atlas tile.
-     * Shader packs process translucent first-person layers inconsistently, so
-     * these copies are used only by the atlas held in the player's hands.
-     */
-    public static ResourceLocation shaderSafeTile(ResourceLocation texture) {
-        if (!AntiqueAtlas.ID.equals(texture.getNamespace())
-                || !texture.getPath().startsWith(TILE_PATH_PREFIX)) {
-            return texture;
-        }
-
-        return ResourceLocations.of(texture.getNamespace(), SHADER_SAFE_TILE_PATH_PREFIX
-                + texture.getPath().substring(TILE_PATH_PREFIX.length()));
-    }
 
     // Constructor helpers:
     private static ITexture gui(String fileName, int width, int height) {

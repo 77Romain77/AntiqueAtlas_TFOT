@@ -1,4 +1,18 @@
-# Antique Atlas TFOT 8.2.0-tfot.8
+# Antique Atlas TFOT 8.2.0-tfot.9
+
+- Suppression des 190 textures shader-safe générées pendant le build : le rendu
+  en main utilise de nouveau exactement les ressources originales.
+- Les resource packs peuvent donc remplacer le livre, le cadre et toutes les
+  tuiles de la carte tenue en main comme dans l’écran normal.
+- Nouveau correctif de rendu : lorsque Iris/Oculus indique qu’un shader pack est
+  actif, l’atlas emploie les couches d’entité adaptées aux parties opaques et
+  translucides, avec le format de sommets complet attendu par ces couches.
+- Iris/Oculus reste entièrement optionnel et est détecté par réflexion, sans
+  nouvelle dépendance ni installation nécessaire sur le serveur.
+- Correctif porté de l’approche fusionnée dans
+  [Antique Atlas 4 #332](https://github.com/sleepingdragoninn/antique-atlas/pull/332).
+
+## 8.2.0-tfot.8
 
 - La liste de l’écran **Maps** s’adapte à la hauteur disponible et devient
   défilable à la molette ou avec sa barre de défilement.

@@ -22,9 +22,9 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
   choix est conservé dans la configuration client.
 - Le scanner ne lit que les chunks déjà reçus et chargés par le client, avec un
   budget configurable ; il ne force jamais le chargement d’un chunk serveur.
-- L’atlas tenu en main utilise des textures à alpha binaire compatibles avec les
-  shader packs Iris/Oculus, générées pendant le build sans changer le rendu de
-  l’écran de carte.
+- Lorsque Iris/Oculus utilise un shader pack, l’atlas tenu en main sélectionne
+  des couches de rendu d’entité compatibles tout en conservant les chemins de
+  textures originaux. Les resource packs modifient donc aussi le rendu en main.
 
 Les fichiers se trouvent dans :
 
