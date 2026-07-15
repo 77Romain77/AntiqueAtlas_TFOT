@@ -21,6 +21,9 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
 - Le bouton de filtre permet d’afficher ou masquer chaque type de marqueur ; le
   choix est enregistré séparément dans chaque profil de carte et s’applique
   aussi à l’atlas tenu en main.
+- La colonne de gauche regroupe les marqueurs par icône. Son survol indique le
+  nombre de marqueurs du groupe et un clic ouvre leur liste défilable, sans
+  afficher leurs coordonnées.
 - Le marque-page **Actualiser la zone** permet de réexaminer ponctuellement les
   chunks déjà cartographiés et chargés autour du joueur lorsqu’une mise à jour a
   modifié le monde. Le bouton reste bloqué jusqu’à la fin de l’opération.

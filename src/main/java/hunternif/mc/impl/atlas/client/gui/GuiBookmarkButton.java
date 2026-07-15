@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 public class GuiBookmarkButton extends GuiToggleButton {
     private static final int WIDTH = 21;
     private static final int HEIGHT = 18;
+    private static final float TEXT_ICON_SCALE = 1.6F;
 
     private final int colorIndex;
     private ITexture iconTexture;
@@ -77,9 +78,14 @@ public class GuiBookmarkButton extends GuiToggleButton {
         if (iconTexture != null) {
             iconTexture.draw(matrices, getGuiX() + 2 + hoverOffset, getGuiY() + 1);
         } else if (iconText != null) {
-            matrices.drawCenteredString(Minecraft.getInstance().font, iconText,
-                    getGuiX() + WIDTH / 2 + hoverOffset, getGuiY() + 5,
+            matrices.pose().pushPose();
+            matrices.pose().translate(getGuiX() + WIDTH / 2F + hoverOffset,
+                    getGuiY() + HEIGHT / 2F, 0);
+            matrices.pose().scale(TEXT_ICON_SCALE, TEXT_ICON_SCALE, 1.0F);
+            matrices.drawCenteredString(Minecraft.getInstance().font, iconText, 0,
+                    -Minecraft.getInstance().font.lineHeight / 2,
                     isEnabled() ? 0xFFF2E2BD : 0xFF777777);
+            matrices.pose().popPose();
         }
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 

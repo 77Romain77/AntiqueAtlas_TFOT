@@ -1,4 +1,16 @@
-# Antique Atlas TFOT 8.2.0-tfot.10
+# Antique Atlas TFOT 8.2.0-tfot.11
+
+- La colonne gauche regroupe désormais les marqueurs par type d’icône au lieu
+  d’afficher immédiatement tous les marqueurs de la dimension.
+- Le survol d’une catégorie indique son nom et son nombre de marqueurs. Un clic
+  ouvre une seconde liste défilable à gauche ; un nouveau clic referme la
+  catégorie et une autre catégorie remplace celle déjà ouverte.
+- Les marqueurs individuels conservent uniquement leur nom au survol, sans
+  afficher leurs coordonnées, et un clic recentre toujours la carte dessus.
+- Le symbole du bouton **Actualiser la zone** est agrandi, séparé du bouton
+  **Maps** et son texte d’aide est réparti sur plusieurs lignes.
+
+## 8.2.0-tfot.10
 
 - Les types de marqueurs masqués ne sont plus stockés dans
   `antiqueatlas-client.json` : chaque profil de carte conserve désormais ses

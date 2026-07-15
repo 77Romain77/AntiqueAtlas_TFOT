@@ -24,9 +24,13 @@ import hunternif.mc.impl.atlas.util.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -197,7 +201,15 @@ public class GuiAtlas extends GuiComponent {
 
     private final GuiScaleBar scaleBar = new GuiScaleBar();
 
-    private final GuiScrollingContainer markers = new GuiScrollingContainer();
+    /** Marker-type categories attached directly to the left side of the atlas. */
+    private final GuiScrollingContainer markerGroups = new GuiScrollingContainer();
+
+    /** Markers from the selected category, displayed to the left of the categories. */
+    private final GuiScrollingContainer markerBookmarks = new GuiScrollingContainer();
+
+    private final Map<ResourceLocation, List<Marker>> groupedMarkers = new LinkedHashMap<>();
+    private final Map<ResourceLocation, GuiMarkerGroupBookmark> markerGroupBookmarks = new LinkedHashMap<>();
+    private ResourceLocation selectedMarkerGroup;
 
     /**
      * Pixel-to-block ratio.
@@ -357,16 +369,20 @@ public class GuiAtlas extends GuiComponent {
 
         btnRescan = new GuiBookmarkButton(1, Component.literal("↻"),
                 Component.translatable("gui.antiqueatlas.rescan.title"));
-        addChild(btnRescan).offsetGuiCoords(300, 94);
+        addChild(btnRescan).offsetGuiCoords(300, 99);
         btnRescan.addListener(button -> requestAreaRescan());
         updateRescanButton();
 
         addChild(scaleBar).offsetGuiCoords(20, 198);
         scaleBar.setMapScale(1);
 
-        addChild(markers).setRelativeCoords(-10, 14);
-        markers.setViewportSize(21, 180);
-        markers.setWheelScrollsVertically();
+        addChild(markerBookmarks).setRelativeCoords(-38, 14);
+        markerBookmarks.setViewportSize(21, 180);
+        markerBookmarks.setWheelScrollsVertically();
+
+        addChild(markerGroups).setRelativeCoords(-10, 14);
+        markerGroups.setViewportSize(21, 180);
+        markerGroups.setWheelScrollsVertically();
 
         markerFinalizer.addMarkerListener(blinkingIcon);
 
@@ -447,14 +463,65 @@ public class GuiAtlas extends GuiComponent {
     }
 
     public void updateBookmarkerList() {
-        markers.removeAllContent();
-        markers.scrollTo(0, 0);
+        markerGroups.removeAllContent();
+        markerGroups.scrollTo(0, 0);
+        markerGroupBookmarks.clear();
+        groupedMarkers.clear();
 
-        if (localMarkersData == null) return;
+        if (localMarkersData != null) {
+            List<Marker> visibleMarkers = new ArrayList<>();
+            for (Marker marker : localMarkersData.getAllMarkers()) {
+                if (marker.isVisibleAhead() && !marker.isGlobal()
+                        && MarkerVisibility.isVisible(marker.getType())) {
+                    visibleMarkers.add(marker);
+                }
+            }
+            visibleMarkers.sort(Comparator
+                    .comparing((Marker marker) -> marker.getType().toString())
+                    .thenComparingInt(Marker::getId));
+            for (Marker marker : visibleMarkers) {
+                groupedMarkers.computeIfAbsent(marker.getType(), ignored -> new ArrayList<>())
+                        .add(marker);
+            }
+        }
 
+        if (selectedMarkerGroup != null && !groupedMarkers.containsKey(selectedMarkerGroup)) {
+            selectedMarkerGroup = null;
+        }
 
         int contentY = 0;
-        for (Marker marker : localMarkersData.getAllMarkers()) {
+        for (Map.Entry<ResourceLocation, List<Marker>> entry : groupedMarkers.entrySet()) {
+            ResourceLocation markerTypeId = entry.getKey();
+            MarkerType markerType = MarkerType.REGISTRY.get(markerTypeId);
+            GuiMarkerGroupBookmark bookmark = new GuiMarkerGroupBookmark(markerType,
+                    GuiMarkerFilter.markerName(markerTypeId), entry.getValue().size());
+            bookmark.setSelected(markerTypeId.equals(selectedMarkerGroup));
+            bookmark.addListener(button -> selectMarkerGroup(markerTypeId));
+
+            markerGroupBookmarks.put(markerTypeId, bookmark);
+            markerGroups.addContent(bookmark).setRelativeY(contentY);
+            contentY += 20;
+        }
+
+        updateSelectedMarkerBookmarks();
+    }
+
+    private void selectMarkerGroup(ResourceLocation markerTypeId) {
+        selectedMarkerGroup = markerTypeId.equals(selectedMarkerGroup) ? null : markerTypeId;
+        markerGroupBookmarks.forEach((id, bookmark) ->
+                bookmark.setSelected(id.equals(selectedMarkerGroup)));
+        updateSelectedMarkerBookmarks();
+    }
+
+    private void updateSelectedMarkerBookmarks() {
+        markerBookmarks.removeAllContent();
+        markerBookmarks.scrollTo(0, 0);
+
+        List<Marker> selectedMarkers = groupedMarkers.get(selectedMarkerGroup);
+        if (selectedMarkers == null) return;
+
+        int contentY = 0;
+        for (Marker marker : selectedMarkers) {
             if (!marker.isVisibleAhead() || marker.isGlobal() || !MarkerVisibility.isVisible(marker.getType())) {
                 continue;
             }
@@ -475,8 +542,8 @@ public class GuiAtlas extends GuiComponent {
                 }
             });
 
-            markers.addContent(bookmark).setRelativeY(contentY);
-            contentY += 18 + 2;
+            markerBookmarks.addContent(bookmark).setRelativeY(contentY);
+            contentY += 20;
         }
     }
 
@@ -719,7 +786,9 @@ public class GuiAtlas extends GuiComponent {
         } else {
             btnRescan.setTooltip(List.of(
                     Component.translatable("gui.antiqueatlas.rescan.title"),
-                    Component.translatable("gui.antiqueatlas.rescan.help")));
+                    Component.translatable("gui.antiqueatlas.rescan.help.1"),
+                    Component.translatable("gui.antiqueatlas.rescan.help.2"),
+                    Component.translatable("gui.antiqueatlas.rescan.help.3")));
         }
     }
 
