@@ -206,6 +206,7 @@ public class OverlayRenderer {
     private void renderMarker(MultiBufferSource buffer, PoseStack matrices, Marker marker,
                               int x, int y, WorldData biomeData, int light,
                               LightRenderMode renderMode) {
+        if (!MarkerVisibility.isVisible(marker.getType())) return;
         int tileHalfSize = GuiAtlas.MARKER_SIZE / 16;
         if (!((x + tileHalfSize) <= 240 && (x - tileHalfSize >= 3) && (y + tileHalfSize) < 166 && (y - tileHalfSize) >= 0))
             return;

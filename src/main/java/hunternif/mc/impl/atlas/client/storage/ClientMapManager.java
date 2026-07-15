@@ -32,6 +32,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -51,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 public final class ClientMapManager {
     public static final int REGION_SIZE = 32;
     private static final int FORMAT_VERSION = 1;
+    private static final String HIDDEN_MARKER_TYPES_TAG = "hiddenMarkerTypes";
     private static final int SAVE_INTERVAL_TICKS = 100;
     private static final String DEFAULT_PROFILE_ID = "map_0001";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -108,6 +110,35 @@ public final class ClientMapManager {
 
     public MarkersData getMarkersData() {
         return activeProfile == null ? null : activeProfile.markersData;
+    }
+
+    public boolean isMarkerTypeVisible(ResourceLocation type) {
+        return activeProfile == null || type == null
+                || !activeProfile.hiddenMarkerTypes.contains(type.toString());
+    }
+
+    public void setMarkerTypeVisible(ResourceLocation type, boolean visible) {
+        if (activeProfile == null || type == null) return;
+        String id = type.toString();
+        boolean changed = visible
+                ? activeProfile.hiddenMarkerTypes.remove(id)
+                : activeProfile.hiddenMarkerTypes.add(id);
+        if (changed) stateDirty = true;
+    }
+
+    public void showAllMarkerTypes() {
+        if (activeProfile == null || activeProfile.hiddenMarkerTypes.isEmpty()) return;
+        activeProfile.hiddenMarkerTypes.clear();
+        stateDirty = true;
+    }
+
+    public void hideMarkerTypes(Collection<ResourceLocation> types) {
+        if (activeProfile == null || types == null) return;
+        boolean changed = false;
+        for (ResourceLocation type : types) {
+            if (type != null) changed |= activeProfile.hiddenMarkerTypes.add(type.toString());
+        }
+        if (changed) stateDirty = true;
     }
 
     public int getActiveAtlasId() {
@@ -215,6 +246,14 @@ public final class ClientMapManager {
         return true;
     }
 
+    public boolean removeTile(ResourceKey<Level> dimension, int chunkX, int chunkZ) {
+        if (activeProfile == null) return false;
+        ResourceLocation removed = activeProfile.atlasData.removeTile(dimension, chunkX, chunkZ);
+        if (removed == null) return false;
+        dirtyRegions.add(RegionKey.of(dimension, chunkX, chunkZ));
+        return true;
+    }
+
     public Marker createMarker(ResourceKey<Level> dimension, ResourceLocation type, Component label,
                                int x, int z, boolean visibleAhead) {
         if (activeProfile == null || type == null) return null;
@@ -291,6 +330,7 @@ public final class ClientMapManager {
     private ClientProfile loadProfile(String profileId) {
         AtlasData atlasData = new AtlasData();
         MarkersData markersData = new MarkersData();
+        Set<String> hiddenMarkerTypes = new LinkedHashSet<>();
         Path folder = profileFolder(profileId);
         Path stateFile = folder.resolve("profile.dat");
 
@@ -299,6 +339,11 @@ public final class ClientMapManager {
                 CompoundTag root = NbtIo.readCompressed(stateFile.toFile());
                 if (root.contains("atlas", Tag.TAG_COMPOUND)) atlasData.updateFromNbt(root.getCompound("atlas"));
                 if (root.contains("markers", Tag.TAG_COMPOUND)) markersData = MarkersData.fromNbt(root.getCompound("markers"));
+                ListTag hiddenTypes = root.getList(HIDDEN_MARKER_TYPES_TAG, Tag.TAG_STRING);
+                for (int index = 0; index < hiddenTypes.size(); index++) {
+                    String id = hiddenTypes.getString(index);
+                    if (!id.isBlank()) hiddenMarkerTypes.add(id);
+                }
             } catch (Exception exception) {
                 AntiqueAtlas.LOG.error("Could not load local atlas profile {}", stateFile, exception);
             }
@@ -316,7 +361,7 @@ public final class ClientMapManager {
                 AntiqueAtlas.LOG.error("Could not enumerate local atlas regions in {}", dimensions, exception);
             }
         }
-        return new ClientProfile(atlasData, markersData);
+        return new ClientProfile(atlasData, markersData, hiddenMarkerTypes);
     }
 
     private void readRegion(Path path, AtlasData atlasData) {
@@ -411,6 +456,9 @@ public final class ClientMapManager {
         root.putInt("version", FORMAT_VERSION);
         root.put("atlas", activeProfile.atlasData.writeToNBT(new CompoundTag(), false));
         root.put("markers", activeProfile.markersData.save(new CompoundTag()));
+        ListTag hiddenTypes = new ListTag();
+        for (String id : activeProfile.hiddenMarkerTypes) hiddenTypes.add(StringTag.valueOf(id));
+        root.put(HIDDEN_MARKER_TYPES_TAG, hiddenTypes);
         return new StateSnapshot(profileFolder(activeProfileId).resolve("profile.dat"), root);
     }
 
@@ -540,7 +588,8 @@ public final class ClientMapManager {
     public record ProfileInfo(String id, String name) {
     }
 
-    private record ClientProfile(AtlasData atlasData, MarkersData markersData) {
+    private record ClientProfile(AtlasData atlasData, MarkersData markersData,
+                                 Set<String> hiddenMarkerTypes) {
     }
 
     private record RegionSnapshot(Path path, CompoundTag data) {

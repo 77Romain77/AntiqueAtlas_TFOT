@@ -12,8 +12,6 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 
 /** Lightweight standalone client config with no network hooks. */
 public final class ClientConfigStorage {
@@ -56,15 +54,6 @@ public final class ClientConfigStorage {
     }
 
     private static void validate(AntiqueAtlasConfig config) {
-        if (config.hiddenMarkerTypes == null) {
-            config.hiddenMarkerTypes = new ArrayList<>();
-        } else {
-            LinkedHashSet<String> uniqueTypes = new LinkedHashSet<>();
-            for (String type : config.hiddenMarkerTypes) {
-                if (type != null && !type.isBlank()) uniqueTypes.add(type);
-            }
-            config.hiddenMarkerTypes = new ArrayList<>(uniqueTypes);
-        }
         config.scanRadius = clamp(config.scanRadius, 0, 32);
         config.clientScanBudget = clamp(config.clientScanBudget, 1, 64);
         config.markerLimit = Math.max(0, config.markerLimit);

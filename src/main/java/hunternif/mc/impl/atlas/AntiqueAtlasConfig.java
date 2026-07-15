@@ -1,8 +1,5 @@
 package hunternif.mc.impl.atlas;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Plain client configuration serialized by {@code ClientConfigStorage}.
  * Keeping this as a simple data object avoids loading an external config mod.
@@ -17,7 +14,6 @@ public class AntiqueAtlasConfig {
 
     // Interface
     public boolean doScaleMarkers = false;
-    public List<String> hiddenMarkerTypes = new ArrayList<>();
     public double defaultScale = 0.5;
     public double minScale = 1.0 / 32.0;
     public double maxScale = 4.0;
@@ -28,8 +24,10 @@ public class AntiqueAtlasConfig {
     public int scanRadius = 11;
     public boolean forceChunkLoading = false;
     public float newScanInterval = 1.0F;
-    public boolean doRescan = false;
-    public int rescanRate = 4;
+    // Kept only so the unused legacy server scanner still compiles. Manual
+    // client rescans are deliberately one-shot and are not config toggles.
+    public transient boolean doRescan = false;
+    public transient int rescanRate = 4;
     public int clientScanBudget = 8;
     public int markerLimit = 1024;
     public boolean doScanPonds = false;

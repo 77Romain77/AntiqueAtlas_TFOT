@@ -134,6 +134,9 @@ public class GuiAtlas extends GuiComponent {
     /** Button opening the per-type marker visibility filter. */
     private final GuiBookmarkButton btnMarkerFilter;
 
+    /** One-shot refresh of already mapped chunks loaded around the player. */
+    private final GuiBookmarkButton btnRescan;
+
     /**
      * Button for restoring player's position at the center of the Atlas.
      */
@@ -352,6 +355,12 @@ public class GuiAtlas extends GuiComponent {
             if (stack != null || !AntiqueAtlas.CONFIG.itemNeeded) addChild(markerFilter);
         });
 
+        btnRescan = new GuiBookmarkButton(1, Component.literal("↻"),
+                Component.translatable("gui.antiqueatlas.rescan.title"));
+        addChild(btnRescan).offsetGuiCoords(300, 94);
+        btnRescan.addListener(button -> requestAreaRescan());
+        updateRescanButton();
+
         addChild(scaleBar).offsetGuiCoords(20, 198);
         scaleBar.setMapScale(1);
 
@@ -410,6 +419,7 @@ public class GuiAtlas extends GuiComponent {
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN, 1.0F));
 
         this.player = Minecraft.getInstance().player;
+        updateRescanButton();
         updateAtlasData();
         if (!followPlayer && AntiqueAtlas.CONFIG.doSaveBrowsingPos) {
             loadSavedBrowsingPosition();
@@ -653,6 +663,7 @@ public class GuiAtlas extends GuiComponent {
     @Override
     public void tick() {
         super.tick();
+        updateRescanButton();
         if (player == null) return;
         if (followPlayer) {
             setMapPosition(player.getBlockX(), player.getBlockZ());
@@ -680,6 +691,36 @@ public class GuiAtlas extends GuiComponent {
         }
 
         updateAtlasData();
+    }
+
+    private void requestAreaRescan() {
+        ClientWorldScanner.RescanRequest request = AntiqueAtlasClientSegment.requestRescan();
+        Component message = switch (request.result()) {
+            case STARTED -> Component.translatable(
+                    "message.antiqueatlas.rescan.started", request.queuedChunks());
+            case ALREADY_RUNNING -> Component.translatable("message.antiqueatlas.rescan.alreadyRunning");
+            case NOTHING_TO_SCAN -> Component.translatable("message.antiqueatlas.rescan.nothing");
+            case UNAVAILABLE -> Component.translatable("message.antiqueatlas.rescan.unavailable");
+        };
+        if (player != null) player.displayClientMessage(message, true);
+        updateRescanButton();
+    }
+
+    private void updateRescanButton() {
+        if (btnRescan == null) return;
+        ClientWorldScanner.RescanStatus status = AntiqueAtlasClientSegment.getRescanStatus();
+        btnRescan.setEnabled(!status.running());
+        btnRescan.setSelected(status.running());
+        if (status.running()) {
+            btnRescan.setTooltip(List.of(
+                    Component.translatable("gui.antiqueatlas.rescan.title"),
+                    Component.translatable("gui.antiqueatlas.rescan.progress",
+                            status.completedChunks(), status.totalChunks())));
+        } else {
+            btnRescan.setTooltip(List.of(
+                    Component.translatable("gui.antiqueatlas.rescan.title"),
+                    Component.translatable("gui.antiqueatlas.rescan.help")));
+        }
     }
 
     /**
@@ -1130,6 +1171,7 @@ public class GuiAtlas extends GuiComponent {
         btnMarker.setTitle(Component.translatable("gui.antiqueatlas.addMarker"));
         btnDelMarker.setTitle(Component.translatable("gui.antiqueatlas.delMarker"));
         btnMarkerFilter.setTitle(Component.translatable("gui.antiqueatlas.markerFilter.title"));
+        updateRescanButton();
     }
 
     /**

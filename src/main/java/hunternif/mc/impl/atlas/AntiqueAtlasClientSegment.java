@@ -31,6 +31,14 @@ public class AntiqueAtlasClientSegment {
         CLIENT_SCANNER.reset();
     }
 
+    public static ClientWorldScanner.RescanRequest requestRescan() {
+        return CLIENT_SCANNER.requestRescan(Minecraft.getInstance());
+    }
+
+    public static ClientWorldScanner.RescanStatus getRescanStatus() {
+        return CLIENT_SCANNER.getRescanStatus();
+    }
+
     public static void openMapProfiles(GuiAtlas parent) {
         Minecraft.getInstance().setScreen(new GuiMapProfiles(parent));
     }

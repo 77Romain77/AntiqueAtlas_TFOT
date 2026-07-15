@@ -8,6 +8,7 @@ import hunternif.mc.impl.atlas.core.scaning.TileDetectorEnd;
 import hunternif.mc.impl.atlas.core.scaning.TileDetectorNether;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
@@ -20,8 +21,10 @@ import java.util.Set;
 
 /** Scans only chunks already received by this client, with a bounded per-tick budget. */
 public final class ClientWorldScanner {
-    private final ArrayDeque<PendingChunk> queue = new ArrayDeque<>();
-    private final Set<PendingChunk> queued = new HashSet<>();
+    private final ArrayDeque<ChunkKey> discoveryQueue = new ArrayDeque<>();
+    private final Set<ChunkKey> discoveryQueued = new HashSet<>();
+    private final ArrayDeque<ChunkKey> rescanQueue = new ArrayDeque<>();
+    private final Set<ChunkKey> rescanQueued = new HashSet<>();
     private final TileDetectorBase overworldDetector = new TileDetectorBase();
     private final TileDetectorNether netherDetector = new TileDetectorNether();
     private final TileDetectorEnd endDetector = new TileDetectorEnd();
@@ -30,6 +33,7 @@ public final class ClientWorldScanner {
     private ChunkPos lastPlayerChunk;
     private String lastProfileId;
     private int discoveryTicker;
+    private RescanProgress activeRescan;
 
     public void tick(Minecraft minecraft) {
         ClientMapManager maps = ClientMapManager.getInstance();
@@ -39,8 +43,8 @@ public final class ClientWorldScanner {
             return;
         }
         if (AntiqueAtlas.CONFIG.itemNeeded && ClientAtlasItem.find(minecraft.player).isEmpty()) {
-            queue.clear();
-            queued.clear();
+            clearDiscoveryQueue();
+            cancelRescan();
             return;
         }
 
@@ -51,8 +55,8 @@ public final class ClientWorldScanner {
         boolean movedChunk = !playerChunk.equals(lastPlayerChunk);
 
         if (contextChanged) {
-            queue.clear();
-            queued.clear();
+            clearDiscoveryQueue();
+            if (activeRescan != null && !activeRescan.matches(profileId, dimension)) cancelRescan();
             TileDetectorBase.scanBiomeTypes(level);
         }
 
@@ -67,21 +71,70 @@ public final class ClientWorldScanner {
 
         int budget = Math.max(1, AntiqueAtlas.CONFIG.clientScanBudget);
         for (int i = 0; i < budget; i++) {
-            PendingChunk pending = queue.pollFirst();
-            if (pending == null) break;
-            queued.remove(pending);
-            if (!pending.dimension.equals(level.dimension()) || !level.getChunkSource().hasChunk(pending.x, pending.z)) continue;
-            if (maps.getAtlasData().getWorldData(pending.dimension).hasTileAt(pending.x, pending.z)) continue;
-
-            ChunkAccess chunk = level.getChunk(pending.x, pending.z);
-            ResourceLocation tile = detectorFor(pending.dimension).getBiomeID(level, chunk);
-            if (tile != null) maps.putTile(pending.dimension, pending.x, pending.z, tile);
+            // A manual operation is short-lived and gets the whole budget so
+            // it finishes promptly; normal discovery resumes immediately after.
+            if (activeRescan != null) {
+                if (!processNextRescan(minecraft, level, maps)) break;
+            } else if (!processNextDiscovery(level, maps)) {
+                break;
+            }
         }
     }
 
+    /**
+     * Queues one bounded pass over known chunks that are already loaded around
+     * the player. Repeated requests are rejected until that pass is complete.
+     */
+    public RescanRequest requestRescan(Minecraft minecraft) {
+        if (activeRescan != null) {
+            return new RescanRequest(RescanRequestResult.ALREADY_RUNNING, activeRescan.totalChunks);
+        }
+
+        ClientMapManager maps = ClientMapManager.getInstance();
+        ClientLevel level = minecraft.level;
+        if (level == null || minecraft.player == null || !maps.isReady()) {
+            return new RescanRequest(RescanRequestResult.UNAVAILABLE, 0);
+        }
+        if (AntiqueAtlas.CONFIG.itemNeeded && ClientAtlasItem.find(minecraft.player).isEmpty()) {
+            return new RescanRequest(RescanRequestResult.UNAVAILABLE, 0);
+        }
+
+        rescanQueue.clear();
+        rescanQueued.clear();
+        ResourceKey<Level> dimension = level.dimension();
+        ChunkPos center = minecraft.player.chunkPosition();
+        int radius = Math.max(0, AntiqueAtlas.CONFIG.scanRadius);
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                if (dx * dx + dz * dz > radius * radius) continue;
+                int x = center.x + dx;
+                int z = center.z + dz;
+                if (!level.getChunkSource().hasChunk(x, z)) continue;
+                if (!maps.getAtlasData().getWorldData(dimension).hasTileAt(x, z)) continue;
+                ChunkKey key = new ChunkKey(dimension, x, z);
+                if (rescanQueued.add(key)) rescanQueue.addLast(key);
+            }
+        }
+
+        int queuedChunks = rescanQueue.size();
+        if (queuedChunks == 0) {
+            return new RescanRequest(RescanRequestResult.NOTHING_TO_SCAN, 0);
+        }
+
+        TileDetectorBase.scanBiomeTypes(level);
+        activeRescan = new RescanProgress(maps.getActiveProfileId(), dimension, queuedChunks);
+        return new RescanRequest(RescanRequestResult.STARTED, queuedChunks);
+    }
+
+    public RescanStatus getRescanStatus() {
+        if (activeRescan == null) return new RescanStatus(false, 0, 0, 0, 0);
+        return new RescanStatus(true, activeRescan.completedChunks, activeRescan.totalChunks,
+                activeRescan.analyzedChunks, activeRescan.changedChunks);
+    }
+
     public void reset() {
-        queue.clear();
-        queued.clear();
+        clearDiscoveryQueue();
+        cancelRescan();
         lastDimension = null;
         lastPlayerChunk = null;
         lastProfileId = null;
@@ -98,10 +151,81 @@ public final class ClientWorldScanner {
                 int z = center.z + dz;
                 if (!level.getChunkSource().hasChunk(x, z)) continue;
                 if (maps.getAtlasData().getWorldData(dimension).hasTileAt(x, z)) continue;
-                PendingChunk pending = new PendingChunk(dimension, x, z);
-                if (queued.add(pending)) queue.addLast(pending);
+                ChunkKey pending = new ChunkKey(dimension, x, z);
+                if (discoveryQueued.add(pending)) discoveryQueue.addLast(pending);
             }
         }
+    }
+
+    private boolean processNextDiscovery(ClientLevel level, ClientMapManager maps) {
+        ChunkKey pending = discoveryQueue.pollFirst();
+        if (pending == null) return false;
+        discoveryQueued.remove(pending);
+        if (!pending.dimension.equals(level.dimension())
+                || !level.getChunkSource().hasChunk(pending.x, pending.z)) return true;
+        if (maps.getAtlasData().getWorldData(pending.dimension).hasTileAt(pending.x, pending.z)) return true;
+
+        ChunkAccess chunk = level.getChunk(pending.x, pending.z);
+        ResourceLocation tile = detectorFor(pending.dimension).getBiomeID(level, chunk);
+        if (tile != null) maps.putTile(pending.dimension, pending.x, pending.z, tile);
+        return true;
+    }
+
+    private boolean processNextRescan(Minecraft minecraft, ClientLevel level, ClientMapManager maps) {
+        if (activeRescan == null) return false;
+        if (!activeRescan.matches(maps.getActiveProfileId(), level.dimension())) {
+            cancelRescan();
+            return false;
+        }
+
+        ChunkKey pending = rescanQueue.pollFirst();
+        if (pending == null) {
+            finishRescan(minecraft);
+            return false;
+        }
+        rescanQueued.remove(pending);
+
+        boolean analyzed = false;
+        boolean changed = false;
+        if (pending.dimension.equals(level.dimension())
+                && level.getChunkSource().hasChunk(pending.x, pending.z)
+                && maps.getAtlasData().getWorldData(pending.dimension).hasTileAt(pending.x, pending.z)) {
+            ChunkAccess chunk = level.getChunk(pending.x, pending.z);
+            ResourceLocation tile = detectorFor(pending.dimension).getBiomeID(level, chunk);
+            analyzed = true;
+            changed = tile == null
+                    ? maps.removeTile(pending.dimension, pending.x, pending.z)
+                    : maps.putTile(pending.dimension, pending.x, pending.z, tile);
+        }
+
+        activeRescan.completedChunks++;
+        if (analyzed) activeRescan.analyzedChunks++;
+        if (changed) activeRescan.changedChunks++;
+        if (rescanQueue.isEmpty()) finishRescan(minecraft);
+        return true;
+    }
+
+    private void finishRescan(Minecraft minecraft) {
+        RescanProgress finished = activeRescan;
+        activeRescan = null;
+        rescanQueue.clear();
+        rescanQueued.clear();
+        if (finished != null && minecraft.player != null) {
+            minecraft.player.displayClientMessage(Component.translatable(
+                    "message.antiqueatlas.rescan.complete",
+                    finished.analyzedChunks, finished.changedChunks), true);
+        }
+    }
+
+    private void clearDiscoveryQueue() {
+        discoveryQueue.clear();
+        discoveryQueued.clear();
+    }
+
+    private void cancelRescan() {
+        activeRescan = null;
+        rescanQueue.clear();
+        rescanQueued.clear();
     }
 
     private ITileDetector detectorFor(ResourceKey<Level> dimension) {
@@ -110,6 +234,39 @@ public final class ClientWorldScanner {
         return overworldDetector;
     }
 
-    private record PendingChunk(ResourceKey<Level> dimension, int x, int z) {
+    public enum RescanRequestResult {
+        STARTED,
+        ALREADY_RUNNING,
+        NOTHING_TO_SCAN,
+        UNAVAILABLE
+    }
+
+    public record RescanRequest(RescanRequestResult result, int queuedChunks) {
+    }
+
+    public record RescanStatus(boolean running, int completedChunks, int totalChunks,
+                               int analyzedChunks, int changedChunks) {
+    }
+
+    private static final class RescanProgress {
+        private final String profileId;
+        private final ResourceKey<Level> dimension;
+        private final int totalChunks;
+        private int completedChunks;
+        private int analyzedChunks;
+        private int changedChunks;
+
+        private RescanProgress(String profileId, ResourceKey<Level> dimension, int totalChunks) {
+            this.profileId = profileId;
+            this.dimension = dimension;
+            this.totalChunks = totalChunks;
+        }
+
+        private boolean matches(String profileId, ResourceKey<Level> dimension) {
+            return this.profileId.equals(profileId) && this.dimension.equals(dimension);
+        }
+    }
+
+    private record ChunkKey(ResourceKey<Level> dimension, int x, int z) {
     }
 }
