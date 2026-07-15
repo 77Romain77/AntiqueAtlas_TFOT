@@ -19,7 +19,11 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
 - Les données des dimensions sont séparées en interne pour éviter les collisions.
 - Les marqueurs, la position de navigation et les tuiles sont sauvegardés localement.
 - Le bouton de filtre permet d’afficher ou masquer chaque type de marqueur ; le
-  choix est conservé dans la configuration client.
+  choix est enregistré séparément dans chaque profil de carte et s’applique
+  aussi à l’atlas tenu en main.
+- Le marque-page **Actualiser la zone** permet de réexaminer ponctuellement les
+  chunks déjà cartographiés et chargés autour du joueur lorsqu’une mise à jour a
+  modifié le monde. Le bouton reste bloqué jusqu’à la fin de l’opération.
 - Le scanner ne lit que les chunks déjà reçus et chargés par le client, avec un
   budget configurable ; il ne force jamais le chargement d’un chunk serveur.
 - Lorsque Iris/Oculus utilise un shader pack, l’atlas tenu en main sélectionne
@@ -63,6 +67,9 @@ Les réglages sont accessibles depuis le bouton **Config** de la liste des mods 
 sont enregistrés dans `.minecraft/config/antiqueatlas-client.json`.
 `maxMaps` limite uniquement la création de nouvelles cartes (`10` par défaut) ;
 réduire cette valeur ne supprime jamais une carte déjà enregistrée.
+Les filtres de marqueurs ne font pas partie de ce fichier : ils sont sauvegardés
+dans le `profile.dat` de chaque carte. L’actualisation du terrain est volontairement
+manuelle et utilise `clientScanBudget` pour répartir le travail sur plusieurs ticks.
 
 ## Prérequis et build
 
@@ -90,6 +97,10 @@ le JAR dans l’artefact `antique-atlas-tfot-forge-1.20.1`.
 6. Tester les deux valeurs de `itemNeeded`.
 7. Tester le clic droit dans le vide, puis sur un coffre, en main principale et
    en main secondaire.
+8. Configurer des filtres différents sur deux cartes, les rouvrir et vérifier
+   que chaque carte retrouve ses propres choix.
+9. Utiliser **Actualiser la zone** et vérifier la progression, le verrouillage du
+   bouton et le message final indiquant le nombre de chunks modifiés.
 
 ## Crédits et licence
 

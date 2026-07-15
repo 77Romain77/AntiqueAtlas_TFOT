@@ -1,4 +1,20 @@
-# Antique Atlas TFOT 8.2.0-tfot.9
+# Antique Atlas TFOT 8.2.0-tfot.10
+
+- Les types de marqueurs masqués ne sont plus stockés dans
+  `antiqueatlas-client.json` : chaque profil de carte conserve désormais ses
+  propres filtres dans son fichier `profile.dat`.
+- Les filtres s’appliquent à l’écran complet ainsi qu’à l’atlas tenu en main.
+- Ajout d’un marque-page **Actualiser la zone** dans l’atlas. Il réanalyse une
+  seule fois les chunks déjà cartographiés et actuellement chargés autour du
+  joueur, sans jamais demander de chunk au serveur.
+- L’actualisation partage le budget `clientScanBudget`, compare les nouvelles
+  tuiles aux anciennes et n’écrit que les régions réellement modifiées.
+- Le bouton explique son rôle au survol, affiche la progression et reste bloqué
+  jusqu’à la fin du passage afin d’empêcher les rescans en double.
+- Les anciennes options automatiques `doRescan` et `rescanRate` sont retirées du
+  JSON client au profit de cette action manuelle et sans charge permanente.
+
+## 8.2.0-tfot.9
 
 - Suppression des 190 textures shader-safe générées pendant le build : le rendu
   en main utilise de nouveau exactement les ressources originales.
