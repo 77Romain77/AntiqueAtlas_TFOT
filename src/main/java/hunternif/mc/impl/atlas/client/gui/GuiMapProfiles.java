@@ -7,20 +7,27 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
 /** Small local-only menu used to select and name map profiles. */
 public class GuiMapProfiles extends Screen {
+    private static final int LIST_WIDTH = 300;
+    private static final int OPEN_BUTTON_WIDTH = 82;
+    private static final int ROW_GAP = 4;
+
     private final Screen parent;
     private final ClientMapManager maps = ClientMapManager.getInstance();
+    private final ItemStack accessStack;
     private String selectedProfileId;
     private EditBox nameField;
     private boolean deleteArmed;
 
-    public GuiMapProfiles(Screen parent) {
+    public GuiMapProfiles(GuiAtlas parent) {
         super(Component.translatable("gui.antiqueatlas.maps.title"));
         this.parent = parent;
+        this.accessStack = parent.copyAccessStack();
         this.selectedProfileId = maps.getActiveProfileId();
     }
 
@@ -38,16 +45,29 @@ public class GuiMapProfiles extends Screen {
 
         int listX = width / 2 - 150;
         int listY = 48;
+        int nameButtonWidth = LIST_WIDTH - OPEN_BUTTON_WIDTH - ROW_GAP;
+        String activeProfileId = maps.getActiveProfileId();
         int visibleProfiles = Math.min(8, profiles.size());
         for (int i = 0; i < visibleProfiles; i++) {
             ClientMapManager.ProfileInfo profile = profiles.get(i);
             boolean selected = profile.id().equals(selectedProfileId);
+            boolean active = profile.id().equals(activeProfileId);
             Component label = Component.literal((selected ? "▶ " : "  ") + profile.name());
             addRenderableWidget(Button.builder(label, button -> {
                 selectedProfileId = profile.id();
                 deleteArmed = false;
                 refreshWidgets();
-            }).bounds(listX, listY + i * 23, 300, 20).build());
+            }).bounds(listX, listY + i * 23, nameButtonWidth, 20).build());
+
+            Button openButton = Button.builder(Component.translatable(active
+                            ? "gui.antiqueatlas.maps.active"
+                            : "gui.antiqueatlas.maps.open"),
+                    button -> openProfile(profile.id()))
+                    .bounds(listX + nameButtonWidth + ROW_GAP, listY + i * 23,
+                            OPEN_BUTTON_WIDTH, 20)
+                    .build();
+            openButton.active = !active;
+            addRenderableWidget(openButton);
         }
 
         ClientMapManager.ProfileInfo selected = profiles.stream()
@@ -88,14 +108,19 @@ public class GuiMapProfiles extends Screen {
         deleteButton.active = profiles.size() > 1;
         addRenderableWidget(deleteButton);
 
-        addRenderableWidget(Button.builder(Component.translatable("gui.antiqueatlas.maps.open"), button -> {
-            maps.activateProfile(selectedProfileId);
-            minecraft.setScreen(null);
-            AntiqueAtlasClientSegment.openAtlasGUI();
-        }).bounds(width / 2 + 50, height - 66, 100, 20).build());
-
         addRenderableWidget(Button.builder(Component.translatable("gui.back"), button -> onClose())
                 .bounds(width / 2 - 50, height - 40, 100, 20).build());
+    }
+
+    private void openProfile(String profileId) {
+        if (!maps.activateProfile(profileId)) return;
+
+        minecraft.setScreen(null);
+        if (accessStack.isEmpty()) {
+            AntiqueAtlasClientSegment.openAtlasGUI();
+        } else {
+            AntiqueAtlasClientSegment.openAtlasGUI(accessStack);
+        }
     }
 
     @Override

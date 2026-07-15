@@ -31,7 +31,7 @@ public class AntiqueAtlasClientSegment {
         CLIENT_SCANNER.reset();
     }
 
-    public static void openMapProfiles(Screen parent) {
+    public static void openMapProfiles(GuiAtlas parent) {
         Minecraft.getInstance().setScreen(new GuiMapProfiles(parent));
     }
 

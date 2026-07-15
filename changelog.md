@@ -1,4 +1,14 @@
-# Antique Atlas TFOT 8.2.0-tfot.5
+# Antique Atlas TFOT 8.2.0-tfot.6
+
+- `Échap` dans le filtre des marqueurs agit désormais comme le bouton **Done** :
+  le filtre est retiré proprement et l’atlas reste ouvert et centré.
+- Chaque carte possède maintenant son propre bouton **Ouvrir** dans la liste ;
+  la carte utilisée est clairement indiquée comme **Active**.
+- Correction de l’atlas vide juste après un changement de carte : le contexte du
+  livre-atlas est conservé et les données du nouveau profil sont chargées avant
+  son affichage.
+
+## 8.2.0-tfot.5
 
 - Correction forcée du modèle des livres reconnus comme atlas : l’icône
   Antique Atlas est désormais sélectionnée directement par le moteur de rendu

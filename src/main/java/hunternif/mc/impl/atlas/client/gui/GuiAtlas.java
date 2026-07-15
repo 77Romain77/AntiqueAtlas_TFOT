@@ -372,6 +372,14 @@ public class GuiAtlas extends GuiComponent {
         return prepareToOpen();
     }
 
+    /**
+     * Keeps the vanilla book context while the map-profile screen temporarily
+     * replaces this atlas. This is required when atlas access needs an item.
+     */
+    public ItemStack copyAccessStack() {
+        return stack == null ? ItemStack.EMPTY : stack.copy();
+    }
+
     public void openMarkerFinalizer(Component name) {
         markerFinalizer.setMarkerData(player.getCommandSenderWorld(),
                 getAtlasID(),
@@ -528,7 +536,12 @@ public class GuiAtlas extends GuiComponent {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_UP) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && markerFilter.getParent() != null) {
+            // Escape from the filter must behave exactly like its Done button,
+            // otherwise the full-screen child remains attached to this atlas.
+            markerFilter.closeChild();
+            return true;
+        } else if (keyCode == GLFW.GLFW_KEY_UP) {
             navigateMap(0, navigateStep);
         } else if (keyCode == GLFW.GLFW_KEY_DOWN) {
             navigateMap(0, -navigateStep);
@@ -1068,6 +1081,7 @@ public class GuiAtlas extends GuiComponent {
     public void onClose() {
         super.onClose();
         markerFinalizer.closeChild();
+        if (markerFilter.getParent() != null) markerFilter.closeChild();
         removeChild(blinkingIcon);
         // Keyboard.enableRepeatEvents(false);
         biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);

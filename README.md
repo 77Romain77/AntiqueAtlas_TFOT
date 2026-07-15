@@ -12,6 +12,8 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
   raccourci clavier n’est ajouté aux contrôles.
 - Chaque adresse de serveur possède ses propres cartes locales.
 - Il est possible de créer, renommer, sélectionner et supprimer plusieurs cartes.
+  La carte active est indiquée dans la liste et chaque autre carte possède son
+  propre bouton **Ouvrir**.
 - La carte affiche uniquement la dimension où se trouve actuellement le joueur.
 - Les données des dimensions sont séparées en interne pour éviter les collisions.
 - Les marqueurs, la position de navigation et les tuiles sont sauvegardés localement.
