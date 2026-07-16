@@ -22,6 +22,8 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
 - Les données des dimensions sont séparées en interne pour éviter les collisions.
 - Le terrain, les marqueurs et l’icône du joueur utilisent tous le centre du
   livre comme origine, y compris aux niveaux de dézoom qui regroupent les chunks.
+- Le livre reste lui-même centré à l’écran ; les listes et boutons qui dépassent
+  sur ses côtés ne sont pas inclus dans le calcul de sa position.
 - Le terrain exploré est partagé entre toutes les cartes du même pseudo sur le
   même serveur : changer de carte ne recharge ni ne rescane les chunks déjà connus.
 - Les marqueurs, les filtres et la position de navigation restent propres à chaque carte.
@@ -126,8 +128,9 @@ le JAR dans l’artefact `antique-atlas-tfot-forge-1.20.1`.
 2. Rejoindre un serveur Forge 1.20.1 dépourvu du mod.
 3. Explorer, fermer Minecraft, se reconnecter et vérifier la persistance.
 4. Changer de dimension et vérifier que seule la dimension actuelle est affichée.
-5. Centrer la carte sur le joueur, dézoomer jusqu’au minimum et vérifier que
-   son icône reste sur le même terrain à chaque niveau.
+5. Vérifier que le livre est centré à l’écran, puis centrer la carte sur le
+   joueur et dézoomer jusqu’au minimum : son icône doit rester sur le même
+   terrain à chaque niveau.
 6. Tester la création, le renommage et la suppression de plusieurs cartes.
 7. Tester les deux valeurs de `itemNeeded`.
 8. Tester le clic droit dans le vide, puis sur un coffre, en main principale et

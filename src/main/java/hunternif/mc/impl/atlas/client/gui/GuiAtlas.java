@@ -472,7 +472,9 @@ public class GuiAtlas extends GuiComponent {
         super.init();
         //Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);
         screenScale = Minecraft.getInstance().getWindow().getGuiScale();
-        setCentered();
+        // The marker lists extend beyond the book and must not influence its
+        // position. Center the 310x218 book itself on the screen.
+        setGuiCoords((width - WIDTH) / 2, (height - HEIGHT) / 2);
 
         updateBookmarkerList();
     }
@@ -1261,8 +1263,8 @@ public class GuiAtlas extends GuiComponent {
     }
 
     /**
-     * The map is anchored to the book, not to the full screen. Side panels can
-     * make this component wider and move the book away from the screen center.
+     * The map is anchored to the explicitly centered book. Side panels extend
+     * beyond its bounds but do not participate in this coordinate system.
      */
     private int getMapCenterScreenX() {
         return getGuiX() + WIDTH / 2;
