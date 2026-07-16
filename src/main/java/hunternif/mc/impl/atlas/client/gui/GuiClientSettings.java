@@ -20,44 +20,35 @@ public class GuiClientSettings extends Screen {
     @Override
     protected void init() {
         int x = width / 2 - 110;
-        int y = height / 2 - 70;
+        int y = height / 2 - 58;
 
         addRenderableWidget(Button.builder(itemLabel(), button -> {
             AntiqueAtlas.CONFIG.itemNeeded = !AntiqueAtlas.CONFIG.itemNeeded;
             button.setMessage(itemLabel());
         }).bounds(x, y, 220, 20).build());
 
-        addRenderableWidget(Button.builder(deathLabel(), button -> {
-            AntiqueAtlas.CONFIG.autoDeathMarker = !AntiqueAtlas.CONFIG.autoDeathMarker;
-            button.setMessage(deathLabel());
-        }).bounds(x, y + 24, 220, 20).build());
-
         addRenderableWidget(Button.builder(browsingLabel(), button -> {
             AntiqueAtlas.CONFIG.doSaveBrowsingPos = !AntiqueAtlas.CONFIG.doSaveBrowsingPos;
             button.setMessage(browsingLabel());
-        }).bounds(x, y + 48, 220, 20).build());
+        }).bounds(x, y + 24, 220, 20).build());
 
         addRenderableWidget(Button.builder(radiusLabel(), button -> {
             AntiqueAtlas.CONFIG.scanRadius = AntiqueAtlas.CONFIG.scanRadius >= 32
                     ? 0 : AntiqueAtlas.CONFIG.scanRadius + 1;
             button.setMessage(radiusLabel());
-        }).bounds(x, y + 72, 108, 20).build());
+        }).bounds(x, y + 48, 108, 20).build());
 
         addRenderableWidget(Button.builder(budgetLabel(), button -> {
             AntiqueAtlas.CONFIG.clientScanBudget = nextBudget(AntiqueAtlas.CONFIG.clientScanBudget);
             button.setMessage(budgetLabel());
-        }).bounds(x + 112, y + 72, 108, 20).build());
+        }).bounds(x + 112, y + 48, 108, 20).build());
 
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose())
-                .bounds(width / 2 - 50, y + 108, 100, 20).build());
+                .bounds(width / 2 - 50, y + 84, 100, 20).build());
     }
 
     private Component itemLabel() {
         return option("gui.antiqueatlas.config.itemRequired", AntiqueAtlas.CONFIG.itemNeeded);
-    }
-
-    private Component deathLabel() {
-        return option("gui.antiqueatlas.config.deathMarker", AntiqueAtlas.CONFIG.autoDeathMarker);
     }
 
     private Component browsingLabel() {

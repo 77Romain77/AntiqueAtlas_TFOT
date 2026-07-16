@@ -20,7 +20,13 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
   disponible.
 - La carte affiche uniquement la dimension où se trouve actuellement le joueur.
 - Les données des dimensions sont séparées en interne pour éviter les collisions.
-- Les marqueurs, la position de navigation et les tuiles sont sauvegardés localement.
+- Le terrain exploré est partagé entre toutes les cartes du même pseudo sur le
+  même serveur : changer de carte ne recharge ni ne rescane les chunks déjà connus.
+- Les marqueurs, les filtres et la position de navigation restent propres à chaque carte.
+- Un marque-page avec l’icône de tombe, placé entre les filtres et le gestionnaire
+  de cartes, active ou désactive le marqueur de mort automatique pour la carte
+  courante. Une seule tombe « Vous êtes mort ici » est créée à chaque décès du
+  joueur local.
 - Le bouton de filtre permet d’afficher ou masquer chaque type de marqueur ; le
   choix est enregistré séparément dans chaque profil de carte et s’applique
   aussi à l’atlas tenu en main.
@@ -43,11 +49,12 @@ Les fichiers se trouvent dans :
 
 ```text
 .minecraft/config/antiqueatlas/servers/<adresse-hachée>/
-├── maps.json
-├── players/<pseudo-haché>/...  (uniquement si plusieurs pseudos utilisent ce serveur)
-└── maps/<profil>/
-    ├── profile.dat
-    └── dimensions/<namespace>/<dimension>/terrain/r.<x>.<z>.dat
+└── players/<pseudo-haché>/
+    ├── maps.json
+    ├── maps/<profil>/profile.dat
+    └── worlds/world_0001/
+        ├── world.dat
+        └── dimensions/<namespace>/<dimension>/terrain/r.<x>.<z>.dat
 ```
 
 Une région contient au maximum `32 × 32` chunks avec une palette compressée.
@@ -55,12 +62,16 @@ Les écritures de régions sont effectuées sur un thread client dédié et regr
 toutes les cinq secondes, afin de ne pas bloquer le rendu.
 
 Chaque profil possède un identifiant aléatoire et une empreinte SHA-256 calculée
-depuis le pseudo normalisé. Chaque région possède sa propre empreinte couvrant
-aussi la dimension, les coordonnées et le contenu du terrain. Il ne s’agit pas
-d’un chiffrement inviolable : cette liaison vise à empêcher le simple échange de
-fichiers sans ajouter de service ou de mod côté serveur. Les anciennes cartes sont
-liées une seule fois au pseudo qui les ouvre après la mise à jour ; la conversion
-des régions est réalisée sur le thread de sauvegarde.
+depuis le pseudo normalisé. Le terrain partagé possède une empreinte séparée et
+chaque région couvre aussi la dimension, ses coordonnées et son contenu. Il ne
+s’agit pas d’un chiffrement inviolable : cette liaison vise à empêcher le simple
+échange de fichiers sans ajouter de service ou de mod côté serveur.
+
+Au premier lancement de cette version, l’ancien dossier racine est déplacé dans
+le dossier du pseudo. Le terrain de la carte active est utilisé en priorité, puis
+les autres cartes complètent uniquement les chunks manquants. Les anciens fichiers
+de régions restent en place comme sauvegarde pendant cette migration ; les nouvelles
+écritures utilisent ensuite uniquement `worlds/world_0001`.
 
 ## Objet optionnel
 
@@ -86,8 +97,9 @@ sont enregistrés dans `.minecraft/config/antiqueatlas-client.json`.
 `maxMaps` limite uniquement la création de nouvelles cartes (`10` par défaut) ;
 réduire cette valeur ne supprime jamais une carte déjà enregistrée.
 Les filtres de marqueurs ne font pas partie de ce fichier : ils sont sauvegardés
-dans le `profile.dat` de chaque carte. L’actualisation du terrain est volontairement
-manuelle et utilise `clientScanBudget` pour répartir le travail sur plusieurs ticks.
+dans le `profile.dat` de chaque carte, tout comme le toggle de marqueur de mort.
+L’actualisation du terrain est volontairement manuelle et utilise
+`clientScanBudget` pour répartir le travail sur plusieurs ticks.
 
 ## Prérequis et build
 
@@ -117,9 +129,13 @@ le JAR dans l’artefact `antique-atlas-tfot-forge-1.20.1`.
    en main secondaire.
 8. Configurer des filtres différents sur deux cartes, les rouvrir et vérifier
    que chaque carte retrouve ses propres choix.
-9. Utiliser **Actualiser la zone** et vérifier la progression, le verrouillage du
+9. Explorer avec une carte, en ouvrir une autre et vérifier que le même terrain
+   apparaît immédiatement alors que les marqueurs et filtres restent indépendants.
+10. Désactiver le marqueur de mort sur une carte, le laisser activé sur une autre,
+    puis vérifier qu’une seule tombe « Vous êtes mort ici » est créée par décès.
+11. Utiliser **Actualiser la zone** et vérifier la progression, le verrouillage du
    bouton et le message final indiquant le nombre de chunks modifiés.
-10. Copier une sauvegarde sur une seconde installation : vérifier qu’elle charge
+12. Copier une sauvegarde sur une seconde installation : vérifier qu’elle charge
     avec le même pseudo, puis qu’un pseudo différent obtient son propre espace et
     ne peut pas ouvrir les profils ou régions copiés.
 

@@ -53,20 +53,27 @@ import java.util.concurrent.TimeUnit;
  */
 public final class ClientMapManager {
     public static final int REGION_SIZE = 32;
-    private static final int FORMAT_VERSION = 2;
+    private static final int FORMAT_VERSION = 3;
     private static final int BINDING_VERSION = 1;
     private static final String HIDDEN_MARKER_TYPES_TAG = "hiddenMarkerTypes";
+    private static final String AUTO_DEATH_MARKER_TAG = "autoDeathMarker";
     private static final String BINDING_VERSION_TAG = "aaBindingVersion";
     private static final String MAP_ID_TAG = "aaMapId";
+    private static final String WORLD_ID_TAG = "aaWorldId";
     private static final String OWNER_NAME_TAG = "aaOwnerName";
     private static final String OWNER_FINGERPRINT_TAG = "aaOwnerFingerprint";
+    private static final String WORLD_FINGERPRINT_TAG = "aaWorldFingerprint";
     private static final String REGION_FINGERPRINT_TAG = "aaRegionFingerprint";
     private static final String REGION_MIGRATION_PENDING_TAG = "aaRegionMigrationPending";
+    private static final String TERRAIN_MIGRATION_COMPLETE_TAG = "aaTerrainMigrationComplete";
     private static final String OWNER_FINGERPRINT_CONTEXT = "antiqueatlas-tfot-owner-v1";
     private static final String PROFILE_FINGERPRINT_CONTEXT = "antiqueatlas-tfot-profile-v1";
-    private static final String REGION_FINGERPRINT_CONTEXT = "antiqueatlas-tfot-region-v1";
+    private static final String LEGACY_REGION_FINGERPRINT_CONTEXT = "antiqueatlas-tfot-region-v1";
+    private static final String WORLD_FINGERPRINT_CONTEXT = "antiqueatlas-tfot-world-v1";
+    private static final String SHARED_REGION_FINGERPRINT_CONTEXT = "antiqueatlas-tfot-shared-region-v1";
     private static final int SAVE_INTERVAL_TICKS = 100;
     private static final String DEFAULT_PROFILE_ID = "map_0001";
+    private static final String DEFAULT_WORLD_ID = "world_0001";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final ClientMapManager INSTANCE = new ClientMapManager();
 
@@ -82,6 +89,8 @@ public final class ClientMapManager {
     private String currentOwnerName;
     private String currentOwnerFingerprint;
     private Path serverFolder;
+    private AtlasData sharedAtlasData;
+    private volatile WorldBinding worldBinding;
     private final LinkedHashMap<String, ProfileInfo> profiles = new LinkedHashMap<>();
     private String activeProfileId;
     private ClientProfile activeProfile;
@@ -123,7 +132,7 @@ public final class ClientMapManager {
     }
 
     public AtlasData getAtlasData() {
-        return activeProfile == null ? null : activeProfile.atlasData;
+        return activeProfile == null ? null : sharedAtlasData;
     }
 
     public MarkersData getMarkersData() {
@@ -159,6 +168,16 @@ public final class ClientMapManager {
         if (changed) stateDirty = true;
     }
 
+    public boolean isAutoDeathMarkerEnabled() {
+        return activeProfile != null && activeProfile.autoDeathMarker;
+    }
+
+    public void setAutoDeathMarkerEnabled(boolean enabled) {
+        if (activeProfile == null || activeProfile.autoDeathMarker == enabled) return;
+        activeProfile.autoDeathMarker = enabled;
+        stateDirty = true;
+    }
+
     public int getActiveAtlasId() {
         return activeProfileId == null ? 0 : activeProfileId.hashCode();
     }
@@ -169,7 +188,7 @@ public final class ClientMapManager {
 
     public String getActiveProfileName() {
         ProfileInfo info = profiles.get(activeProfileId);
-        return info == null ? "Carte 1" : info.name();
+        return info == null ? defaultProfileName(1) : info.name();
     }
 
     public String getServerAddress() {
@@ -194,8 +213,7 @@ public final class ClientMapManager {
 
         String id = nextProfileId();
 
-        // Parentheses are intentional: the first additional profile is Carte 2.
-        ProfileInfo info = new ProfileInfo(id, "Carte " + (profiles.size() + 1));
+        ProfileInfo info = new ProfileInfo(id, defaultProfileName(profiles.size() + 1));
         profiles.put(id, info);
         claimLegacyProfileBinding(id);
         writeIndex();
@@ -219,16 +237,15 @@ public final class ClientMapManager {
 
         stateDirty = activeProfile != null;
         flushBlocking();
-        ProfileLoad loaded = loadProfile(profileId);
+        ClientProfile loaded = loadProfile(profileId);
         if (loaded == null) return false;
 
         activeProfileId = profileId;
-        activeProfile = loaded.profile;
-        dirtyRegions.clear();
+        activeProfile = loaded;
+        applyActiveNavigation();
         stateDirty = false;
         installActiveData();
         writeIndex();
-        startRegionBindingMigration(profileId, loaded);
         AntiqueAtlasClientSegment.resetAtlasGUI();
         return true;
     }
@@ -256,18 +273,18 @@ public final class ClientMapManager {
     }
 
     public boolean putTile(ResourceKey<Level> dimension, int chunkX, int chunkZ, ResourceLocation tile) {
-        if (activeProfile == null || tile == null) return false;
+        if (activeProfile == null || sharedAtlasData == null || tile == null) return false;
         ResourceLocation canonical = tileIds.computeIfAbsent(tile.toString(), ignored -> tile);
-        ResourceLocation old = activeProfile.atlasData.getWorldData(dimension).getTile(chunkX, chunkZ);
+        ResourceLocation old = sharedAtlasData.getWorldData(dimension).getTile(chunkX, chunkZ);
         if (canonical.equals(old)) return false;
-        activeProfile.atlasData.setTile(dimension, chunkX, chunkZ, canonical);
+        sharedAtlasData.setTile(dimension, chunkX, chunkZ, canonical);
         dirtyRegions.add(RegionKey.of(dimension, chunkX, chunkZ));
         return true;
     }
 
     public boolean removeTile(ResourceKey<Level> dimension, int chunkX, int chunkZ) {
-        if (activeProfile == null) return false;
-        ResourceLocation removed = activeProfile.atlasData.removeTile(dimension, chunkX, chunkZ);
+        if (activeProfile == null || sharedAtlasData == null) return false;
+        ResourceLocation removed = sharedAtlasData.removeTile(dimension, chunkX, chunkZ);
         if (removed == null) return false;
         dirtyRegions.add(RegionKey.of(dimension, chunkX, chunkZ));
         return true;
@@ -308,6 +325,8 @@ public final class ClientMapManager {
         currentOwnerName = null;
         currentOwnerFingerprint = null;
         serverFolder = null;
+        sharedAtlasData = null;
+        worldBinding = null;
         profiles.clear();
         activeProfileId = null;
         activeProfile = null;
@@ -333,7 +352,9 @@ public final class ClientMapManager {
         serverFolder = selectOwnedServerFolder(baseServerFolder);
         profiles.clear();
         readIndex();
-        if (profiles.isEmpty()) profiles.put(DEFAULT_PROFILE_ID, new ProfileInfo(DEFAULT_PROFILE_ID, "Carte 1"));
+        if (profiles.isEmpty()) {
+            profiles.put(DEFAULT_PROFILE_ID, new ProfileInfo(DEFAULT_PROFILE_ID, defaultProfileName(1)));
+        }
         if (activeProfileId == null || !profiles.containsKey(activeProfileId)) activeProfileId = profiles.keySet().iterator().next();
 
         // Claim the selected storage root before migrating any legacy profile.
@@ -342,7 +363,7 @@ public final class ClientMapManager {
         writeIndex();
         claimLegacyProfileBindings();
 
-        ProfileLoad loaded = loadProfile(activeProfileId);
+        ClientProfile loaded = loadProfile(activeProfileId);
         if (loaded == null) {
             for (String profileId : profiles.keySet()) {
                 if (profileId.equals(activeProfileId)) continue;
@@ -355,25 +376,54 @@ public final class ClientMapManager {
         }
         if (loaded == null) {
             activeProfileId = nextProfileId();
-            profiles.put(activeProfileId, new ProfileInfo(activeProfileId, "Carte " + (profiles.size() + 1)));
+            profiles.put(activeProfileId,
+                    new ProfileInfo(activeProfileId, defaultProfileName(profiles.size() + 1)));
             loaded = loadProfile(activeProfileId);
         }
         if (loaded == null) throw new IllegalStateException("Could not create a local map owned by the current player");
 
-        activeProfile = loaded.profile;
+        sharedAtlasData = new AtlasData();
+        loadSharedTerrain(activeProfileId);
+        activeProfile = loaded;
+        applyActiveNavigation();
         dirtyRegions.clear();
         stateDirty = false;
         installActiveData();
         writeIndex();
-        startRegionBindingMigration(activeProfileId, loaded);
         AntiqueAtlasClientSegment.resetAtlasGUI();
         AntiqueAtlasClientSegment.resetClientScanner();
         AntiqueAtlas.LOG.info("Loaded local atlas '{}' for {}", getActiveProfileName(), address);
     }
 
     private void installActiveData() {
-        AntiqueAtlas.tileData.setClientData(activeProfile == null ? null : activeProfile.atlasData);
+        AntiqueAtlas.tileData.setClientData(activeProfile == null ? null : sharedAtlasData);
         AntiqueAtlas.markersData.setClientData(activeProfile == null ? null : activeProfile.markersData);
+    }
+
+    private void captureActiveNavigation() {
+        if (activeProfile == null || sharedAtlasData == null) return;
+        Set<ResourceKey<Level>> dimensions = new LinkedHashSet<>(sharedAtlasData.getVisitedWorlds());
+        dimensions.addAll(activeProfile.navigationData.getVisitedWorlds());
+        for (ResourceKey<Level> dimension : dimensions) {
+            var shared = sharedAtlasData.getWorldData(dimension);
+            activeProfile.navigationData.getWorldData(dimension).setBrowsingPosition(
+                    shared.getBrowsingX(), shared.getBrowsingY(), shared.getBrowsingZoom());
+        }
+    }
+
+    private void applyActiveNavigation() {
+        if (activeProfile == null || sharedAtlasData == null) return;
+        Set<ResourceKey<Level>> dimensions = new LinkedHashSet<>(sharedAtlasData.getVisitedWorlds());
+        dimensions.addAll(activeProfile.navigationData.getVisitedWorlds());
+        for (ResourceKey<Level> dimension : dimensions) {
+            var shared = sharedAtlasData.getWorldData(dimension);
+            if (activeProfile.navigationData.getVisitedWorlds().contains(dimension)) {
+                var saved = activeProfile.navigationData.getWorldData(dimension);
+                shared.setBrowsingPosition(saved.getBrowsingX(), saved.getBrowsingY(), saved.getBrowsingZoom());
+            } else {
+                shared.setBrowsingPosition(0, 0, AntiqueAtlas.CONFIG.defaultScale);
+            }
+        }
     }
 
     private void claimLegacyProfileBindings() {
@@ -406,8 +456,8 @@ public final class ClientMapManager {
         writeNbtAtomic(stateFile, root);
     }
 
-    private ProfileLoad loadProfile(String profileId) {
-        AtlasData atlasData = new AtlasData();
+    private ClientProfile loadProfile(String profileId) {
+        AtlasData navigationData = new AtlasData();
         MarkersData markersData = new MarkersData();
         Set<String> hiddenMarkerTypes = new LinkedHashSet<>();
         Path folder = profileFolder(profileId);
@@ -415,15 +465,19 @@ public final class ClientMapManager {
         Path dimensions = folder.resolve("dimensions");
         CompoundTag savedState = null;
         boolean hadStateFile = Files.isRegularFile(stateFile);
+        boolean autoDeathMarker = true;
 
         if (hadStateFile) {
             try {
                 savedState = NbtIo.readCompressed(stateFile.toFile());
                 if (savedState.contains("atlas", Tag.TAG_COMPOUND)) {
-                    atlasData.updateFromNbt(savedState.getCompound("atlas"));
+                    navigationData.updateFromNbt(savedState.getCompound("atlas"));
                 }
                 if (savedState.contains("markers", Tag.TAG_COMPOUND)) {
                     markersData = MarkersData.fromNbt(savedState.getCompound("markers"));
+                }
+                if (savedState.contains(AUTO_DEATH_MARKER_TAG, Tag.TAG_BYTE)) {
+                    autoDeathMarker = savedState.getBoolean(AUTO_DEATH_MARKER_TAG);
                 }
                 ListTag hiddenTypes = savedState.getList(HIDDEN_MARKER_TYPES_TAG, Tag.TAG_STRING);
                 for (int index = 0; index < hiddenTypes.size(); index++) {
@@ -467,45 +521,19 @@ public final class ClientMapManager {
             migrationPending = hadStateFile || Files.isDirectory(dimensions);
         }
 
-        ClientProfile profile = new ClientProfile(atlasData, markersData, hiddenMarkerTypes,
-                binding, migrationPending);
+        ClientProfile profile = new ClientProfile(navigationData, markersData, hiddenMarkerTypes,
+                autoDeathMarker, binding, migrationPending);
 
         // A small synchronous checkpoint makes the owner and random map ID
-        // durable before the larger legacy regions are rebound in the worker.
+        // durable before any legacy terrain is moved into shared storage.
         if (!declaresBinding) {
             writeNbtAtomic(stateFile, createStateTag(profile, migrationPending));
         }
-
-        Set<RegionKey> regionsToMigrate = new LinkedHashSet<>();
-        int rejectedRegions = 0;
-        if (Files.isDirectory(dimensions)) {
-            try (var files = Files.walk(dimensions)) {
-                List<Path> regionFiles = files.filter(Files::isRegularFile)
-                        .filter(path -> path.getFileName().toString().startsWith("r."))
-                        .filter(path -> path.getFileName().toString().endsWith(".dat"))
-                        .sorted()
-                        .toList();
-                for (Path path : regionFiles) {
-                    RegionReadResult result = readRegion(path, atlasData, binding, migrationPending);
-                    if (result == null || result.rejected) {
-                        rejectedRegions++;
-                    } else if (result.needsMigration) {
-                        regionsToMigrate.add(result.key);
-                    }
-                }
-            } catch (IOException exception) {
-                AntiqueAtlas.LOG.error("Could not enumerate local atlas regions in {}", dimensions, exception);
-            }
-        }
-        if (rejectedRegions > 0) {
-            AntiqueAtlas.LOG.warn("Skipped {} local atlas region(s) whose owner or contents did not match profile {}",
-                    rejectedRegions, profileId);
-        }
-        return new ProfileLoad(profile, List.copyOf(regionsToMigrate));
+        return profile;
     }
 
-    private RegionReadResult readRegion(Path path, AtlasData atlasData, ProfileBinding binding,
-                                        boolean allowLegacyRegion) {
+    private RegionReadResult readLegacyRegion(Path path, AtlasData atlasData, ProfileBinding binding,
+                                              boolean allowUnboundRegion, boolean fillMissingOnly) {
         try {
             CompoundTag root = NbtIo.readCompressed(path.toFile());
             ResourceLocation dimensionId = ResourceLocation.tryParse(root.getString("dimension"));
@@ -523,11 +551,11 @@ public final class ClientMapManager {
                 if (root.getInt(BINDING_VERSION_TAG) != BINDING_VERSION
                         || !root.contains(REGION_FINGERPRINT_TAG, Tag.TAG_STRING)
                         || !root.getString(REGION_FINGERPRINT_TAG).equals(
-                        regionFingerprint(binding, key, paletteTag, tiles))) {
-                    return new RegionReadResult(key, false, true);
+                        legacyRegionFingerprint(binding, key, paletteTag, tiles))) {
+                    return new RegionReadResult(key, true);
                 }
-            } else if (!allowLegacyRegion) {
-                return new RegionReadResult(key, false, true);
+            } else if (!allowUnboundRegion) {
+                return new RegionReadResult(key, true);
             }
 
             List<ResourceLocation> palette = new ArrayList<>(paletteTag.size());
@@ -542,12 +570,206 @@ public final class ClientMapManager {
                 if (paletteIndex < 0 || paletteIndex >= palette.size()) continue;
                 int x = regionX * REGION_SIZE + index % REGION_SIZE;
                 int z = regionZ * REGION_SIZE + index / REGION_SIZE;
+                if (fillMissingOnly && atlasData.getWorldData(dimension).hasTileAt(x, z)) continue;
                 atlasData.setTile(dimension, x, z, palette.get(paletteIndex));
             }
-            return new RegionReadResult(key, !declaresBinding, false);
+            return new RegionReadResult(key, false);
         } catch (Exception exception) {
             AntiqueAtlas.LOG.error("Could not load local atlas region {}", path, exception);
             return null;
+        }
+    }
+
+    /**
+     * Loads the one terrain dataset shared by every map profile for this
+     * player/server pair. Existing per-map regions are merged once, with the
+     * active map taking priority and the other maps only filling missing tiles.
+     */
+    private void loadSharedTerrain(String preferredProfileId) {
+        worldBinding = readWorldBinding();
+
+        int rejectedSharedRegions = 0;
+        Path sharedDimensions = worldFolder().resolve("dimensions");
+        for (Path path : listRegionFiles(sharedDimensions)) {
+            RegionReadResult result = readSharedRegion(path, sharedAtlasData, worldBinding);
+            if (result == null || result.rejected) rejectedSharedRegions++;
+        }
+        if (rejectedSharedRegions > 0) {
+            AntiqueAtlas.LOG.warn("Skipped {} shared atlas region(s) whose owner or contents did not match player '{}'",
+                    rejectedSharedRegions, currentOwnerName);
+        }
+
+        if (worldBinding.terrainMigrationComplete) return;
+
+        LinkedHashSet<String> orderedProfiles = new LinkedHashSet<>();
+        if (preferredProfileId != null) orderedProfiles.add(preferredProfileId);
+        orderedProfiles.addAll(profiles.keySet());
+
+        Set<RegionKey> migratedRegions = new LinkedHashSet<>();
+        int rejectedLegacyRegions = 0;
+        for (String profileId : orderedProfiles) {
+            LegacyProfileAccess access = readLegacyProfileAccess(profileId);
+            if (access == null) continue;
+            Path dimensions = profileFolder(profileId).resolve("dimensions");
+            for (Path path : listRegionFiles(dimensions)) {
+                RegionReadResult result = readLegacyRegion(path, sharedAtlasData, access.binding,
+                        access.allowUnboundRegions, true);
+                if (result == null || result.rejected) {
+                    rejectedLegacyRegions++;
+                } else {
+                    migratedRegions.add(result.key);
+                }
+            }
+        }
+        if (rejectedLegacyRegions > 0) {
+            AntiqueAtlas.LOG.warn("Skipped {} legacy atlas region(s) whose owner or contents were invalid",
+                    rejectedLegacyRegions);
+        }
+
+        startSharedTerrainMigration(migratedRegions);
+    }
+
+    private WorldBinding readWorldBinding() {
+        String expectedFingerprint = worldFingerprint(currentOwnerFingerprint, DEFAULT_WORLD_ID);
+        WorldBinding expected = new WorldBinding(DEFAULT_WORLD_ID, expectedFingerprint,
+                currentOwnerName, false);
+        Path stateFile = worldFolder().resolve("world.dat");
+        if (!Files.isRegularFile(stateFile)) {
+            writeNbtAtomic(stateFile, createWorldStateTag(expected));
+            return expected;
+        }
+
+        try {
+            CompoundTag root = NbtIo.readCompressed(stateFile.toFile());
+            String worldId = root.getString(WORLD_ID_TAG);
+            String storedFingerprint = root.getString(WORLD_FINGERPRINT_TAG);
+            if (root.getInt(BINDING_VERSION_TAG) != BINDING_VERSION
+                    || !DEFAULT_WORLD_ID.equals(worldId)
+                    || !expectedFingerprint.equals(storedFingerprint)) {
+                AntiqueAtlas.LOG.warn("Ignoring shared atlas terrain in {} because it belongs to another player",
+                        stateFile);
+                writeNbtAtomic(stateFile, createWorldStateTag(expected));
+                return expected;
+            }
+            String storedOwner = root.getString(OWNER_NAME_TAG);
+            return new WorldBinding(worldId, storedFingerprint,
+                    storedOwner.isBlank() ? currentOwnerName : storedOwner,
+                    root.getBoolean(TERRAIN_MIGRATION_COMPLETE_TAG));
+        } catch (Exception exception) {
+            AntiqueAtlas.LOG.error("Could not load shared atlas world state {}", stateFile, exception);
+            writeNbtAtomic(stateFile, createWorldStateTag(expected));
+            return expected;
+        }
+    }
+
+    private LegacyProfileAccess readLegacyProfileAccess(String profileId) {
+        Path stateFile = profileFolder(profileId).resolve("profile.dat");
+        if (!Files.isRegularFile(stateFile)) return null;
+        try {
+            CompoundTag root = NbtIo.readCompressed(stateFile.toFile());
+            if (!declaresProfileBinding(root)
+                    || root.getInt(BINDING_VERSION_TAG) != BINDING_VERSION) return null;
+            String mapId = root.getString(MAP_ID_TAG);
+            String storedFingerprint = root.getString(OWNER_FINGERPRINT_TAG);
+            if (mapId.isBlank()
+                    || !profileFingerprint(currentOwnerFingerprint, mapId).equals(storedFingerprint)) {
+                return null;
+            }
+            String storedOwner = root.getString(OWNER_NAME_TAG);
+            return new LegacyProfileAccess(new ProfileBinding(mapId, storedFingerprint,
+                    storedOwner.isBlank() ? currentOwnerName : storedOwner),
+                    root.getBoolean(REGION_MIGRATION_PENDING_TAG));
+        } catch (Exception exception) {
+            AntiqueAtlas.LOG.error("Could not inspect legacy atlas profile {}", stateFile, exception);
+            return null;
+        }
+    }
+
+    private RegionReadResult readSharedRegion(Path path, AtlasData atlasData, WorldBinding binding) {
+        try {
+            CompoundTag root = NbtIo.readCompressed(path.toFile());
+            ResourceLocation dimensionId = ResourceLocation.tryParse(root.getString("dimension"));
+            if (dimensionId == null) return null;
+            ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, dimensionId);
+            RegionKey key = new RegionKey(dimension, root.getInt("regionX"), root.getInt("regionZ"));
+            ListTag paletteTag = root.getList("palette", Tag.TAG_STRING);
+            int[] tiles = root.getIntArray("tiles");
+            if (root.getInt(BINDING_VERSION_TAG) != BINDING_VERSION
+                    || !root.contains(REGION_FINGERPRINT_TAG, Tag.TAG_STRING)
+                    || !root.getString(REGION_FINGERPRINT_TAG).equals(
+                    sharedRegionFingerprint(binding, key, paletteTag, tiles))) {
+                return new RegionReadResult(key, true);
+            }
+
+            List<ResourceLocation> palette = new ArrayList<>(paletteTag.size());
+            for (int index = 0; index < paletteTag.size(); index++) {
+                ResourceLocation id = ResourceLocation.tryParse(paletteTag.getString(index));
+                palette.add(id == null ? AntiqueAtlas.id("unknown")
+                        : tileIds.computeIfAbsent(id.toString(), ignored -> id));
+            }
+            int length = Math.min(tiles.length, REGION_SIZE * REGION_SIZE);
+            for (int index = 0; index < length; index++) {
+                int paletteIndex = tiles[index] - 1;
+                if (paletteIndex < 0 || paletteIndex >= palette.size()) continue;
+                int x = key.regionX * REGION_SIZE + index % REGION_SIZE;
+                int z = key.regionZ * REGION_SIZE + index / REGION_SIZE;
+                atlasData.setTile(dimension, x, z, palette.get(paletteIndex));
+            }
+            return new RegionReadResult(key, false);
+        } catch (Exception exception) {
+            AntiqueAtlas.LOG.error("Could not load shared atlas region {}", path, exception);
+            return null;
+        }
+    }
+
+    private void startSharedTerrainMigration(Set<RegionKey> migratedRegions) {
+        WorldBinding pendingBinding = worldBinding;
+        List<RegionSnapshot> snapshots = new ArrayList<>(migratedRegions.size());
+        for (RegionKey key : migratedRegions) snapshots.add(snapshotRegion(key));
+
+        WorldBinding completedBinding = new WorldBinding(pendingBinding.worldId,
+                pendingBinding.fingerprint, pendingBinding.ownerName, true);
+        StateSnapshot completedState = new StateSnapshot(worldFolder().resolve("world.dat"),
+                createWorldStateTag(completedBinding));
+
+        AntiqueAtlas.LOG.info("Moving {} legacy atlas region(s) into shared terrain for player '{}'",
+                snapshots.size(), currentOwnerName);
+        ioExecutor.submit(() -> {
+            boolean success = true;
+            for (RegionSnapshot snapshot : snapshots) {
+                if (!writeNbtAtomic(snapshot.path, snapshot.data)) success = false;
+            }
+            if (success) success = writeNbtAtomic(completedState.path, completedState.data);
+            if (success) {
+                if (worldBinding == pendingBinding) worldBinding = completedBinding;
+            } else {
+                AntiqueAtlas.LOG.warn("The shared atlas terrain migration will be retried next time");
+            }
+        });
+    }
+
+    private CompoundTag createWorldStateTag(WorldBinding binding) {
+        CompoundTag root = new CompoundTag();
+        root.putInt("version", FORMAT_VERSION);
+        root.putInt(BINDING_VERSION_TAG, BINDING_VERSION);
+        root.putString(WORLD_ID_TAG, binding.worldId);
+        root.putString(OWNER_NAME_TAG, binding.ownerName);
+        root.putString(WORLD_FINGERPRINT_TAG, binding.fingerprint);
+        root.putBoolean(TERRAIN_MIGRATION_COMPLETE_TAG, binding.terrainMigrationComplete);
+        return root;
+    }
+
+    private static List<Path> listRegionFiles(Path dimensions) {
+        if (!Files.isDirectory(dimensions)) return List.of();
+        try (var files = Files.walk(dimensions)) {
+            return files.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().startsWith("r."))
+                    .filter(path -> path.getFileName().toString().endsWith(".dat"))
+                    .sorted()
+                    .toList();
+        } catch (IOException exception) {
+            AntiqueAtlas.LOG.error("Could not enumerate local atlas regions in {}", dimensions, exception);
+            return List.of();
         }
     }
 
@@ -589,10 +811,6 @@ public final class ClientMapManager {
     }
 
     private RegionSnapshot snapshotRegion(RegionKey key) {
-        return snapshotRegion(activeProfileId, activeProfile, key);
-    }
-
-    private RegionSnapshot snapshotRegion(String profileId, ClientProfile profile, RegionKey key) {
         CompoundTag root = new CompoundTag();
         root.putInt("version", FORMAT_VERSION);
         root.putString("dimension", key.dimension.location().toString());
@@ -605,7 +823,7 @@ public final class ClientMapManager {
         for (int index = 0; index < tiles.length; index++) {
             int x = key.regionX * REGION_SIZE + index % REGION_SIZE;
             int z = key.regionZ * REGION_SIZE + index / REGION_SIZE;
-            ResourceLocation tile = profile.atlasData.getWorldData(key.dimension).getTile(x, z);
+            ResourceLocation tile = sharedAtlasData.getWorldData(key.dimension).getTile(x, z);
             if (tile == null) continue;
             Integer paletteIndex = palette.get(tile);
             if (paletteIndex == null) {
@@ -619,16 +837,16 @@ public final class ClientMapManager {
         root.putIntArray("tiles", tiles);
         root.putInt(BINDING_VERSION_TAG, BINDING_VERSION);
         root.putString(REGION_FINGERPRINT_TAG,
-                regionFingerprint(profile.binding, key, paletteTag, tiles));
-        return new RegionSnapshot(regionPath(profileId, key), root);
+                sharedRegionFingerprint(worldBinding, key, paletteTag, tiles));
+        return new RegionSnapshot(regionPath(key), root);
     }
 
     private StateSnapshot snapshotState() {
         if (!stateDirty || activeProfile == null) return null;
-        if (activeProfile.migrationInProgress) return null;
+        captureActiveNavigation();
         stateDirty = false;
         return new StateSnapshot(profileFolder(activeProfileId).resolve("profile.dat"),
-                createStateTag(activeProfile, activeProfile.migrationPending));
+                createStateTag(activeProfile, activeProfile.legacyRegionsAllowed));
     }
 
     private CompoundTag createStateTag(ClientProfile profile, boolean migrationPending) {
@@ -639,42 +857,13 @@ public final class ClientMapManager {
         root.putString(OWNER_NAME_TAG, profile.binding.ownerName);
         root.putString(OWNER_FINGERPRINT_TAG, profile.binding.ownerFingerprint);
         root.putBoolean(REGION_MIGRATION_PENDING_TAG, migrationPending);
-        root.put("atlas", profile.atlasData.writeToNBT(new CompoundTag(), false));
+        root.putBoolean(AUTO_DEATH_MARKER_TAG, profile.autoDeathMarker);
+        root.put("atlas", profile.navigationData.writeToNBT(new CompoundTag(), false));
         root.put("markers", profile.markersData.save(new CompoundTag()));
         ListTag hiddenTypes = new ListTag();
         for (String id : profile.hiddenMarkerTypes) hiddenTypes.add(StringTag.valueOf(id));
         root.put(HIDDEN_MARKER_TYPES_TAG, hiddenTypes);
         return root;
-    }
-
-    private void startRegionBindingMigration(String profileId, ProfileLoad loaded) {
-        ClientProfile profile = loaded.profile;
-        if (!profile.migrationPending || profile.migrationInProgress) return;
-
-        profile.migrationInProgress = true;
-        List<RegionSnapshot> regions = new ArrayList<>(loaded.regionsToMigrate.size());
-        for (RegionKey key : loaded.regionsToMigrate) {
-            regions.add(snapshotRegion(profileId, profile, key));
-        }
-        StateSnapshot completedState = new StateSnapshot(profileFolder(profileId).resolve("profile.dat"),
-                createStateTag(profile, false));
-
-        AntiqueAtlas.LOG.info("Binding {} legacy atlas region(s) in profile '{}' to player '{}'",
-                regions.size(), profileId, currentOwnerName);
-        ioExecutor.submit(() -> {
-            boolean success = true;
-            for (RegionSnapshot region : regions) {
-                if (!writeNbtAtomic(region.path, region.data)) success = false;
-            }
-            if (success) success = writeNbtAtomic(completedState.path, completedState.data);
-            if (success) {
-                profile.migrationPending = false;
-            } else {
-                AntiqueAtlas.LOG.warn("The owner binding migration for local atlas profile '{}' will be retried later",
-                        profileId);
-            }
-            profile.migrationInProgress = false;
-        });
     }
 
     private void writeSnapshots(List<RegionSnapshot> regions, StateSnapshot state) {
@@ -743,13 +932,7 @@ public final class ClientMapManager {
     }
 
     private Path selectOwnedServerFolder(Path baseServerFolder) {
-        String storedOwner = readIndexOwnerFingerprint(baseServerFolder.resolve("maps.json"));
-        if (storedOwner == null || storedOwner.equals(currentOwnerFingerprint)) {
-            return baseServerFolder;
-        }
-
-        // Keep another nickname's maps untouched and transparently give the
-        // current nickname a separate local root for this same server.
+        String legacyOwner = readIndexOwnerFingerprint(baseServerFolder.resolve("maps.json"));
         Path playersFolder = baseServerFolder.resolve("players");
         String slug = normalizePlayerName(currentOwnerName).replaceAll("[^a-z0-9._-]+", "_");
         if (slug.isBlank()) slug = "player";
@@ -758,13 +941,61 @@ public final class ClientMapManager {
         for (int suffix = 0; suffix < 100; suffix++) {
             Path candidate = playersFolder.resolve(suffix == 0 ? baseName : baseName + "-" + suffix);
             String candidateOwner = readIndexOwnerFingerprint(candidate.resolve("maps.json"));
-            if (candidateOwner == null || candidateOwner.equals(currentOwnerFingerprint)) {
-                AntiqueAtlas.LOG.info("Local atlas storage for '{}' is isolated from another nickname's maps",
+            if (currentOwnerFingerprint.equals(candidateOwner)) return candidate;
+            if (candidateOwner == null) {
+                boolean legacyBelongsHere = suffix == 0
+                        && (legacyOwner == null || currentOwnerFingerprint.equals(legacyOwner))
+                        && hasLegacyRoot(baseServerFolder);
+                if (legacyBelongsHere && !migrateLegacyRoot(baseServerFolder, candidate)) {
+                    // Keep using the original location for this session rather
+                    // than risking a partial migration or data loss. If even
+                    // the rollback failed, follow the index wherever it ended up.
+                    return Files.isRegularFile(baseServerFolder.resolve("maps.json"))
+                            ? baseServerFolder : candidate;
+                }
+                AntiqueAtlas.LOG.info("Local atlas storage for '{}' uses its own player folder",
                         currentOwnerName);
                 return candidate;
             }
         }
         throw new IllegalStateException("Could not allocate an owned local atlas folder for " + currentOwnerName);
+    }
+
+    private static boolean hasLegacyRoot(Path baseServerFolder) {
+        return Files.isRegularFile(baseServerFolder.resolve("maps.json"))
+                || Files.isDirectory(baseServerFolder.resolve("maps"))
+                || Files.isDirectory(baseServerFolder.resolve("worlds"));
+    }
+
+    private static boolean migrateLegacyRoot(Path source, Path target) {
+        List<String> moved = new ArrayList<>();
+        try {
+            Files.createDirectories(target);
+            for (String name : List.of("maps", "worlds", "maps.json")) {
+                Path from = source.resolve(name);
+                Path to = target.resolve(name);
+                if (Files.exists(from) && !Files.exists(to)) {
+                    moveAtomic(from, to);
+                    moved.add(name);
+                }
+            }
+            AntiqueAtlas.LOG.info("Moved legacy local atlas files into {}", target);
+            return true;
+        } catch (IOException exception) {
+            AntiqueAtlas.LOG.error("Could not move legacy local atlas files from {} to {}",
+                    source, target, exception);
+            for (int index = moved.size() - 1; index >= 0; index--) {
+                String name = moved.get(index);
+                Path from = target.resolve(name);
+                Path to = source.resolve(name);
+                try {
+                    if (Files.exists(from) && !Files.exists(to)) moveAtomic(from, to);
+                } catch (IOException rollbackException) {
+                    AntiqueAtlas.LOG.error("Could not roll back local atlas path {}", from, rollbackException);
+                }
+            }
+            return false;
+        }
     }
 
     private static String readIndexOwnerFingerprint(Path index) {
@@ -776,6 +1007,10 @@ public final class ClientMapManager {
             AntiqueAtlas.LOG.warn("Could not inspect local atlas owner in {}", index, exception);
             return null;
         }
+    }
+
+    private static String defaultProfileName(int number) {
+        return Component.translatable("gui.antiqueatlas.maps.defaultName", Math.max(1, number)).getString();
     }
 
     private String nextProfileId() {
@@ -791,9 +1026,13 @@ public final class ClientMapManager {
         return serverFolder.resolve("maps").resolve(profileId);
     }
 
-    private Path regionPath(String profileId, RegionKey key) {
+    private Path worldFolder() {
+        return serverFolder.resolve("worlds").resolve(DEFAULT_WORLD_ID);
+    }
+
+    private Path regionPath(RegionKey key) {
         ResourceLocation dimension = key.dimension.location();
-        return profileFolder(profileId)
+        return worldFolder()
                 .resolve("dimensions")
                 .resolve(dimension.getNamespace())
                 .resolve(dimension.getPath())
@@ -845,11 +1084,32 @@ public final class ClientMapManager {
         return sha256Hex(PROFILE_FINGERPRINT_CONTEXT, ownerFingerprint, mapId);
     }
 
-    private static String regionFingerprint(ProfileBinding binding, RegionKey key,
-                                            ListTag palette, int[] tiles) {
+    private static String worldFingerprint(String ownerFingerprint, String worldId) {
+        return sha256Hex(WORLD_FINGERPRINT_CONTEXT, ownerFingerprint, worldId);
+    }
+
+    private static String legacyRegionFingerprint(ProfileBinding binding, RegionKey key,
+                                                  ListTag palette, int[] tiles) {
         MessageDigest digest = newSha256Digest();
-        updateDigest(digest, REGION_FINGERPRINT_CONTEXT);
+        updateDigest(digest, LEGACY_REGION_FINGERPRINT_CONTEXT);
         updateDigest(digest, binding.ownerFingerprint);
+        updateDigest(digest, key.dimension.location().toString());
+        updateDigest(digest, key.regionX);
+        updateDigest(digest, key.regionZ);
+        updateDigest(digest, palette.size());
+        for (int index = 0; index < palette.size(); index++) {
+            updateDigest(digest, palette.getString(index));
+        }
+        updateDigest(digest, tiles.length);
+        for (int tile : tiles) updateDigest(digest, tile);
+        return HexFormat.of().formatHex(digest.digest());
+    }
+
+    private static String sharedRegionFingerprint(WorldBinding binding, RegionKey key,
+                                                  ListTag palette, int[] tiles) {
+        MessageDigest digest = newSha256Digest();
+        updateDigest(digest, SHARED_REGION_FINGERPRINT_CONTEXT);
+        updateDigest(digest, binding.fingerprint);
         updateDigest(digest, key.dimension.location().toString());
         updateDigest(digest, key.regionX);
         updateDigest(digest, key.regionZ);
@@ -914,31 +1174,36 @@ public final class ClientMapManager {
     }
 
     private static final class ClientProfile {
-        private final AtlasData atlasData;
+        private final AtlasData navigationData;
         private final MarkersData markersData;
         private final Set<String> hiddenMarkerTypes;
+        private boolean autoDeathMarker;
         private final ProfileBinding binding;
-        private volatile boolean migrationPending;
-        private volatile boolean migrationInProgress;
+        private final boolean legacyRegionsAllowed;
 
-        private ClientProfile(AtlasData atlasData, MarkersData markersData,
-                              Set<String> hiddenMarkerTypes, ProfileBinding binding,
-                              boolean migrationPending) {
-            this.atlasData = atlasData;
+        private ClientProfile(AtlasData navigationData, MarkersData markersData,
+                              Set<String> hiddenMarkerTypes, boolean autoDeathMarker,
+                              ProfileBinding binding, boolean legacyRegionsAllowed) {
+            this.navigationData = navigationData;
             this.markersData = markersData;
             this.hiddenMarkerTypes = hiddenMarkerTypes;
+            this.autoDeathMarker = autoDeathMarker;
             this.binding = binding;
-            this.migrationPending = migrationPending;
+            this.legacyRegionsAllowed = legacyRegionsAllowed;
         }
     }
 
     private record ProfileBinding(String mapId, String ownerFingerprint, String ownerName) {
     }
 
-    private record ProfileLoad(ClientProfile profile, List<RegionKey> regionsToMigrate) {
+    private record WorldBinding(String worldId, String fingerprint, String ownerName,
+                                boolean terrainMigrationComplete) {
     }
 
-    private record RegionReadResult(RegionKey key, boolean needsMigration, boolean rejected) {
+    private record LegacyProfileAccess(ProfileBinding binding, boolean allowUnboundRegions) {
+    }
+
+    private record RegionReadResult(RegionKey key, boolean rejected) {
     }
 
     private record RegionSnapshot(Path path, CompoundTag data) {

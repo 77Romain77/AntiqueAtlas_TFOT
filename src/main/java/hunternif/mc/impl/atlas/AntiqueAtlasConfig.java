@@ -7,7 +7,6 @@ package hunternif.mc.impl.atlas;
 public class AntiqueAtlasConfig {
     // Gameplay
     public boolean doSaveBrowsingPos = true;
-    public boolean autoDeathMarker = true;
     public boolean autoVillageMarkers = false;
     public boolean itemNeeded = false;
 

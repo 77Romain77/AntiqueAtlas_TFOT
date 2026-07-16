@@ -78,7 +78,10 @@ public class GuiBookmarkButton extends GuiToggleButton {
         // Render the icon:
         int hoverOffset = isMouseOver || isSelected() ? 1 : 0;
         if (iconTexture != null) {
-            iconTexture.draw(matrices, getGuiX() + 2 + hoverOffset, getGuiY() + 1);
+            // Bookmark icons always occupy 16x16 pixels. Textures with a
+            // larger native canvas (such as 32x32 marker art) are scaled down
+            // cleanly instead of sampling only their top-left corner.
+            iconTexture.draw(matrices, getGuiX() + 2 + hoverOffset, getGuiY() + 1, 16, 16);
         } else if (iconText != null) {
             matrices.pose().pushPose();
             matrices.pose().translate(getGuiX() + WIDTH / 2F + hoverOffset + TEXT_ICON_OFFSET_X,

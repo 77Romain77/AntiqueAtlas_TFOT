@@ -6,6 +6,7 @@ import java.util.Map;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
 import hunternif.mc.impl.atlas.client.texture.IconTexture;
+import hunternif.mc.impl.atlas.client.texture.RegionTexture;
 import hunternif.mc.impl.atlas.client.texture.Texture;
 import hunternif.mc.impl.atlas.util.ResourceLocations;
 import net.minecraft.resources.ResourceLocation;
@@ -45,6 +46,8 @@ public class Textures {
             ICON_ADD_MARKER = icon("add_marker.png"),
             ICON_DELETE_MARKER = icon("del_marker.png"),
             ICON_HIDE_MARKERS = icon("hide_markers.png"),
+            ICON_DEATH_MARKER = new RegionTexture(ResourceLocations.parse(
+                    MOD_PREFIX + "textures/gui/markers/tomb.png"), 32, 32, 0, 0, 16, 16),
             ICON_MAPS = new IconTexture(ResourceLocations.parse(MOD_PREFIX + "textures/item/antique_atlas.png"));
 
     public static final ResourceLocation EXPORTED_BG = ResourceLocations.parse(GUI + "exported_bg.png");

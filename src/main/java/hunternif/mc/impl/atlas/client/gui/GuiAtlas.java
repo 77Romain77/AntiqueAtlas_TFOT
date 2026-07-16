@@ -138,6 +138,9 @@ public class GuiAtlas extends GuiComponent {
     /** Button opening the per-type marker visibility filter. */
     private final GuiBookmarkButton btnMarkerFilter;
 
+    /** Per-map toggle for automatically placing a tomb at the death position. */
+    private final GuiBookmarkButton btnDeathMarker;
+
     /** One-shot refresh of already mapped chunks loaded around the player. */
     private final GuiBookmarkButton btnRescan;
 
@@ -305,7 +308,7 @@ public class GuiAtlas extends GuiComponent {
 
         btnMaps = new GuiBookmarkButton(1, Textures.ICON_MAPS,
                 Component.translatable("gui.antiqueatlas.maps.manage"));
-        addChild(btnMaps).offsetGuiCoords(300, 75);
+        addChild(btnMaps).offsetGuiCoords(300, 94);
         btnMaps.addListener(button -> {
             if (biomeData != null) {
                 biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);
@@ -368,9 +371,19 @@ public class GuiAtlas extends GuiComponent {
             if (stack != null || !AntiqueAtlas.CONFIG.itemNeeded) addChild(markerFilter);
         });
 
+        btnDeathMarker = new GuiBookmarkButton(0, Textures.ICON_DEATH_MARKER,
+                Component.translatable("gui.antiqueatlas.deathMarker.title"));
+        addChild(btnDeathMarker).offsetGuiCoords(300, 71);
+        btnDeathMarker.addListener(button -> {
+            ClientMapManager maps = ClientMapManager.getInstance();
+            maps.setAutoDeathMarkerEnabled(!maps.isAutoDeathMarkerEnabled());
+            updateDeathMarkerButton();
+        });
+        updateDeathMarkerButton();
+
         btnRescan = new GuiBookmarkButton(1, Component.literal("↻"),
                 Component.translatable("gui.antiqueatlas.rescan.title"));
-        addChild(btnRescan).offsetGuiCoords(300, 99);
+        addChild(btnRescan).offsetGuiCoords(300, 118);
         btnRescan.addListener(button -> requestAreaRescan());
         updateRescanButton();
 
@@ -436,6 +449,7 @@ public class GuiAtlas extends GuiComponent {
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN, 1.0F));
 
         this.player = Minecraft.getInstance().player;
+        updateDeathMarkerButton();
         updateRescanButton();
         updateAtlasData();
         if (!followPlayer && AntiqueAtlas.CONFIG.doSaveBrowsingPos) {
@@ -782,6 +796,19 @@ public class GuiAtlas extends GuiComponent {
         };
         if (player != null) player.displayClientMessage(message, true);
         updateRescanButton();
+    }
+
+    private void updateDeathMarkerButton() {
+        if (btnDeathMarker == null) return;
+        boolean enabled = ClientMapManager.getInstance().isAutoDeathMarkerEnabled();
+        btnDeathMarker.setSelected(enabled);
+        btnDeathMarker.setTooltip(List.of(
+                Component.translatable("gui.antiqueatlas.deathMarker.title"),
+                Component.translatable(enabled
+                        ? "gui.antiqueatlas.deathMarker.enabled"
+                        : "gui.antiqueatlas.deathMarker.disabled"),
+                Component.translatable("gui.antiqueatlas.deathMarker.help.1"),
+                Component.translatable("gui.antiqueatlas.deathMarker.help.2")));
     }
 
     private void updateRescanButton() {
@@ -1252,6 +1279,7 @@ public class GuiAtlas extends GuiComponent {
         btnMarker.setTitle(Component.translatable("gui.antiqueatlas.addMarker"));
         btnDelMarker.setTitle(Component.translatable("gui.antiqueatlas.delMarker"));
         btnMarkerFilter.setTitle(Component.translatable("gui.antiqueatlas.markerFilter.title"));
+        updateDeathMarkerButton();
         updateRescanButton();
     }
 
