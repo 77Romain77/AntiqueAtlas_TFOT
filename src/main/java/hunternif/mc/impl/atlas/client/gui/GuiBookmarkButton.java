@@ -26,6 +26,7 @@ public class GuiBookmarkButton extends GuiToggleButton {
     private Component iconText;
     private Component title;
     private List<Component> tooltip;
+    private boolean dimmed;
 
     /**
      * @param colorIndex  0=red, 1=blue, 2=yellow, 3=green
@@ -65,9 +66,14 @@ public class GuiBookmarkButton extends GuiToggleButton {
         this.tooltip = tooltip == null || tooltip.isEmpty() ? List.of(title) : List.copyOf(tooltip);
     }
 
+    /** Visually disables a bookmark without preventing it from being clicked. */
+    void setDimmed(boolean dimmed) {
+        this.dimmed = dimmed;
+    }
+
     @Override
     public void render(GuiGraphics matrices, int mouseX, int mouseY, float partialTick) {
-        float tint = isEnabled() ? 1.0F : 0.55F;
+        float tint = isEnabled() && !dimmed ? 1.0F : 0.55F;
         RenderSystem.setShaderColor(tint, tint, tint, 1.0F);
 
         // Render background:
@@ -89,7 +95,7 @@ public class GuiBookmarkButton extends GuiToggleButton {
             matrices.pose().scale(TEXT_ICON_SCALE, TEXT_ICON_SCALE, 1.0F);
             matrices.drawCenteredString(Minecraft.getInstance().font, iconText, 0,
                     -Minecraft.getInstance().font.lineHeight / 2,
-                    isEnabled() ? 0xFFF2E2BD : 0xFF777777);
+                    isEnabled() && !dimmed ? 0xFFF2E2BD : 0xFF777777);
             matrices.pose().popPose();
         }
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

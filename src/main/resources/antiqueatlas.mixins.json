@@ -9,7 +9,7 @@
     "HeldItemRendererMixin",
     "ItemRendererMixin",
     "MinecraftClientMixin",
-    "MixinPlayerEntityDeath"
+    "MixinClientPacketListenerDeath"
   ],
   "injectors": {
     "defaultRequire": 1

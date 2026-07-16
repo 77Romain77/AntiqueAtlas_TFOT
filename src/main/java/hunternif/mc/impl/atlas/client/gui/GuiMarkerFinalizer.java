@@ -83,10 +83,10 @@ public class GuiMarkerFinalizer extends GuiComponent {
                     SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.AMBIENT,
                     1F, 1F);
             closeChild();
-        }).bounds(this.width / 2 - BUTTON_WIDTH - BUTTON_SPACING / 2, this.height / 2 + 40, BUTTON_WIDTH, 20).build());
+        }).bounds(this.width / 2 + BUTTON_SPACING / 2, this.height / 2 + 40, BUTTON_WIDTH, 20).build());
         addRenderableWidget(btnCancel = Button.builder(Component.translatable("gui.cancel"), (button) -> {
             closeChild();
-        }).bounds(this.width / 2 + BUTTON_SPACING / 2, this.height / 2 + 40, BUTTON_WIDTH, 20).build());
+        }).bounds(this.width / 2 - BUTTON_WIDTH - BUTTON_SPACING / 2, this.height / 2 + 40, BUTTON_WIDTH, 20).build());
         textField = new EditBox(Minecraft.getInstance().font, (this.width - 200) / 2, this.height / 2 - 81, 200, 20, Component.translatable("gui.antiqueatlas.marker.label"));
         textField.setEditable(true);
         textField.setValue("");

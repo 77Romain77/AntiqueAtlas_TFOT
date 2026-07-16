@@ -802,6 +802,7 @@ public class GuiAtlas extends GuiComponent {
         if (btnDeathMarker == null) return;
         boolean enabled = ClientMapManager.getInstance().isAutoDeathMarkerEnabled();
         btnDeathMarker.setSelected(enabled);
+        btnDeathMarker.setDimmed(!enabled);
         btnDeathMarker.setTooltip(List.of(
                 Component.translatable("gui.antiqueatlas.deathMarker.title"),
                 Component.translatable(enabled

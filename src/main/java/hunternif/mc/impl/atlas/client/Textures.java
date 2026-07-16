@@ -47,7 +47,8 @@ public class Textures {
             ICON_DELETE_MARKER = icon("del_marker.png"),
             ICON_HIDE_MARKERS = icon("hide_markers.png"),
             ICON_DEATH_MARKER = new RegionTexture(ResourceLocations.parse(
-                    MOD_PREFIX + "textures/gui/markers/tomb.png"), 32, 32, 0, 0, 16, 16),
+                    MOD_PREFIX + "textures/gui/markers/tomb.png"), 32, 32,
+                    10, 9, 12, 13, 15, 16),
             ICON_MAPS = new IconTexture(ResourceLocations.parse(MOD_PREFIX + "textures/item/antique_atlas.png"));
 
     public static final ResourceLocation EXPORTED_BG = ResourceLocations.parse(GUI + "exported_bg.png");

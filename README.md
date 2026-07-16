@@ -26,7 +26,8 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
 - Un marque-page avec l’icône de tombe, placé entre les filtres et le gestionnaire
   de cartes, active ou désactive le marqueur de mort automatique pour la carte
   courante. Une seule tombe « Vous êtes mort ici » est créée à chaque décès du
-  joueur local.
+  joueur local. La détection réagit au paquet vanilla de mort envoyé par le
+  serveur : elle n’effectue aucun contrôle permanent à chaque tick.
 - Le bouton de filtre permet d’afficher ou masquer chaque type de marqueur ; le
   choix est enregistré séparément dans chaque profil de carte et s’applique
   aussi à l’atlas tenu en main.

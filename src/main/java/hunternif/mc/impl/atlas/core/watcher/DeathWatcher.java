@@ -31,7 +31,7 @@ public class DeathWatcher {
         int x = player.getBlockX();
         int z = player.getBlockZ();
         boolean duplicate = lastPlayer == player && dimension.equals(lastDimension)
-                && deathTick == lastDeathTick
+                && deathTick >= lastDeathTick && deathTick - lastDeathTick <= 2
                 && x == lastDeathX && z == lastDeathZ;
         if (duplicate) return;
 
