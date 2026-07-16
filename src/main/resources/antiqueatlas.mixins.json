@@ -7,10 +7,9 @@
   "mixins": [],
   "client": [
     "HeldItemRendererMixin",
+    "ItemRendererMixin",
     "MinecraftClientMixin",
-    "MixinEntity",
-    "GlDebugMixin",
-    "MixinPlayerEntityDeath"
+    "MixinClientPacketListenerDeath"
   ],
   "injectors": {
     "defaultRequire": 1

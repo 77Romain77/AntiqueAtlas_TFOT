@@ -124,12 +124,15 @@ public class WorldData implements ITileStorage {
 
     @Override
     public ResourceLocation removeTile(int x, int y) {
-        //TODO
-        // since scope is not modified, I assume this was never really used
-        // Tile oldTile = tileGroups.remove(getKey().set(x, y));
-        // if (oldTile != null) parent.markDirty();
-        // return oldTile;
-        return getTile(x, y);
+        ChunkPos groupPos = new ChunkPos((int) Math.floor(x / (float) TileGroup.CHUNK_STEP),
+                (int) Math.floor(y / (float) TileGroup.CHUNK_STEP));
+        TileGroup group = tileGroups.get(groupPos);
+        if (group == null) return null;
+        ResourceLocation removed = group.removeTile(x, y);
+        if (removed != null) parent.setDirty();
+        // Keeping the old scope is intentional: shrinking it would require a
+        // full pass over every stored tile and does not affect rendering.
+        return removed;
     }
 
     @Override

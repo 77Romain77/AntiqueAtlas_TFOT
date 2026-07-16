@@ -4,12 +4,12 @@ import com.mojang.blaze3d.platform.InputConstants;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.AntiqueAtlasClientSegment;
 import hunternif.mc.impl.atlas.client.gui.GuiAtlas;
-import hunternif.mc.impl.atlas.item.AtlasItem;
+import hunternif.mc.impl.atlas.client.gui.GuiMapProfiles;
+import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 
@@ -18,36 +18,39 @@ public class KeyHandler {
 
     public static void onClientTick(Minecraft client) {
         while (ATLAS_KEYMAPPING.consumeClick()) {
-            Screen currentScreen = client.screen;
-            if (currentScreen instanceof GuiAtlas) {
-                currentScreen.onClose();
-            } else if (currentScreen == null && client.player != null) {
-                if (AntiqueAtlas.CONFIG.itemNeeded) {
-                    ItemStack atlas = findAtlas(client.player);
-                    if (atlas.isEmpty()) {
-                        client.player.displayClientMessage(
-                                Component.translatable("message.antiqueatlas.atlas_required"), true);
-                        continue;
-                    }
-                    AntiqueAtlasClientSegment.openAtlasGUI(atlas);
-                } else {
-                    AntiqueAtlasClientSegment.openAtlasGUI();
-                }
-            }
+            toggleAtlas(client, ItemStack.EMPTY);
         }
     }
 
-    private static ItemStack findAtlas(Player player) {
-        for (ItemStack stack : player.getInventory().items) {
-            if (!stack.isEmpty() && stack.getItem() instanceof AtlasItem) {
-                return stack;
-            }
+    /**
+     * Runs the common atlas action used by the key binding and by right-click.
+     * A non-empty held atlas is preferred so the GUI keeps the same item context
+     * as the historical custom Atlas item.
+     */
+    public static boolean toggleAtlas(Minecraft client, ItemStack heldAtlas) {
+        Screen currentScreen = client.screen;
+        if (currentScreen instanceof GuiAtlas || currentScreen instanceof GuiMapProfiles) {
+            currentScreen.onClose();
+            return true;
         }
-        for (ItemStack stack : player.getInventory().offhand) {
-            if (!stack.isEmpty() && stack.getItem() instanceof AtlasItem) {
-                return stack;
-            }
+        if (currentScreen != null || client.player == null || !ClientMapManager.getInstance().isReady()) {
+            return false;
         }
-        return ItemStack.EMPTY;
+        if (ClientAtlasItem.isAtlas(heldAtlas)) {
+            AntiqueAtlasClientSegment.openAtlasGUI(heldAtlas);
+            return true;
+        }
+        if (AntiqueAtlas.CONFIG.itemNeeded) {
+            ItemStack atlas = ClientAtlasItem.find(client.player);
+            if (atlas.isEmpty()) {
+                client.player.displayClientMessage(
+                        Component.translatable("message.antiqueatlas.atlas_required"), true);
+                return true;
+            }
+            AntiqueAtlasClientSegment.openAtlasGUI(atlas);
+        } else {
+            AntiqueAtlasClientSegment.openAtlasGUI();
+        }
+        return true;
     }
 }

@@ -1,11 +1,10 @@
 package hunternif.mc.impl.atlas.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import hunternif.mc.impl.atlas.client.Textures;
 import hunternif.mc.impl.atlas.client.gui.core.GuiToggleButton;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
-import java.util.Collections;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -18,10 +17,16 @@ import net.minecraft.network.chat.Component;
 public class GuiBookmarkButton extends GuiToggleButton {
     private static final int WIDTH = 21;
     private static final int HEIGHT = 18;
+    private static final float TEXT_ICON_SCALE = 3.0F;
+    private static final float TEXT_ICON_OFFSET_X = 1.5F;
+    private static final float TEXT_ICON_OFFSET_Y = -2.0F;
 
     private final int colorIndex;
     private ITexture iconTexture;
+    private Component iconText;
     private Component title;
+    private List<Component> tooltip;
+    private boolean dimmed;
 
     /**
      * @param colorIndex  0=red, 1=blue, 2=yellow, 3=green
@@ -35,8 +40,17 @@ public class GuiBookmarkButton extends GuiToggleButton {
         setSize(WIDTH, HEIGHT);
     }
 
+    /** Creates a bookmark whose icon is rendered by Minecraft's font. */
+    GuiBookmarkButton(int colorIndex, Component iconText, Component title) {
+        this.colorIndex = colorIndex;
+        this.iconText = iconText;
+        setTitle(title);
+        setSize(WIDTH, HEIGHT);
+    }
+
     void setIconTexture(ITexture iconTexture) {
         this.iconTexture = iconTexture;
+        this.iconText = null;
     }
 
     public Component getTitle() {
@@ -45,11 +59,22 @@ public class GuiBookmarkButton extends GuiToggleButton {
 
     void setTitle(Component title) {
         this.title = title;
+        this.tooltip = List.of(title);
+    }
+
+    void setTooltip(List<Component> tooltip) {
+        this.tooltip = tooltip == null || tooltip.isEmpty() ? List.of(title) : List.copyOf(tooltip);
+    }
+
+    /** Visually disables a bookmark without preventing it from being clicked. */
+    void setDimmed(boolean dimmed) {
+        this.dimmed = dimmed;
     }
 
     @Override
     public void render(GuiGraphics matrices, int mouseX, int mouseY, float partialTick) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        float tint = isEnabled() && !dimmed ? 1.0F : 0.55F;
+        RenderSystem.setShaderColor(tint, tint, tint, 1.0F);
 
         // Render background:
         int u = colorIndex * WIDTH;
@@ -57,10 +82,26 @@ public class GuiBookmarkButton extends GuiToggleButton {
         Textures.BOOKMARKS.draw(matrices, getGuiX(), getGuiY(), u, v, WIDTH, HEIGHT);
 
         // Render the icon:
-        iconTexture.draw(matrices, getGuiX() + (isMouseOver || isSelected() ? 3 : 2), getGuiY() + 1);
+        int hoverOffset = isMouseOver || isSelected() ? 1 : 0;
+        if (iconTexture != null) {
+            // Bookmark icons always occupy 16x16 pixels. Textures with a
+            // larger native canvas (such as 32x32 marker art) are scaled down
+            // cleanly instead of sampling only their top-left corner.
+            iconTexture.draw(matrices, getGuiX() + 2 + hoverOffset, getGuiY() + 1, 16, 16);
+        } else if (iconText != null) {
+            matrices.pose().pushPose();
+            matrices.pose().translate(getGuiX() + WIDTH / 2F + hoverOffset + TEXT_ICON_OFFSET_X,
+                    getGuiY() + HEIGHT / 2F + TEXT_ICON_OFFSET_Y, 0);
+            matrices.pose().scale(TEXT_ICON_SCALE, TEXT_ICON_SCALE, 1.0F);
+            matrices.drawCenteredString(Minecraft.getInstance().font, iconText, 0,
+                    -Minecraft.getInstance().font.lineHeight / 2,
+                    isEnabled() && !dimmed ? 0xFFF2E2BD : 0xFF777777);
+            matrices.pose().popPose();
+        }
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         if (isMouseOver) {
-            drawTooltip(Collections.singletonList(title), Minecraft.getInstance().font);
+            drawTooltip(tooltip, Minecraft.getInstance().font);
         }
     }
 }

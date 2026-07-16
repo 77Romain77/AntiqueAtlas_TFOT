@@ -1,9 +1,8 @@
 package hunternif.mc.impl.atlas.network.packet.c2s.play;
 
-import com.stereowalker.unionlib.network.protocol.game.ServerboundUnionPacket;
-
 import hunternif.mc.api.AtlasAPI;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
+import hunternif.mc.impl.atlas.network.LegacyServerboundPacket;
 import hunternif.mc.impl.atlas.util.Log;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -15,20 +14,18 @@ import net.minecraft.server.level.ServerPlayer;
  * original sender.
  * @author Hunternif
  */
-public class DeleteMarkerC2SPacket extends ServerboundUnionPacket {
+public class DeleteMarkerC2SPacket extends LegacyServerboundPacket {
 	public static final ResourceLocation ID = AntiqueAtlas.id("packet", "c2s", "marker", "delete");
 
 	private static final int GLOBAL = -1;
 	int atlasID, markerID;
 	
 	public DeleteMarkerC2SPacket(int atlasID, int markerID) {
-		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.markerID = markerID;
 	}
 
 	public DeleteMarkerC2SPacket(FriendlyByteBuf packetBuffer) {
-		super(packetBuffer, AntiqueAtlas.instance.channel);
 		this.atlasID = packetBuffer.readInt();
 		this.markerID = packetBuffer.readInt();
 	}

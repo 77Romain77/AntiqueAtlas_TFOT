@@ -2,13 +2,11 @@ package hunternif.mc.impl.atlas.client;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.stereowalker.unionlib.resource.ReloadListener;
-import com.stereowalker.unionlib.util.VersionHelper;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.core.scaning.TileHeightType;
 import hunternif.mc.impl.atlas.resource.ResourceReloadListener;
 import hunternif.mc.impl.atlas.util.Log;
+import hunternif.mc.impl.atlas.util.ResourceLocations;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -29,7 +27,7 @@ import java.util.concurrent.Executor;
  *
  * @author Hunternif
  */
-public class TileTextureConfig implements ResourceReloadListener<Map<ResourceLocation, ResourceLocation>>, ReloadListener {
+public class TileTextureConfig implements ResourceReloadListener<Map<ResourceLocation, ResourceLocation>> {
     public static final ResourceLocation ID = AntiqueAtlas.id("tile_textures");
     private final TileTextureMap tileTextureMap;
     private final TextureSetMap textureSetMap;
@@ -46,7 +44,7 @@ public class TileTextureConfig implements ResourceReloadListener<Map<ResourceLoc
 
             try {
                 for (Entry<ResourceLocation, Resource> id : manager.listResources("atlas/tiles", (s) -> s.toString().endsWith(".json")).entrySet()) {
-                    ResourceLocation tile_id = VersionHelper.toLoc(id.getKey().getNamespace(), id.getKey().getPath().replace("atlas/tiles/", "").replace(".json", ""));
+                    ResourceLocation tile_id = ResourceLocations.of(id.getKey().getNamespace(), id.getKey().getPath().replace("atlas/tiles/", "").replace(".json", ""));
 
                     try {
                         Resource resource = id.getValue();
@@ -55,7 +53,7 @@ public class TileTextureConfig implements ResourceReloadListener<Map<ResourceLoc
 
                             int version = object.getAsJsonPrimitive("version").getAsInt();
                             if (version == 1) {
-                                ResourceLocation texture_set = VersionHelper.toLoc(object.get("texture_set").getAsString());
+                                ResourceLocation texture_set = ResourceLocations.parse(object.get("texture_set").getAsString());
 
                                 map.put(tile_id, texture_set);
 
@@ -66,7 +64,7 @@ public class TileTextureConfig implements ResourceReloadListener<Map<ResourceLoc
                                 ResourceLocation default_entry = TileTextureMap.DEFAULT_TEXTURE;
 
                                 try {
-                                    default_entry = VersionHelper.toLoc(object.getAsJsonObject("texture_sets").get("default").getAsString());
+                                    default_entry = ResourceLocations.parse(object.getAsJsonObject("texture_sets").get("default").getAsString());
                                 } catch (Exception ignored) {
                                 }
 
@@ -77,7 +75,7 @@ public class TileTextureConfig implements ResourceReloadListener<Map<ResourceLoc
                                     ResourceLocation texture_set = default_entry;
 
                                     try {
-                                        texture_set = VersionHelper.toLoc(object.getAsJsonObject("texture_sets").get(layer.getName()).getAsString());
+                                        texture_set = ResourceLocations.parse(object.getAsJsonObject("texture_sets").get(layer.getName()).getAsString());
                                     } catch (Exception ignored) {
                                     }
 

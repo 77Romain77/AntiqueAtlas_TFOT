@@ -13,7 +13,6 @@
   "gui.antiqueatlas.marker.label": "Метка:",
   "gui.antiqueatlas.marker.type": "Тип:",
   "gui.antiqueatlas.marker.village": "Деревня",
-  "gui.antiqueatlas.marker.netherPortal": "Портал в Нижний Мир",
   "gui.antiqueatlas.marker.tomb": "Здесь покоится %s",
   "gui.antiqueatlas.marker.treasure": "Зарытый клад",
   "gui.antiqueatlas.marker.monument": "Морской монумент",
@@ -48,7 +47,6 @@
   "text.autoconfig.antiqueatlas.option.doSaveBrowsingPos": "Сохранить позицию",
   "text.autoconfig.antiqueatlas.option.autoDeathMarker": "Метка смерти",
   "text.autoconfig.antiqueatlas.option.autoVillageMarkers": "Метка деревни",
-  "text.autoconfig.antiqueatlas.option.autoNetherPortalMarkers": "Метка портала в Нижний Мир",
   "text.autoconfig.antiqueatlas.option.itemNeeded": "Для использования необходим атлас",
 
   "text.autoconfig.antiqueatlas.option.doScaleMarkers": "Маркеры масштаба",

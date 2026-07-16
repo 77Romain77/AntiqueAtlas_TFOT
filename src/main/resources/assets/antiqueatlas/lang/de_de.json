@@ -13,7 +13,6 @@
   "gui.antiqueatlas.marker.label": "Bezeichnung:",
   "gui.antiqueatlas.marker.type": "Typ:",
   "gui.antiqueatlas.marker.village": "Dorf",
-  "gui.antiqueatlas.marker.netherPortal": "Nether-Portal",
   "gui.antiqueatlas.marker.tomb": "Hier ruht %s",
   "gui.antiqueatlas.marker.treasure": "Vergrabener Schatz",
   "gui.antiqueatlas.marker.monument": "Ozeanmonument",
@@ -47,7 +46,6 @@
   "text.autoconfig.antiqueatlas.option.doSaveBrowsingPos": "Speichere Position im Atlas",
   "text.autoconfig.antiqueatlas.option.autoDeathMarker": "Todesmarkierungen",
   "text.autoconfig.antiqueatlas.option.autoVillageMarkers": "Markierungen für Dörfer",
-  "text.autoconfig.antiqueatlas.option.autoNetherPortalMarkers": "Markierungen für Nether Portale",
   "text.autoconfig.antiqueatlas.option.itemNeeded": "Atlas wird benötigt",
 
   "text.autoconfig.antiqueatlas.option.doScaleMarkers": "Skaliere Markierungen",

@@ -1,10 +1,10 @@
 package hunternif.mc.impl.atlas.api.client.impl;
 
 import hunternif.mc.impl.atlas.AntiqueAtlas;
+import hunternif.mc.impl.atlas.AntiqueAtlasClientSegment;
 import hunternif.mc.api.MarkerAPI;
+import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import hunternif.mc.impl.atlas.marker.Marker;
-import hunternif.mc.impl.atlas.network.packet.c2s.play.PutMarkerC2SPacket;
-import hunternif.mc.impl.atlas.network.packet.c2s.play.DeleteMarkerC2SPacket;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -16,8 +16,10 @@ public class MarkerApiImplClient implements MarkerAPI {
     @Nullable
     @Override
     public Marker putMarker(@NotNull Level world, boolean visibleAhead, int atlasID, ResourceLocation marker, Component label, int x, int z) {
-        new PutMarkerC2SPacket(atlasID, marker, x, z, visibleAhead, label).send();
-        return null;
+        Marker created = ClientMapManager.getInstance().createMarker(
+                world.dimension(), marker, label, x, z, visibleAhead);
+        AntiqueAtlasClientSegment.getAtlasGUI().updateBookmarkerList();
+        return created;
     }
 
     @Nullable
@@ -30,7 +32,9 @@ public class MarkerApiImplClient implements MarkerAPI {
 
     @Override
     public void deleteMarker(@NotNull Level world, int atlasID, int markerID) {
-        new DeleteMarkerC2SPacket(atlasID, markerID).send();
+        if (ClientMapManager.getInstance().deleteMarker(markerID)) {
+            AntiqueAtlasClientSegment.getAtlasGUI().updateBookmarkerList();
+        }
     }
 
     @Override

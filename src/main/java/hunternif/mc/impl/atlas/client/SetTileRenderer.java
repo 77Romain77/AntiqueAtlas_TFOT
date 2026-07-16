@@ -2,6 +2,7 @@ package hunternif.mc.impl.atlas.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
+import hunternif.mc.impl.atlas.client.texture.ITexture.LightRenderMode;
 import hunternif.mc.impl.atlas.client.texture.Texture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
@@ -21,12 +22,15 @@ class SetTileRenderer {
     private final int tileHalfSize;
     private final int light;
     private final MultiBufferSource buffer;
+    private final LightRenderMode renderMode;
 
-    public SetTileRenderer(MultiBufferSource buffer, PoseStack matrices, int tileHalfSize, int light) {
+    public SetTileRenderer(MultiBufferSource buffer, PoseStack matrices, int tileHalfSize,
+                           int light, LightRenderMode renderMode) {
         this.matrices = matrices;
         this.tileHalfSize = tileHalfSize;
         this.light = light;
         this.buffer = buffer;
+        this.renderMode = renderMode;
     }
 
     public void addTileCorner(ResourceLocation texture, int x, int y, int u, int v) {
@@ -49,7 +53,9 @@ class SetTileRenderer {
     private void drawInlineAutotileCorner(ITexture texture, int x, int y, int u, int v) {
         // This is dumb. But because there are drawn four at a time, these chunks prevent rendering outside of our map
         if ((x + tileHalfSize) <= 240 && (x - tileHalfSize >= 0) && (y + tileHalfSize) < 166 && (y - tileHalfSize) >= 0) {
-            texture.drawWithLight(this.buffer, this.matrices, x, y, tileHalfSize, tileHalfSize, u, v, 1, 1, this.light);
+            texture.drawWithLight(this.buffer, this.matrices, x, y,
+                    tileHalfSize, tileHalfSize, u, v, 1, 1,
+                    this.light, this.renderMode);
         }
     }
 

@@ -13,7 +13,6 @@
   "gui.antiqueatlas.marker.label": "Etiqueta:",
   "gui.antiqueatlas.marker.type": "Tipo:",
   "gui.antiqueatlas.marker.village": "Aldea",
-  "gui.antiqueatlas.marker.netherPortal": "Portal del Nether",
   "gui.antiqueatlas.marker.tomb": "Aquí yace %s",
 
   "gui.antiqueatlas.export.opening": "Abriendo diálogo del sistema de archivos...",

@@ -3,11 +3,10 @@ package hunternif.mc.impl.atlas.network.packet.s2c.play;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.stereowalker.unionlib.network.protocol.game.ClientboundUnionPacket;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.core.AtlasData;
 import hunternif.mc.impl.atlas.core.TileGroup;
+import hunternif.mc.impl.atlas.network.LegacyClientboundPacket;
 import hunternif.mc.impl.atlas.core.WorldData;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -24,7 +23,7 @@ import net.minecraft.world.level.Level;
  * @author Hunternif
  * @author Haven King
  */
-public class TileGroupsS2CPacket extends ClientboundUnionPacket {
+public class TileGroupsS2CPacket extends LegacyClientboundPacket {
     public static final int TILE_GROUPS_PER_PACKET = 100;
     public static final ResourceLocation ID = AntiqueAtlas.id("packet", "s2c", "tile", "groups");
     int atlasID;
@@ -32,14 +31,12 @@ public class TileGroupsS2CPacket extends ClientboundUnionPacket {
     List<TileGroup> tileGroups;
 
 	public TileGroupsS2CPacket(int atlasID, ResourceKey<Level> world, List<TileGroup> tileGroups) {
-		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.world = world;
 		this.tileGroups = tileGroups;
 	}
 	
 	public TileGroupsS2CPacket(FriendlyByteBuf byteBuf) {
-		super(byteBuf, AntiqueAtlas.instance.channel);
 		this.atlasID = byteBuf.readVarInt();
 		this.world = ResourceKey.create(Registries.DIMENSION, byteBuf.readResourceLocation());
         int length = byteBuf.readVarInt();

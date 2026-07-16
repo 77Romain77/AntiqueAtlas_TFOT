@@ -13,7 +13,6 @@
   "gui.antiqueatlas.marker.label": "Mærkat:",
   "gui.antiqueatlas.marker.type": "Type:",
   "gui.antiqueatlas.marker.village": "Landsby",
-  "gui.antiqueatlas.marker.netherPortal": "Nether Portal",
   "gui.antiqueatlas.marker.tomb": "Her ligger %s",
 
   "gui.antiqueatlas.export.opening": "Åbner filsystemsdialog...",

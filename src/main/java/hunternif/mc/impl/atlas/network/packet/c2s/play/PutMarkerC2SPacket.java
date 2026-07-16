@@ -1,9 +1,8 @@
 package hunternif.mc.impl.atlas.network.packet.c2s.play;
 
-import com.stereowalker.unionlib.network.protocol.game.ServerboundUnionPacket;
-
 import hunternif.mc.api.AtlasAPI;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
+import hunternif.mc.impl.atlas.network.LegacyServerboundPacket;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -16,7 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
  * @author Hunternif
  * @author Haven King
  */
-public class PutMarkerC2SPacket extends ServerboundUnionPacket {
+public class PutMarkerC2SPacket extends LegacyServerboundPacket {
 	public static final ResourceLocation ID = AntiqueAtlas.id("packet", "c2s", "marker", "put");
 	int atlasID, x, z; 
 	boolean visibleBeforeDiscovery;
@@ -24,7 +23,6 @@ public class PutMarkerC2SPacket extends ServerboundUnionPacket {
 	Component label;
 	
 	public PutMarkerC2SPacket(int atlasID, ResourceLocation markerType, int x, int z, boolean visibleBeforeDiscovery, Component label) {
-		super(AntiqueAtlas.instance.channel);
 		this.atlasID = atlasID;
 		this.markerType = markerType;
 		this.x = x;
@@ -34,7 +32,6 @@ public class PutMarkerC2SPacket extends ServerboundUnionPacket {
 	}
 
 	public PutMarkerC2SPacket(FriendlyByteBuf packetBuffer) {
-		super(packetBuffer, AntiqueAtlas.instance.channel);
 		this.atlasID = packetBuffer.readVarInt();
 		this.markerType = packetBuffer.readResourceLocation();
 		this.x = packetBuffer.readVarInt();

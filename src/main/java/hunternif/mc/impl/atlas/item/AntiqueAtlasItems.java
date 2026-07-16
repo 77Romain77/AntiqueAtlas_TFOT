@@ -1,10 +1,6 @@
 package hunternif.mc.impl.atlas.item;
 
 import com.mojang.serialization.Codec;
-import com.stereowalker.unionlib.core.registries.RegistryHolder;
-import com.stereowalker.unionlib.core.registries.RegistryObject;
-import com.stereowalker.unionlib.util.VersionHelper;
-
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,8 +16,7 @@ public class AntiqueAtlasItems {
 	        return "atlas_" + this.id;
 	    }
 	}
-	@RegistryHolder(namespace = AntiqueAtlas.ID)
-	public class Components {
+	public static final class Components {
 //		@RegistryObject("atlas_id")
 //		public static final DataComponentType<AtlasId> ATLAS_ID = register(
 //		        type -> type.persistent(AtlasId.CODEC).networkSynchronized(AtlasId.STREAM_CODEC)
@@ -29,26 +24,36 @@ public class AntiqueAtlasItems {
 //	    private static <T> DataComponentType<T> register(UnaryOperator<DataComponentType.Builder<T>> pBuilder) {
 //	        return pBuilder.apply(DataComponentType.builder()).build();
 //	    }
-	    public static final VersionHelper.Data<AtlasId> ATLAS_ID_DATA = new VersionHelper.Data<AtlasId>(
-				(stack) -> stack.getTag() != null && stack.getTag().contains("atlasID"),
-				(stack) -> new AtlasId(stack.getTag().getInt("atlasID")),
-				(stack, dat) -> stack.getOrCreateTag().putInt("atlasID", dat.id),
-				(stack) -> stack.removeTagKey("atlasID"));
+	    public static final AtlasIdData ATLAS_ID_DATA = new AtlasIdData();
 	}
-	
-	@RegistryHolder(namespace = AntiqueAtlas.ID)
-	public class Items {
-		@RegistryObject("empty_antique_atlas")
+
+	/** Legacy NBT accessor retained for dormant migration code. */
+	public static final class AtlasIdData {
+		public boolean hasData(ItemStack stack) {
+			return stack.getTag() != null && stack.getTag().contains("atlasID");
+		}
+
+		public AtlasId getData(ItemStack stack) {
+			return new AtlasId(stack.getOrCreateTag().getInt("atlasID"));
+		}
+
+		public void setData(ItemStack stack, AtlasId data) {
+			stack.getOrCreateTag().putInt("atlasID", data.id());
+		}
+
+		public void removeData(ItemStack stack) {
+			stack.removeTagKey("atlasID");
+		}
+	}
+
+	/** Historical objects are deliberately not registered in the client-only edition. */
+	public static final class Items {
 		public static final Item EMPTY_ATLAS = new EmptyAtlasItem(new Item.Properties());
-		@RegistryObject("antique_atlas")
 		public static final Item ATLAS = new AtlasItem(new Item.Properties().stacksTo(1));
 	}
-	
-	@RegistryHolder(namespace = AntiqueAtlas.ID)
-	public class Recipes {
-		@RegistryObject("atlas_clone")
+
+	public static final class Recipes {
 	    public static final RecipeSerializer<?> CLONE = new SimpleCraftingRecipeSerializer<>(RecipeAtlasCloning::new);
-		@RegistryObject("atlas_combine")
 	    public static final RecipeSerializer<RecipeAtlasCombining> COMBINE = new SimpleCraftingRecipeSerializer<>(RecipeAtlasCombining::new);
 	}
 	

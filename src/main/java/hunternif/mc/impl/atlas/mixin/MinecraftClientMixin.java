@@ -3,6 +3,7 @@ package hunternif.mc.impl.atlas.mixin;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.AntiqueAtlasClientSegment;
 import hunternif.mc.impl.atlas.ClientProxy;
+import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -23,13 +24,9 @@ public class MinecraftClientMixin {
 
     @Inject(method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At("HEAD"))
     void antiqueAtlas$clearClientCaches(Screen screen, CallbackInfo info) {
-        Minecraft minecraft = (Minecraft) (Object) this;
-        boolean isRemote = !minecraft.hasSingleplayerServer();
-
-        AntiqueAtlas.tileData.onClientConnectedToServer(isRemote);
-        AntiqueAtlas.markersData.onClientConnectedToServer(isRemote);
-        AntiqueAtlas.globalMarkersData.onClientConnectedToServer(isRemote);
-        AntiqueAtlas.globalTileData.onClientConnectedToServer(isRemote);
+        ClientMapManager.getInstance().disconnect();
+        AntiqueAtlas.globalMarkersData.onClientConnectedToServer(true);
+        AntiqueAtlas.globalTileData.onClientConnectedToServer(true);
         AntiqueAtlasClientSegment.resetAtlasGUI();
     }
 }

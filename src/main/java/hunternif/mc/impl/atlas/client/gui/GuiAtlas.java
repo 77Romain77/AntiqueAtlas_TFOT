@@ -4,36 +4,36 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import hunternif.mc.api.client.AtlasClientAPI;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
+import hunternif.mc.impl.atlas.AntiqueAtlasClientSegment;
 import hunternif.mc.impl.atlas.client.*;
 import hunternif.mc.impl.atlas.client.gui.core.*;
 import hunternif.mc.impl.atlas.client.gui.core.GuiStates.IState;
 import hunternif.mc.impl.atlas.client.gui.core.GuiStates.SimpleState;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
 import hunternif.mc.impl.atlas.client.texture.TileTexture;
+import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import hunternif.mc.impl.atlas.core.WorldData;
 import hunternif.mc.impl.atlas.event.MarkerClickedCallback;
 import hunternif.mc.impl.atlas.event.MarkerHoveredCallback;
 import hunternif.mc.impl.atlas.marker.DimensionMarkersData;
 import hunternif.mc.impl.atlas.marker.Marker;
 import hunternif.mc.impl.atlas.marker.MarkersData;
-import hunternif.mc.impl.atlas.network.packet.c2s.play.PutBrowsingPositionC2SPacket;
 import hunternif.mc.impl.atlas.registry.MarkerRenderInfo;
 import hunternif.mc.impl.atlas.registry.MarkerType;
 import hunternif.mc.impl.atlas.util.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
-import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -60,8 +60,6 @@ public class GuiAtlas extends GuiComponent {
 
     public static final int MARKER_SIZE = 32;
 
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
-
     /**
      * If the map scale goes below this value, the tiles will not scale down
      * visually, but will instead span greater area.
@@ -80,26 +78,6 @@ public class GuiAtlas extends GuiComponent {
      * If on, navigate the map normally.
      */
     private final IState NORMAL = new SimpleState();
-
-    /**
-     * If on, all markers as well as the player icon are hidden.
-     */
-    private final IState HIDING_MARKERS = new IState() {
-        @Override
-        public void onEnterState() {
-            // Set the button as not selected so that it can be clicked again:
-            btnShowMarkers.setSelected(false);
-            btnShowMarkers.setTitle(Component.translatable("gui.antiqueatlas.showMarkers"));
-            btnShowMarkers.setIconTexture(Textures.ICON_SHOW_MARKERS);
-        }
-
-        @Override
-        public void onExitState() {
-            btnShowMarkers.setSelected(false);
-            btnShowMarkers.setTitle(Component.translatable("gui.antiqueatlas.hideMarkers"));
-            btnShowMarkers.setIconTexture(Textures.ICON_HIDE_MARKERS);
-        }
-    };
 
     /**
      * If on, a semi-transparent marker is attached to the cursor, and the
@@ -137,18 +115,6 @@ public class GuiAtlas extends GuiComponent {
     };
     private final GuiCursor eraser = new GuiCursor();
 
-    private final IState EXPORTING_IMAGE = new IState() {
-        @Override
-        public void onEnterState() {
-            btnExportPng.setSelected(true);
-        }
-
-        @Override
-        public void onExitState() {
-            btnExportPng.setSelected(false);
-        }
-    };
-
     // Buttons =================================================================
 
     /**
@@ -156,10 +122,8 @@ public class GuiAtlas extends GuiComponent {
      */
     private final GuiArrowButton btnUp, btnDown, btnLeft, btnRight;
 
-    /**
-     * Button for exporting PNG image of the Atlas's contents.
-     */
-    private final GuiBookmarkButton btnExportPng;
+    /** Button opening the local map-profile manager. */
+    private final GuiBookmarkButton btnMaps;
 
     /**
      * Button for placing a marker at current position, local to this Atlas instance.
@@ -171,10 +135,14 @@ public class GuiAtlas extends GuiComponent {
      */
     private final GuiBookmarkButton btnDelMarker;
 
-    /**
-     * Button for showing/hiding all markers.
-     */
-    private final GuiBookmarkButton btnShowMarkers;
+    /** Button opening the per-type marker visibility filter. */
+    private final GuiBookmarkButton btnMarkerFilter;
+
+    /** Per-map toggle for automatically placing a tomb at the death position. */
+    private final GuiBookmarkButton btnDeathMarker;
+
+    /** One-shot refresh of already mapped chunks loaded around the player. */
+    private final GuiBookmarkButton btnRescan;
 
     /**
      * Button for restoring player's position at the center of the Atlas.
@@ -236,7 +204,15 @@ public class GuiAtlas extends GuiComponent {
 
     private final GuiScaleBar scaleBar = new GuiScaleBar();
 
-    private final GuiScrollingContainer markers = new GuiScrollingContainer();
+    /** Marker-type categories attached directly to the left side of the atlas. */
+    private final GuiScrollingContainer markerGroups = new GuiScrollingContainer();
+
+    /** Markers from the selected category, displayed to the left of the categories. */
+    private final GuiScrollingContainer markerBookmarks = new GuiScrollingContainer();
+
+    private final Map<ResourceLocation, List<Marker>> groupedMarkers = new LinkedHashMap<>();
+    private final Map<ResourceLocation, GuiMarkerGroupBookmark> markerGroupBookmarks = new LinkedHashMap<>();
+    private ResourceLocation selectedMarkerGroup;
 
     /**
      * Pixel-to-block ratio.
@@ -269,6 +245,7 @@ public class GuiAtlas extends GuiComponent {
     private Marker hoveredMarker;
 
     private final GuiMarkerFinalizer markerFinalizer = new GuiMarkerFinalizer();
+    private final GuiMarkerFilter markerFilter = new GuiMarkerFilter();
     /**
      * Displayed where the marker is about to be placed when the Finalizer GUI is on.
      */
@@ -285,19 +262,12 @@ public class GuiAtlas extends GuiComponent {
      */
     private double screenScale;
 
-    /**
-     * Progress bar for exporting images.
-     */
-    private final ProgressBarOverlay progressBar = new ProgressBarOverlay(100, 2);
-
     private long lastUpdateMillis = System.currentTimeMillis();
     private int scaleAlpha = 255;
     private int scaleClipIndex = 0;
     private final int zoomLevelOne = 8;
     private int zoomLevel = zoomLevelOne;
     private final String[] zoomNames = new String[]{"256", "128", "64", "32", "16", "8", "4", "2", "1", "1/2", "1/4", "1/8", "1/16", "1/32", "1/64", "1/128", "1/256"};
-
-    private Thread exportThread;
 
     @SuppressWarnings("rawtypes")
     public GuiAtlas() {
@@ -336,18 +306,16 @@ public class GuiAtlas extends GuiComponent {
         btnRight.addListener(positionListener);
         btnPosition.addListener(positionListener);
 
-        btnExportPng = new GuiBookmarkButton(1, Textures.ICON_EXPORT, Component.translatable("gui.antiqueatlas.exportImage")) {
-            @Override
-            public boolean isEnabled() {
-                return !ExportImageUtil.isExporting;
+        btnMaps = new GuiBookmarkButton(1, Textures.ICON_MAPS,
+                Component.translatable("gui.antiqueatlas.maps.manage"));
+        addChild(btnMaps).offsetGuiCoords(300, 94);
+        btnMaps.addListener(button -> {
+            if (biomeData != null) {
+                biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);
+                ClientMapManager.getInstance().markStateDirty();
             }
-        };
-        addChild(btnExportPng).offsetGuiCoords(300, 75);
-        btnExportPng.addListener(button -> {
-            if (stack != null || !AntiqueAtlas.CONFIG.itemNeeded) {
-                exportThread = new Thread(() -> exportImage(getAtlasID()), "Atlas file export thread");
-                exportThread.start();
-            }
+            closeMarkerGroupList();
+            AntiqueAtlasClientSegment.openMapProfiles(this);
         });
 
         btnMarker = new GuiBookmarkButton(0, Textures.ICON_ADD_MARKER, Component.translatable("gui.antiqueatlas.addMarker"));
@@ -395,24 +363,40 @@ public class GuiAtlas extends GuiComponent {
                 state.switchTo(DELETING_MARKER);
             }
         });
-        btnShowMarkers = new GuiBookmarkButton(3, Textures.ICON_HIDE_MARKERS, Component.translatable("gui.antiqueatlas.hideMarkers"));
-        addChild(btnShowMarkers).offsetGuiCoords(300, 52);
-        btnShowMarkers.addListener(button -> {
+        btnMarkerFilter = new GuiBookmarkButton(3, Textures.ICON_HIDE_MARKERS,
+                Component.translatable("gui.antiqueatlas.markerFilter.title"));
+        addChild(btnMarkerFilter).offsetGuiCoords(300, 52);
+        btnMarkerFilter.addListener(button -> {
             selectedButton = null;
-            if (state.is(HIDING_MARKERS)) {
-                state.switchTo(NORMAL);
-            } else if (stack != null || !AntiqueAtlas.CONFIG.itemNeeded) {
-                selectedButton = null;
-                state.switchTo(HIDING_MARKERS);
-            }
+            if (stack != null || !AntiqueAtlas.CONFIG.itemNeeded) addChild(markerFilter);
         });
+
+        btnDeathMarker = new GuiBookmarkButton(0, Textures.ICON_DEATH_MARKER,
+                Component.translatable("gui.antiqueatlas.deathMarker.title"));
+        addChild(btnDeathMarker).offsetGuiCoords(300, 71);
+        btnDeathMarker.addListener(button -> {
+            ClientMapManager maps = ClientMapManager.getInstance();
+            maps.setAutoDeathMarkerEnabled(!maps.isAutoDeathMarkerEnabled());
+            updateDeathMarkerButton();
+        });
+        updateDeathMarkerButton();
+
+        btnRescan = new GuiBookmarkButton(1, Component.literal("↻"),
+                Component.translatable("gui.antiqueatlas.rescan.title"));
+        addChild(btnRescan).offsetGuiCoords(300, 118);
+        btnRescan.addListener(button -> requestAreaRescan());
+        updateRescanButton();
 
         addChild(scaleBar).offsetGuiCoords(20, 198);
         scaleBar.setMapScale(1);
 
-        addChild(markers).setRelativeCoords(-10, 14);
-        markers.setViewportSize(21, 180);
-        markers.setWheelScrollsVertically();
+        addChild(markerBookmarks).setRelativeCoords(-38, 14);
+        markerBookmarks.setViewportSize(21, 180);
+        markerBookmarks.setWheelScrollsVertically();
+
+        addChild(markerGroups).setRelativeCoords(-10, 14);
+        markerGroups.setViewportSize(21, 180);
+        markerGroups.setWheelScrollsVertically();
 
         markerFinalizer.addMarkerListener(blinkingIcon);
 
@@ -425,6 +409,14 @@ public class GuiAtlas extends GuiComponent {
         this.stack = stack;
 
         return prepareToOpen();
+    }
+
+    /**
+     * Keeps the vanilla book context while the map-profile screen temporarily
+     * replaces this atlas. This is required when atlas access needs an item.
+     */
+    public ItemStack copyAccessStack() {
+        return stack == null ? ItemStack.EMPTY : stack.copy();
     }
 
     public void openMarkerFinalizer(Component name) {
@@ -457,6 +449,8 @@ public class GuiAtlas extends GuiComponent {
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN, 1.0F));
 
         this.player = Minecraft.getInstance().player;
+        updateDeathMarkerButton();
+        updateRescanButton();
         updateAtlasData();
         if (!followPlayer && AntiqueAtlas.CONFIG.doSaveBrowsingPos) {
             loadSavedBrowsingPosition();
@@ -476,27 +470,86 @@ public class GuiAtlas extends GuiComponent {
     @Override
     public void init() {
         super.init();
-        if (state.is(EXPORTING_IMAGE)) {
-            state.switchTo(NORMAL); //TODO: his causes the Export PNG progress bar to disappear when resizing game window
-        }
-
         //Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);
         screenScale = Minecraft.getInstance().getWindow().getGuiScale();
-        setCentered();
+        // The marker lists extend beyond the book and must not influence its
+        // position. Center the 310x218 book itself on the screen.
+        setGuiCoords((width - WIDTH) / 2, (height - HEIGHT) / 2);
 
         updateBookmarkerList();
     }
 
     public void updateBookmarkerList() {
-        markers.removeAllContent();
-        markers.scrollTo(0, 0);
+        markerGroups.removeAllContent();
+        markerGroups.scrollTo(0, 0);
+        markerGroupBookmarks.clear();
+        groupedMarkers.clear();
 
-        if (localMarkersData == null) return;
+        if (localMarkersData != null) {
+            List<Marker> visibleMarkers = new ArrayList<>();
+            for (Marker marker : localMarkersData.getAllMarkers()) {
+                if (marker.isVisibleAhead() && !marker.isGlobal()
+                        && MarkerVisibility.isVisible(marker.getType())) {
+                    visibleMarkers.add(marker);
+                }
+            }
+            visibleMarkers.sort(Comparator
+                    .comparing((Marker marker) -> marker.getType().toString())
+                    .thenComparingInt(Marker::getId));
+            for (Marker marker : visibleMarkers) {
+                groupedMarkers.computeIfAbsent(marker.getType(), ignored -> new ArrayList<>())
+                        .add(marker);
+            }
+        }
 
+        if (selectedMarkerGroup != null && !groupedMarkers.containsKey(selectedMarkerGroup)) {
+            selectedMarkerGroup = null;
+        }
 
         int contentY = 0;
-        for (Marker marker : localMarkersData.getAllMarkers()) {
-            if (!marker.isVisibleAhead() || marker.isGlobal()) {
+        for (Map.Entry<ResourceLocation, List<Marker>> entry : groupedMarkers.entrySet()) {
+            ResourceLocation markerTypeId = entry.getKey();
+            MarkerType markerType = MarkerType.REGISTRY.get(markerTypeId);
+            GuiMarkerGroupBookmark bookmark = new GuiMarkerGroupBookmark(markerType,
+                    entry.getValue().size());
+            bookmark.setSelected(markerTypeId.equals(selectedMarkerGroup));
+            bookmark.addListener(button -> selectMarkerGroup(markerTypeId));
+
+            markerGroupBookmarks.put(markerTypeId, bookmark);
+            markerGroups.addContent(bookmark).setRelativeY(contentY);
+            contentY += 20;
+        }
+
+        updateSelectedMarkerBookmarks();
+    }
+
+    private void selectMarkerGroup(ResourceLocation markerTypeId) {
+        if (markerTypeId.equals(selectedMarkerGroup)) {
+            closeMarkerGroupList();
+            return;
+        }
+        selectedMarkerGroup = markerTypeId;
+        markerGroupBookmarks.forEach((id, bookmark) ->
+                bookmark.setSelected(id.equals(selectedMarkerGroup)));
+        updateSelectedMarkerBookmarks();
+    }
+
+    private void closeMarkerGroupList() {
+        selectedMarkerGroup = null;
+        markerGroupBookmarks.values().forEach(bookmark -> bookmark.setSelected(false));
+        markerBookmarks.removeAllContent();
+    }
+
+    private void updateSelectedMarkerBookmarks() {
+        markerBookmarks.removeAllContent();
+        markerBookmarks.scrollTo(0, 0);
+
+        List<Marker> selectedMarkers = groupedMarkers.get(selectedMarkerGroup);
+        if (selectedMarkers == null) return;
+
+        int contentY = 0;
+        for (Marker marker : selectedMarkers) {
+            if (!marker.isVisibleAhead() || marker.isGlobal() || !MarkerVisibility.isVisible(marker.getType())) {
                 continue;
             }
             GuiMarkerBookmark bookmark = new GuiMarkerBookmark(marker);
@@ -516,18 +569,14 @@ public class GuiAtlas extends GuiComponent {
                 }
             });
 
-            markers.addContent(bookmark).setRelativeY(contentY);
-            contentY += 18 + 2;
+            markerBookmarks.addContent(bookmark).setRelativeY(contentY);
+            contentY += 20;
         }
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseState) {
         boolean result = super.mouseClicked(mouseX, mouseY, mouseState);
-        if (state.is(EXPORTING_IMAGE)) {
-            return result;
-        }
-
         if (result) {
             return true;
         }
@@ -543,7 +592,7 @@ public class GuiAtlas extends GuiComponent {
         int mapY = (height - MAP_HEIGHT) / 2;
         boolean isMouseOverMap = mouseX >= mapX && mouseX <= mapX + MAP_WIDTH &&
                 mouseY >= mapY && mouseY <= mapY + MAP_HEIGHT;
-        if (!state.is(NORMAL) && !state.is(HIDING_MARKERS)) {
+        if (!state.is(NORMAL)) {
             int atlasID = getAtlasID();
 
             if (state.is(PLACING_MARKER) // If clicked on the map, place marker:
@@ -589,57 +638,14 @@ public class GuiAtlas extends GuiComponent {
         return false;
     }
 
-    /**
-     * Opens a dialog window to select which file to save to, then performs
-     * rendering of the map of current dimension into a PNG image.
-     */
-    private void exportImage(int atlasID) {
-        boolean showMarkers = !state.is(HIDING_MARKERS);
-        state.switchTo(EXPORTING_IMAGE);
-        // Default file name is "Atlas <N>.png"
-        ExportImageUtil.isExporting = true;
-
-        File screenshot_folder = new File(Minecraft.getInstance().gameDirectory, "screenshots");
-        if (!screenshot_folder.isDirectory()) {
-            screenshot_folder.mkdir();
-        }
-
-        String outputname = "atlas-" + DATE_FORMAT.format(new Date());
-
-        File file = new File(screenshot_folder, outputname + ".png");
-        for (int i = 1; file.exists(); i++) {
-            file = new File(screenshot_folder, outputname + "_" + i + ".png");
-        }
-
-        try {
-            Log.info("Exporting image from Atlas #%d to file %s", atlasID, file.getAbsolutePath());
-            ExportImageUtil.exportPngImage(biomeData, globalMarkersData, localMarkersData, file, showMarkers);
-            Log.info("Finished exporting image");
-        } catch (OutOfMemoryError e) {
-            Log.warn(e, "Image is too large, trying to export in strips");
-            try {
-                ExportImageUtil.exportPngImageTooLarge(biomeData, globalMarkersData, localMarkersData, file, showMarkers);
-            } catch (OutOfMemoryError e2) {
-                int minX = (biomeData.getScope().minX - 1) * ExportImageUtil.TILE_SIZE;
-                int minY = (biomeData.getScope().minY - 1) * ExportImageUtil.TILE_SIZE;
-                int outWidth = (biomeData.getScope().maxX + 2) * ExportImageUtil.TILE_SIZE - minX;
-                int outHeight = (biomeData.getScope().maxY + 2) * ExportImageUtil.TILE_SIZE - minY;
-
-                Log.error(e2, "Image is STILL too large, how massive is this map?! Answer: (%dx%d)", outWidth, outHeight);
-
-                ExportUpdateListener.INSTANCE.setStatusString(I18n.get("gui.antiqueatlas.export.tooLarge"));
-                ExportImageUtil.isExporting = false;
-                return; //Don't switch to normal state yet so that the error message can be read.
-            }
-        }
-
-        ExportImageUtil.isExporting = false;
-        state.switchTo(showMarkers ? NORMAL : HIDING_MARKERS);
-    }
-
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_UP) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && markerFilter.getParent() != null) {
+            // Escape from the filter must behave exactly like its Done button,
+            // otherwise the full-screen child remains attached to this atlas.
+            markerFilter.closeChild();
+            return true;
+        } else if (keyCode == GLFW.GLFW_KEY_UP) {
             navigateMap(0, navigateStep);
         } else if (keyCode == GLFW.GLFW_KEY_DOWN) {
             navigateMap(0, -navigateStep);
@@ -682,8 +688,8 @@ public class GuiAtlas extends GuiComponent {
                 wheelMove *= -1;
             }
 
-            double mouseOffsetX = Minecraft.getInstance().getWindow().getWidth() / screenScale / 2 - getMouseX();
-            double mouseOffsetY = Minecraft.getInstance().getWindow().getHeight() / screenScale / 2 - getMouseY();
+            double mouseOffsetX = getMapCenterScreenX() - getMouseX();
+            double mouseOffsetY = getMapCenterScreenY() - getMouseY();
             double newScale = mapScale * Math.pow(2, wheelMove);
             double addOffsetX = 0;
             double addOffsetY = 0;
@@ -751,6 +757,7 @@ public class GuiAtlas extends GuiComponent {
     @Override
     public void tick() {
         super.tick();
+        updateRescanButton();
         if (player == null) return;
         if (followPlayer) {
             setMapPosition(player.getBlockX(), player.getBlockZ());
@@ -778,6 +785,52 @@ public class GuiAtlas extends GuiComponent {
         }
 
         updateAtlasData();
+    }
+
+    private void requestAreaRescan() {
+        ClientWorldScanner.RescanRequest request = AntiqueAtlasClientSegment.requestRescan();
+        Component message = switch (request.result()) {
+            case STARTED -> Component.translatable(
+                    "message.antiqueatlas.rescan.started", request.queuedChunks());
+            case ALREADY_RUNNING -> Component.translatable("message.antiqueatlas.rescan.alreadyRunning");
+            case NOTHING_TO_SCAN -> Component.translatable("message.antiqueatlas.rescan.nothing");
+            case UNAVAILABLE -> Component.translatable("message.antiqueatlas.rescan.unavailable");
+        };
+        if (player != null) player.displayClientMessage(message, true);
+        updateRescanButton();
+    }
+
+    private void updateDeathMarkerButton() {
+        if (btnDeathMarker == null) return;
+        boolean enabled = ClientMapManager.getInstance().isAutoDeathMarkerEnabled();
+        btnDeathMarker.setSelected(enabled);
+        btnDeathMarker.setDimmed(!enabled);
+        btnDeathMarker.setTooltip(List.of(
+                Component.translatable("gui.antiqueatlas.deathMarker.title"),
+                Component.translatable(enabled
+                        ? "gui.antiqueatlas.deathMarker.enabled"
+                        : "gui.antiqueatlas.deathMarker.disabled"),
+                Component.translatable("gui.antiqueatlas.deathMarker.help.1"),
+                Component.translatable("gui.antiqueatlas.deathMarker.help.2")));
+    }
+
+    private void updateRescanButton() {
+        if (btnRescan == null) return;
+        ClientWorldScanner.RescanStatus status = AntiqueAtlasClientSegment.getRescanStatus();
+        btnRescan.setEnabled(!status.running());
+        btnRescan.setSelected(status.running());
+        if (status.running()) {
+            btnRescan.setTooltip(List.of(
+                    Component.translatable("gui.antiqueatlas.rescan.title"),
+                    Component.translatable("gui.antiqueatlas.rescan.progress",
+                            status.completedChunks(), status.totalChunks())));
+        } else {
+            btnRescan.setTooltip(List.of(
+                    Component.translatable("gui.antiqueatlas.rescan.title"),
+                    Component.translatable("gui.antiqueatlas.rescan.help.1"),
+                    Component.translatable("gui.antiqueatlas.rescan.help.2"),
+                    Component.translatable("gui.antiqueatlas.rescan.help.3")));
+        }
     }
 
     /**
@@ -935,8 +988,8 @@ public class GuiAtlas extends GuiComponent {
         int mapStartZ = MathUtil.roundToBase((int) Math.floor(-((double) MAP_HEIGHT / 2d + mapOffsetY + 2 * tileHalfSize) / mapScale / 16d), tile2ChunkScale);
         int mapEndX = MathUtil.roundToBase((int) Math.ceil(((double) MAP_WIDTH / 2d - mapOffsetX + 2 * tileHalfSize) / mapScale / 16d), tile2ChunkScale);
         int mapEndZ = MathUtil.roundToBase((int) Math.ceil(((double) MAP_HEIGHT / 2d - mapOffsetY + 2 * tileHalfSize) / mapScale / 16d), tile2ChunkScale);
-        int mapStartScreenX = getGuiX() + WIDTH / 2 + (int) ((mapStartX << 4) * mapScale) + mapOffsetX;
-        int mapStartScreenY = getGuiY() + HEIGHT / 2 + (int) ((mapStartZ << 4) * mapScale) + mapOffsetY;
+        int mapStartScreenX = worldXToScreenX(mapStartX << 4);
+        int mapStartScreenY = worldZToScreenY(mapStartZ << 4);
         TileRenderIterator tiles = new TileRenderIterator(biomeData);
         tiles.setScope(new Rect(mapStartX, mapStartZ, mapEndX, mapEndZ));
         tiles.setStep(tile2ChunkScale);
@@ -969,6 +1022,7 @@ public class GuiAtlas extends GuiComponent {
 
         double iconScale = getIconScale();
 
+        hoveredMarker = null;
         // Draw global markers:
         renderMarkers(matrices, markersStartX, markersStartZ, markersEndX, markersEndZ, globalMarkersData);
         renderMarkers(matrices, markersStartX, markersStartZ, markersEndX, markersEndZ, localMarkersData);
@@ -979,10 +1033,8 @@ public class GuiAtlas extends GuiComponent {
 
         renderScaleOverlay(matrices, deltaMillis);
 
-        // Draw player icon:
-        if (!state.is(HIDING_MARKERS)) {
-            renderPlayer(matrices, iconScale);
-        }
+        // The marker filter never hides the player icon.
+        renderPlayer(matrices, iconScale);
 
         // Draw buttons:
         super.render(matrices, mouseX, mouseY, par3);
@@ -1023,11 +1075,6 @@ public class GuiAtlas extends GuiComponent {
             }
         }
 
-        // Draw progress overlay:
-        if (state.is(EXPORTING_IMAGE)) {
-            renderBackground(matrices);
-            progressBar.draw(matrices, (width - 100) / 2, height / 2 - 34);
-        }
     }
 
     private void renderPlayer(GuiGraphics matrices, double iconScale) {
@@ -1112,8 +1159,9 @@ public class GuiAtlas extends GuiComponent {
     }
 
     private void renderMarker(GuiGraphics matrices, Marker marker, double scale) {
+        if (!MarkerVisibility.isVisible(marker.getType())) return;
         MarkerType type = MarkerType.REGISTRY.get(marker.getType());
-        if (type.shouldHide(state.is(HIDING_MARKERS), scaleClipIndex)) {
+        if (type.shouldHide(false, scaleClipIndex)) {
             return;
         }
 
@@ -1182,35 +1230,48 @@ public class GuiAtlas extends GuiComponent {
 
     @Override
     public void onClose() {
+        closeMarkerGroupList();
         super.onClose();
         markerFinalizer.closeChild();
+        if (markerFilter.getParent() != null) markerFilter.closeChild();
         removeChild(blinkingIcon);
         // Keyboard.enableRepeatEvents(false);
         biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);
-
-        new PutBrowsingPositionC2SPacket(getAtlasID(), player.getCommandSenderWorld().dimension(), mapOffsetX, mapOffsetY, mapScale).send();
+        ClientMapManager.getInstance().markStateDirty();
     }
 
     /**
      * Returns the Y coordinate that the cursor is pointing at.
      */
     private int screenXToWorldX(int mouseX) {
-        return (int) Math.round((double) (mouseX - this.width / 2 - mapOffsetX) / mapScale);
+        return (int) Math.round((double) (mouseX - getMapCenterScreenX() - mapOffsetX) / mapScale);
     }
 
     /**
      * Returns the Y block coordinate that the cursor is pointing at.
      */
     private int screenYToWorldZ(int mouseY) {
-        return (int) Math.round((double) (mouseY - this.height / 2 - mapOffsetY) / mapScale);
+        return (int) Math.round((double) (mouseY - getMapCenterScreenY() - mapOffsetY) / mapScale);
     }
 
     private int worldXToScreenX(int x) {
-        return (int) Math.round((double) x * mapScale + this.width / 2f + mapOffsetX);
+        return (int) Math.round((double) x * mapScale + getMapCenterScreenX() + mapOffsetX);
     }
 
     private int worldZToScreenY(int z) {
-        return (int) Math.round((double) z * mapScale + this.height / 2f + mapOffsetY);
+        return (int) Math.round((double) z * mapScale + getMapCenterScreenY() + mapOffsetY);
+    }
+
+    /**
+     * The map is anchored to the explicitly centered book. Side panels extend
+     * beyond its bounds but do not participate in this coordinate system.
+     */
+    private int getMapCenterScreenX() {
+        return getGuiX() + WIDTH / 2;
+    }
+
+    private int getMapCenterScreenY() {
+        return getGuiY() + HEIGHT / 2;
     }
 
     @Override
@@ -1218,6 +1279,10 @@ public class GuiAtlas extends GuiComponent {
         if (child.equals(markerFinalizer)) {
             setInterceptKeyboard(true);
             removeChild(blinkingIcon);
+        } else if (child.equals(markerFilter)) {
+            btnMarkerFilter.setSelected(false);
+            hoveredMarker = null;
+            updateBookmarkerList();
         }
     }
 
@@ -1225,11 +1290,12 @@ public class GuiAtlas extends GuiComponent {
      * Update all text labels to current localization.
      */
     public void updateL18n() {
-        btnExportPng.setTitle(Component.translatable("gui.antiqueatlas.exportImage"));
+        btnMaps.setTitle(Component.translatable("gui.antiqueatlas.maps.manage"));
         btnMarker.setTitle(Component.translatable("gui.antiqueatlas.addMarker"));
         btnDelMarker.setTitle(Component.translatable("gui.antiqueatlas.delMarker"));
-        btnShowMarkers.setTitle(Component.translatable(
-                state.is(HIDING_MARKERS) ? "gui.antiqueatlas.showMarkers" : "gui.antiqueatlas.hideMarkers"));
+        btnMarkerFilter.setTitle(Component.translatable("gui.antiqueatlas.markerFilter.title"));
+        updateDeathMarkerButton();
+        updateRescanButton();
     }
 
     /**
@@ -1247,6 +1313,6 @@ public class GuiAtlas extends GuiComponent {
      * The map belongs to the player. The atlas item only controls access.
      */
     private int getAtlasID() {
-        return player.getUUID().hashCode();
+        return ClientMapManager.getInstance().getActiveAtlasId();
     }
 }

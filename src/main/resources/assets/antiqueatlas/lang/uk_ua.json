@@ -13,7 +13,6 @@
   "gui.antiqueatlas.marker.label": "Ярлик:",
   "gui.antiqueatlas.marker.type": "Тип:",
   "gui.antiqueatlas.marker.village": "Село",
-  "gui.antiqueatlas.marker.netherPortal": "Портал у Незер",
   "gui.antiqueatlas.marker.tomb": "Here lies %s",
   "gui.antiqueatlas.marker.treasure": "Скарб",
   "gui.antiqueatlas.marker.monument": "Океанічний монумент",
@@ -48,7 +47,6 @@
   "text.autoconfig.antiqueatlas.option.doSaveBrowsingPos": "Зберегти позицію атласа",
   "text.autoconfig.antiqueatlas.option.autoDeathMarker": "Мітка смерті",
   "text.autoconfig.antiqueatlas.option.autoVillageMarkers": "Мітка села",
-  "text.autoconfig.antiqueatlas.option.autoNetherPortalMarkers": "Мітка порталу в Незер",
   "text.autoconfig.antiqueatlas.option.itemNeeded": "Для використання необхідний атлас",
 
   "text.autoconfig.antiqueatlas.option.doScaleMarkers": "Масштабувати мітки",
