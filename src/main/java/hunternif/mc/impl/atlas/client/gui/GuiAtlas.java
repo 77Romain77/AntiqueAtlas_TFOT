@@ -686,8 +686,8 @@ public class GuiAtlas extends GuiComponent {
                 wheelMove *= -1;
             }
 
-            double mouseOffsetX = Minecraft.getInstance().getWindow().getWidth() / screenScale / 2 - getMouseX();
-            double mouseOffsetY = Minecraft.getInstance().getWindow().getHeight() / screenScale / 2 - getMouseY();
+            double mouseOffsetX = getMapCenterScreenX() - getMouseX();
+            double mouseOffsetY = getMapCenterScreenY() - getMouseY();
             double newScale = mapScale * Math.pow(2, wheelMove);
             double addOffsetX = 0;
             double addOffsetY = 0;
@@ -986,8 +986,8 @@ public class GuiAtlas extends GuiComponent {
         int mapStartZ = MathUtil.roundToBase((int) Math.floor(-((double) MAP_HEIGHT / 2d + mapOffsetY + 2 * tileHalfSize) / mapScale / 16d), tile2ChunkScale);
         int mapEndX = MathUtil.roundToBase((int) Math.ceil(((double) MAP_WIDTH / 2d - mapOffsetX + 2 * tileHalfSize) / mapScale / 16d), tile2ChunkScale);
         int mapEndZ = MathUtil.roundToBase((int) Math.ceil(((double) MAP_HEIGHT / 2d - mapOffsetY + 2 * tileHalfSize) / mapScale / 16d), tile2ChunkScale);
-        int mapStartScreenX = getGuiX() + WIDTH / 2 + (int) ((mapStartX << 4) * mapScale) + mapOffsetX;
-        int mapStartScreenY = getGuiY() + HEIGHT / 2 + (int) ((mapStartZ << 4) * mapScale) + mapOffsetY;
+        int mapStartScreenX = worldXToScreenX(mapStartX << 4);
+        int mapStartScreenY = worldZToScreenY(mapStartZ << 4);
         TileRenderIterator tiles = new TileRenderIterator(biomeData);
         tiles.setScope(new Rect(mapStartX, mapStartZ, mapEndX, mapEndZ));
         tiles.setStep(tile2ChunkScale);
@@ -1242,22 +1242,34 @@ public class GuiAtlas extends GuiComponent {
      * Returns the Y coordinate that the cursor is pointing at.
      */
     private int screenXToWorldX(int mouseX) {
-        return (int) Math.round((double) (mouseX - this.width / 2 - mapOffsetX) / mapScale);
+        return (int) Math.round((double) (mouseX - getMapCenterScreenX() - mapOffsetX) / mapScale);
     }
 
     /**
      * Returns the Y block coordinate that the cursor is pointing at.
      */
     private int screenYToWorldZ(int mouseY) {
-        return (int) Math.round((double) (mouseY - this.height / 2 - mapOffsetY) / mapScale);
+        return (int) Math.round((double) (mouseY - getMapCenterScreenY() - mapOffsetY) / mapScale);
     }
 
     private int worldXToScreenX(int x) {
-        return (int) Math.round((double) x * mapScale + this.width / 2f + mapOffsetX);
+        return (int) Math.round((double) x * mapScale + getMapCenterScreenX() + mapOffsetX);
     }
 
     private int worldZToScreenY(int z) {
-        return (int) Math.round((double) z * mapScale + this.height / 2f + mapOffsetY);
+        return (int) Math.round((double) z * mapScale + getMapCenterScreenY() + mapOffsetY);
+    }
+
+    /**
+     * The map is anchored to the book, not to the full screen. Side panels can
+     * make this component wider and move the book away from the screen center.
+     */
+    private int getMapCenterScreenX() {
+        return getGuiX() + WIDTH / 2;
+    }
+
+    private int getMapCenterScreenY() {
+        return getGuiY() + HEIGHT / 2;
     }
 
     @Override

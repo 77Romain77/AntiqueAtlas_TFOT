@@ -20,6 +20,8 @@ pas besoin du mod et ne reçoit aucun paquet, scan de chunk ou fichier de carte.
   disponible.
 - La carte affiche uniquement la dimension où se trouve actuellement le joueur.
 - Les données des dimensions sont séparées en interne pour éviter les collisions.
+- Le terrain, les marqueurs et l’icône du joueur utilisent tous le centre du
+  livre comme origine, y compris aux niveaux de dézoom qui regroupent les chunks.
 - Le terrain exploré est partagé entre toutes les cartes du même pseudo sur le
   même serveur : changer de carte ne recharge ni ne rescane les chunks déjà connus.
 - Les marqueurs, les filtres et la position de navigation restent propres à chaque carte.
@@ -124,19 +126,21 @@ le JAR dans l’artefact `antique-atlas-tfot-forge-1.20.1`.
 2. Rejoindre un serveur Forge 1.20.1 dépourvu du mod.
 3. Explorer, fermer Minecraft, se reconnecter et vérifier la persistance.
 4. Changer de dimension et vérifier que seule la dimension actuelle est affichée.
-5. Tester la création, le renommage et la suppression de plusieurs cartes.
-6. Tester les deux valeurs de `itemNeeded`.
-7. Tester le clic droit dans le vide, puis sur un coffre, en main principale et
+5. Centrer la carte sur le joueur, dézoomer jusqu’au minimum et vérifier que
+   son icône reste sur le même terrain à chaque niveau.
+6. Tester la création, le renommage et la suppression de plusieurs cartes.
+7. Tester les deux valeurs de `itemNeeded`.
+8. Tester le clic droit dans le vide, puis sur un coffre, en main principale et
    en main secondaire.
-8. Configurer des filtres différents sur deux cartes, les rouvrir et vérifier
+9. Configurer des filtres différents sur deux cartes, les rouvrir et vérifier
    que chaque carte retrouve ses propres choix.
-9. Explorer avec une carte, en ouvrir une autre et vérifier que le même terrain
+10. Explorer avec une carte, en ouvrir une autre et vérifier que le même terrain
    apparaît immédiatement alors que les marqueurs et filtres restent indépendants.
-10. Désactiver le marqueur de mort sur une carte, le laisser activé sur une autre,
+11. Désactiver le marqueur de mort sur une carte, le laisser activé sur une autre,
     puis vérifier qu’une seule tombe « Vous êtes mort ici » est créée par décès.
-11. Utiliser **Actualiser la zone** et vérifier la progression, le verrouillage du
+12. Utiliser **Actualiser la zone** et vérifier la progression, le verrouillage du
    bouton et le message final indiquant le nombre de chunks modifiés.
-12. Copier une sauvegarde sur une seconde installation : vérifier qu’elle charge
+13. Copier une sauvegarde sur une seconde installation : vérifier qu’elle charge
     avec le même pseudo, puis qu’un pseudo différent obtient son propre espace et
     ne peut pas ouvrir les profils ou régions copiés.
 
