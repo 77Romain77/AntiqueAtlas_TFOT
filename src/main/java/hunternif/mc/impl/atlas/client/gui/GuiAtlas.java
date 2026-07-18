@@ -10,6 +10,7 @@ import hunternif.mc.impl.atlas.client.gui.core.*;
 import hunternif.mc.impl.atlas.client.gui.core.GuiStates.IState;
 import hunternif.mc.impl.atlas.client.gui.core.GuiStates.SimpleState;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
+import hunternif.mc.impl.atlas.client.texture.TileRenderBatch;
 import hunternif.mc.impl.atlas.client.texture.TileTexture;
 import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import hunternif.mc.impl.atlas.core.WorldData;
@@ -997,17 +998,32 @@ public class GuiAtlas extends GuiComponent {
         matrices.pose().pushPose();
         matrices.pose().translate(mapStartScreenX, mapStartScreenY, 0);
 
+        // TileRenderIterator reuses its four SubTile instances. Capture only
+        // primitive draw data while grouping by texture, then submit one GPU
+        // buffer per texture instead of one draw call per visible subtile.
+        Map<TileTexture, TileRenderBatch> tileBatches = new LinkedHashMap<>();
+        int mapLeft = getGuiX() + MAP_BORDER_WIDTH;
+        int mapTop = getGuiY() + MAP_BORDER_HEIGHT;
+        int mapRight = mapLeft + MAP_WIDTH;
+        int mapBottom = mapTop + MAP_HEIGHT;
         for (SubTileQuartet subtiles : tiles) {
             for (SubTile subtile : subtiles) {
                 if (subtile == null || subtile.tile == null) continue;
+                int drawX = subtile.x * tileHalfSize;
+                int drawY = subtile.y * tileHalfSize;
+                int screenX = mapStartScreenX + drawX;
+                int screenY = mapStartScreenY + drawY;
+                if (screenX >= mapRight || screenY >= mapBottom
+                        || screenX + tileHalfSize <= mapLeft
+                        || screenY + tileHalfSize <= mapTop) continue;
+
                 ITexture texture = TileTextureMap.instance().getTexture(subtile);
-                if (texture instanceof TileTexture) {
-                    TileTexture tileTexture = (TileTexture) texture;
-                    tileTexture.bind();
-                    tileTexture.drawSubTile(matrices, subtile, tileHalfSize);
-                }
+                if (!(texture instanceof TileTexture tileTexture)) continue;
+                tileBatches.computeIfAbsent(tileTexture, TileRenderBatch::new).add(
+                        drawX, drawY, subtile.getTextureU() * 8, subtile.getTextureV() * 8);
             }
         }
+        tileBatches.values().forEach(batch -> batch.draw(matrices, tileHalfSize));
 
         matrices.pose().popPose();
 

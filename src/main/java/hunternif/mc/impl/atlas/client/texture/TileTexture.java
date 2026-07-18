@@ -8,8 +8,8 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * A specialized class for textures used as tiles in the atlas map.
  * It has a special method to draw SubTile instances give a size of the map.
- * By default, TileTextures DO NOT bind the texture. This is on purpose to allow
- * the performance optimization shown in the SetTileRenderer.
+ * By default, TileTextures DO NOT bind the texture. This allows
+ * {@link TileRenderBatch} to bind once for an entire group of visible subtiles.
  */
 public class TileTexture extends ATexture {
     public TileTexture(ResourceLocation texture) {

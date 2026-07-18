@@ -28,6 +28,8 @@ chunks supplémentaires.
 - rendu de l’atlas en main compatible avec Iris/Oculus, les shaders et les
   resource packs ;
 - interface recentrée et coordonnées corrigées à tous les niveaux de zoom ;
+- rendu du terrain regroupé par texture pour limiter fortement les appels
+  graphiques lorsque beaucoup de tuiles sont visibles ;
 - traductions françaises et anglaises de toutes les fonctionnalités TFOT ;
 - build Forge automatique avec GitHub Actions.
 
@@ -151,6 +153,12 @@ simplifié, mais ses coordonnées restent alignées avec le joueur et les marque
 Le terrain, le joueur, les marqueurs, les clics et le zoom sous la souris
 utilisent tous le centre du livre comme origine. Le livre lui-même reste centré
 à l’écran, indépendamment des marque-pages à droite ou des listes à gauche.
+
+Pour limiter la baisse de FPS autour du zoom `×1`, les sous-tuiles visibles qui
+utilisent la même texture sont envoyées au GPU dans un seul lot. Les parties
+réellement hors de la page sont aussi écartées avant le rendu. Cette optimisation
+ne modifie ni l’apparence de la carte ni les textures fournies par les resource
+packs.
 
 ## Marqueurs
 
