@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hunternif.mc.api.client.AtlasClientAPI;
+import hunternif.mc.impl.atlas.client.MarkerTypeOrder;
 import hunternif.mc.impl.atlas.client.gui.core.GuiComponent;
 import hunternif.mc.impl.atlas.client.gui.core.GuiScrollingContainer;
 import hunternif.mc.impl.atlas.client.gui.core.ToggleGroup;
@@ -96,11 +97,8 @@ public class GuiMarkerFinalizer extends GuiComponent {
         scroller.setWheelScrollsHorizontally();
         this.addChild(scroller);
 
-        int typeCount = 0;
-        for (MarkerType type : MarkerType.REGISTRY) {
-            if (!type.isTechnical())
-                typeCount++;
-        }
+        List<MarkerType> orderedTypes = MarkerTypeOrder.sortedNonTechnicalTypes();
+        int typeCount = orderedTypes.size();
         int allTypesWidth = typeCount *
                 (GuiMarkerInList.FRAME_SIZE + TYPE_SPACING) - TYPE_SPACING;
         int scrollerWidth = Math.min(allTypesWidth, 240);
@@ -115,9 +113,7 @@ public class GuiMarkerFinalizer extends GuiComponent {
             }
         });
         int contentX = 0;
-        for (MarkerType markerType : MarkerType.REGISTRY) {
-            if (markerType.isTechnical())
-                continue;
+        for (MarkerType markerType : orderedTypes) {
             GuiMarkerInList markerGui = new GuiMarkerInList(markerType);
             typeRadioGroup.addButton(markerGui);
             if (selectedType.equals(markerType)) {

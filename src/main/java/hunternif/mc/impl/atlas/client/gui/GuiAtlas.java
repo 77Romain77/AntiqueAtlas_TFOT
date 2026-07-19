@@ -495,7 +495,7 @@ public class GuiAtlas extends GuiComponent {
                 }
             }
             visibleMarkers.sort(Comparator
-                    .comparing((Marker marker) -> marker.getType().toString())
+                    .comparing(Marker::getType, MarkerTypeOrder.idComparator())
                     .thenComparingInt(Marker::getId));
             for (Marker marker : visibleMarkers) {
                 groupedMarkers.computeIfAbsent(marker.getType(), ignored -> new ArrayList<>())

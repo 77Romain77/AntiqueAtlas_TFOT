@@ -1,6 +1,7 @@
 package hunternif.mc.impl.atlas.client.gui;
 
 import hunternif.mc.impl.atlas.client.MarkerVisibility;
+import hunternif.mc.impl.atlas.client.MarkerTypeOrder;
 import hunternif.mc.impl.atlas.client.Textures;
 import hunternif.mc.impl.atlas.client.gui.core.GuiComponent;
 import hunternif.mc.impl.atlas.client.gui.core.GuiScrollingContainer;
@@ -15,7 +16,6 @@ import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /** In-atlas multi-select panel controlling which marker types are rendered. */
@@ -47,11 +47,7 @@ public final class GuiMarkerFilter extends GuiComponent {
             scroller.removeAllContent();
         }
 
-        List<MarkerType> types = new ArrayList<>();
-        for (MarkerType type : MarkerType.REGISTRY) {
-            if (!type.isTechnical() && MarkerType.REGISTRY.getKey(type) != null) types.add(type);
-        }
-        types.sort(Comparator.comparing(type -> MarkerType.REGISTRY.getKey(type).toString()));
+        List<MarkerType> types = MarkerTypeOrder.sortedNonTechnicalTypes();
 
         int allTypesWidth = Math.max(FRAME_SIZE,
                 types.size() * (FRAME_SIZE + TYPE_SPACING) - TYPE_SPACING);

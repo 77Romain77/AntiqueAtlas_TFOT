@@ -23,6 +23,8 @@ chunks supplémentaires.
 - liaison légère des fichiers au pseudo pour décourager leur échange direct ;
 - filtres de marqueurs par carte, groupes de marqueurs par icône et nouvelles
   icônes TFOT ;
+- ordre global des types de marqueurs configurable et identique dans toutes les
+  listes de l’interface ;
 - marqueur de mort automatique activable séparément pour chaque carte ;
 - actualisation manuelle d’une zone déjà explorée ;
 - rendu de l’atlas en main compatible avec Iris/Oculus, les shaders et les
@@ -188,6 +190,19 @@ Le marque-page vert ouvre les filtres :
 - la touche `Échap` ferme proprement le menu comme le bouton **Terminé**.
 
 Le filtre affiche seulement l’icône et son état, sans répéter le nom du type.
+
+### Ordre des types de marqueurs
+
+La liste `markerTypeOrder` de `antiqueatlas-client.json` définit un classement
+global. Le même ordre est utilisé dans le sélecteur d’ajout, les filtres et les
+catégories situées à gauche du livre. Chaque entrée correspond à l’identifiant
+interne d’un type, par exemple `antiqueatlas:tomb`.
+
+Les identifiants absents de la liste sont conservés et ajoutés à la fin par
+ordre alphabétique. Les entrées inconnues sont gardées afin de permettre à un
+resource pack d’ajouter ultérieurement son type, tandis que les identifiants
+invalides et les doublons sont nettoyés au chargement. Il est préférable de
+modifier ce classement lorsque le jeu est fermé.
 
 ### Icônes TFOT ajoutées
 
@@ -362,6 +377,7 @@ JSON, de préférence lorsque le jeu est fermé.
 | `scanRadius` | `11` | Rayon circulaire des chunks client vérifiés, limité entre `0` et `32` |
 | `clientScanBudget` | `8` | Nombre maximal de chunks analysés par tick, limité entre `1` et `64` |
 | `markerLimit` | `1024` | Nombre maximal de marqueurs enregistrés dans une carte |
+| `markerTypeOrder` | Liste des marqueurs intégrés | Ordre commun du sélecteur d’ajout, des filtres et des catégories latérales |
 | `defaultScale` | `0.5` | Zoom initial d’une nouvelle dimension |
 | `minScale` | `0.03125` | Dézoom minimal, soit `1/32` |
 | `maxScale` | `4.0` | Zoom maximal |

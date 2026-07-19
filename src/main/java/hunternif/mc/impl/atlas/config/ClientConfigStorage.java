@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.AntiqueAtlasConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraft.resources.ResourceLocation;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,9 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /** Lightweight standalone client config with no network hooks. */
 public final class ClientConfigStorage {
@@ -65,6 +69,18 @@ public final class ClientConfigStorage {
         config.minScale = Math.max(1.0 / 1024.0, config.minScale);
         config.maxScale = Math.max(config.minScale, config.maxScale);
         config.defaultScale = Math.max(config.minScale, Math.min(config.maxScale, config.defaultScale));
+
+        if (config.markerTypeOrder == null) {
+            config.markerTypeOrder = new ArrayList<>(AntiqueAtlasConfig.DEFAULT_MARKER_TYPE_ORDER);
+        } else {
+            Set<String> normalizedOrder = new LinkedHashSet<>();
+            for (String configuredId : config.markerTypeOrder) {
+                if (configuredId == null) continue;
+                ResourceLocation id = ResourceLocation.tryParse(configuredId.trim());
+                if (id != null) normalizedOrder.add(id.toString());
+            }
+            config.markerTypeOrder = new ArrayList<>(normalizedOrder);
+        }
     }
 
     private static int clamp(int value, int min, int max) {
