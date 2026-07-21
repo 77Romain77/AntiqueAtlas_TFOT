@@ -126,7 +126,8 @@ public class RecipeAtlasCombining extends CustomRecipe {
                 for (ResourceKey<Level> worldRegistryKey : srcMarkers.getVisitedDimensions()) {
                     for (Marker marker : srcMarkers.getMarkersDataInWorld(worldRegistryKey).getAllMarkers()) {
                         destMarkers.createAndSaveMarker(marker.getType(),
-                                worldRegistryKey, marker.getX(), marker.getZ(), marker.isVisibleAhead(), marker.getLabel());
+                                worldRegistryKey, marker.getX(), marker.getZ(), marker.isVisibleAhead(),
+                                marker.getLabel(), marker.getColor());
                     }
                 }
             }

@@ -3,13 +3,15 @@ package hunternif.mc.impl.atlas.client.gui;
 import java.util.ArrayList;
 import java.util.List;
 
-import hunternif.mc.api.client.AtlasClientAPI;
+import com.mojang.blaze3d.systems.RenderSystem;
 import hunternif.mc.impl.atlas.client.MarkerTypeOrder;
 import hunternif.mc.impl.atlas.client.gui.core.GuiComponent;
 import hunternif.mc.impl.atlas.client.gui.core.GuiScrollingContainer;
 import hunternif.mc.impl.atlas.client.gui.core.ToggleGroup;
+import hunternif.mc.impl.atlas.client.texture.ITexture;
 import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import hunternif.mc.impl.atlas.marker.Marker;
+import hunternif.mc.impl.atlas.marker.MarkerColor;
 import hunternif.mc.impl.atlas.registry.MarkerType;
 import hunternif.mc.impl.atlas.util.Log;
 import net.minecraft.client.Minecraft;
@@ -35,6 +37,8 @@ public class GuiMarkerFinalizer extends GuiComponent {
     private int markerZ;
     private Marker editingMarker;
     private String markerName = "";
+    private MarkerColor selectedColor = MarkerColor.NONE;
+    private MarkerColor lastUsedColor = MarkerColor.NONE;
 
     MarkerType selectedType = MarkerType.REGISTRY.get(MarkerType.REGISTRY.getDefaultKey());
 
@@ -44,6 +48,11 @@ public class GuiMarkerFinalizer extends GuiComponent {
 
     private static final int TYPE_SPACING = 1;
     private static final int TYPE_BG_FRAME = 4;
+    private static final int COLOR_COLUMNS = 9;
+    private static final int COLOR_SPACING = 2;
+    private static final int COLOR_TOP_OFFSET = 29;
+    private static final int PREVIEW_SIZE = 30;
+    private static final int CONTROLS_Y_OFFSET = 73;
 
     private Button btnDone;
     private Button btnCancel;
@@ -51,6 +60,8 @@ public class GuiMarkerFinalizer extends GuiComponent {
     private EditBox textField;
     private GuiScrollingContainer scroller;
     private ToggleGroup<GuiMarkerInList> typeRadioGroup;
+    private ToggleGroup<GuiMarkerColorButton> colorRadioGroup;
+    private final List<GuiMarkerColorButton> colorButtons = new ArrayList<>();
 
     private final List<IMarkerTypeSelectListener> markerListeners = new ArrayList<>();
 
@@ -64,6 +75,7 @@ public class GuiMarkerFinalizer extends GuiComponent {
         this.markerZ = markerZ;
         this.editingMarker = null;
         this.markerName = "";
+        this.selectedColor = lastUsedColor;
         setBlocksScreen(true);
     }
 
@@ -74,6 +86,7 @@ public class GuiMarkerFinalizer extends GuiComponent {
         this.markerZ = marker.getZ();
         this.editingMarker = marker;
         this.markerName = marker.getLabel().getString();
+        this.selectedColor = marker.getColor();
         MarkerType markerType = MarkerType.REGISTRY.get(marker.getType());
         if (markerType != null) selectedType = markerType;
         setBlocksScreen(true);
@@ -115,20 +128,20 @@ public class GuiMarkerFinalizer extends GuiComponent {
                                     1F, 0.5F);
                             closeChild();
                         }
-                    }).bounds(controlsX, this.height / 2 + 40, EDIT_BUTTON_WIDTH, 20).build());
+                    }).bounds(controlsX, this.height / 2 + CONTROLS_Y_OFFSET, EDIT_BUTTON_WIDTH, 20).build());
             btnCancel = Button.builder(Component.translatable("gui.cancel"), button -> closeChild())
                     .bounds(controlsX + EDIT_BUTTON_WIDTH + BUTTON_SPACING,
-                            this.height / 2 + 40, EDIT_BUTTON_WIDTH, 20).build();
+                            this.height / 2 + CONTROLS_Y_OFFSET, EDIT_BUTTON_WIDTH, 20).build();
             btnDone = Button.builder(doneLabel, button -> saveMarker())
                     .bounds(controlsX + (EDIT_BUTTON_WIDTH + BUTTON_SPACING) * 2,
-                            this.height / 2 + 40, EDIT_BUTTON_WIDTH, 20).build();
+                            this.height / 2 + CONTROLS_Y_OFFSET, EDIT_BUTTON_WIDTH, 20).build();
         } else {
             btnCancel = Button.builder(Component.translatable("gui.cancel"), button -> closeChild())
                     .bounds(this.width / 2 - BUTTON_WIDTH - BUTTON_SPACING / 2,
-                            this.height / 2 + 40, BUTTON_WIDTH, 20).build();
+                            this.height / 2 + CONTROLS_Y_OFFSET, BUTTON_WIDTH, 20).build();
             btnDone = Button.builder(doneLabel, button -> saveMarker())
                     .bounds(this.width / 2 + BUTTON_SPACING / 2,
-                            this.height / 2 + 40, BUTTON_WIDTH, 20).build();
+                            this.height / 2 + CONTROLS_Y_OFFSET, BUTTON_WIDTH, 20).build();
         }
         addRenderableWidget(btnCancel);
         addRenderableWidget(btnDone);
@@ -168,21 +181,49 @@ public class GuiMarkerFinalizer extends GuiComponent {
             scroller.addContent(markerGui).setRelativeX(contentX);
             contentX += GuiMarkerInList.FRAME_SIZE + TYPE_SPACING;
         }
+
+        for (GuiMarkerColorButton colorButton : new ArrayList<>(colorButtons)) {
+            removeChild(colorButton);
+        }
+        colorButtons.clear();
+        colorRadioGroup = new ToggleGroup<>();
+        colorRadioGroup.addListener(button -> selectedColor = button.getColor());
+        int paletteWidth = COLOR_COLUMNS * GuiMarkerColorButton.SIZE
+                + (COLOR_COLUMNS - 1) * COLOR_SPACING;
+        int groupWidth = paletteWidth + 8 + PREVIEW_SIZE;
+        int paletteX = (this.width - groupWidth) / 2;
+        int paletteY = this.height / 2 + COLOR_TOP_OFFSET;
+        MarkerColor[] colors = MarkerColor.values();
+        for (int i = 0; i < colors.length; i++) {
+            GuiMarkerColorButton colorButton = new GuiMarkerColorButton(colors[i]);
+            colorButtons.add(colorButton);
+            colorRadioGroup.addButton(colorButton);
+            if (colors[i] == selectedColor) colorRadioGroup.setSelectedButton(colorButton);
+            int column = i % COLOR_COLUMNS;
+            int row = i / COLOR_COLUMNS;
+            addChild(colorButton).setGuiCoords(
+                    paletteX + column * (GuiMarkerColorButton.SIZE + COLOR_SPACING),
+                    paletteY + row * (GuiMarkerColorButton.SIZE + COLOR_SPACING));
+        }
     }
 
     private void saveMarker() {
         if (isEditing()) {
             Marker updated = ClientMapManager.getInstance().updateMarker(editingMarker.getId(),
-                    MarkerType.REGISTRY.getKey(selectedType), Component.literal(textField.getValue()));
+                    MarkerType.REGISTRY.getKey(selectedType), Component.literal(textField.getValue()),
+                    selectedColor);
             if (updated == null) return;
             Log.info("Updated marker #%d in Atlas #%d", editingMarker.getId(), atlasID);
         } else {
-            AtlasClientAPI.getMarkerAPI().putMarker(world, true, atlasID,
+            Marker created = ClientMapManager.getInstance().createMarker(world.dimension(),
                     MarkerType.REGISTRY.getKey(selectedType), Component.literal(textField.getValue()),
-                    markerX, markerZ);
+                    markerX, markerZ, true, selectedColor);
+            if (created == null) return;
             Log.info("Put marker in Atlas #%d \"%s\" at (%d, %d)",
                     atlasID, textField.getValue(), markerX, markerZ);
         }
+
+        lastUsedColor = selectedColor;
 
         LocalPlayer player = Minecraft.getInstance().player;
         world.playSound(player, player.blockPosition(),
@@ -196,12 +237,20 @@ public class GuiMarkerFinalizer extends GuiComponent {
         if (textField != null) textField.setValue(markerName);
     }
 
+    MarkerColor getSelectedColor() {
+        return selectedColor;
+    }
+
     @Override
     public void closeChild() {
-        super.closeChild();
         if (scroller != null) {
             scroller.closeChild();
         }
+        for (GuiMarkerColorButton colorButton : new ArrayList<>(colorButtons)) {
+            colorButton.closeChild();
+        }
+        colorButtons.clear();
+        super.closeChild();
     }
 
     @Override
@@ -235,6 +284,26 @@ public class GuiMarkerFinalizer extends GuiComponent {
                 scroller.getGuiX() + scroller.getWidth() + TYPE_BG_FRAME,
                 scroller.getGuiY() + scroller.getHeight() + TYPE_BG_FRAME,
                 0x88101010, 0x99101010);
+
+        int paletteWidth = COLOR_COLUMNS * GuiMarkerColorButton.SIZE
+                + (COLOR_COLUMNS - 1) * COLOR_SPACING;
+        int groupWidth = paletteWidth + 8 + PREVIEW_SIZE;
+        int paletteX = (this.width - groupWidth) / 2;
+        Component colorLabel = Component.translatable("gui.antiqueatlas.markerColor.title");
+        matrices.drawString(font, colorLabel,
+                paletteX + (paletteWidth - font.width(colorLabel)) / 2,
+                this.height / 2 + 16, 0xFFFFFF, true);
+
+        int previewX = paletteX + paletteWidth + 8;
+        int previewY = this.height / 2 + COLOR_TOP_OFFSET;
+        MarkerColorRenderer.drawBadge(matrices, previewX, previewY,
+                PREVIEW_SIZE, PREVIEW_SIZE, selectedColor);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        ITexture previewTexture = selectedType == null ? null : selectedType.getTexture();
+        if (previewTexture != null) {
+            previewTexture.draw(matrices, previewX + 3, previewY + 3,
+                    PREVIEW_SIZE - 6, PREVIEW_SIZE - 6);
+        }
         super.render(matrices, mouseX, mouseY, partialTick);
     }
 

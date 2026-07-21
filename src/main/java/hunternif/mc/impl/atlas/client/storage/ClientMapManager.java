@@ -9,6 +9,7 @@ import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.AntiqueAtlasClientSegment;
 import hunternif.mc.impl.atlas.core.AtlasData;
 import hunternif.mc.impl.atlas.marker.Marker;
+import hunternif.mc.impl.atlas.marker.MarkerColor;
 import hunternif.mc.impl.atlas.marker.MarkersData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
@@ -292,6 +293,11 @@ public final class ClientMapManager {
 
     public Marker createMarker(ResourceKey<Level> dimension, ResourceLocation type, Component label,
                                int x, int z, boolean visibleAhead) {
+        return createMarker(dimension, type, label, x, z, visibleAhead, MarkerColor.NONE);
+    }
+
+    public Marker createMarker(ResourceKey<Level> dimension, ResourceLocation type, Component label,
+                               int x, int z, boolean visibleAhead, MarkerColor color) {
         if (activeProfile == null || type == null) return null;
         int markerCount = activeProfile.markersData.getVisitedDimensions().stream()
                 .mapToInt(world -> activeProfile.markersData.getMarkersInWorld(world).size())
@@ -302,7 +308,8 @@ public final class ClientMapManager {
             return null;
         }
         if (label == null) label = Component.empty();
-        Marker marker = activeProfile.markersData.createAndSaveMarker(type, dimension, x, z, visibleAhead, label);
+        Marker marker = activeProfile.markersData.createAndSaveMarker(
+                type, dimension, x, z, visibleAhead, label, color);
         stateDirty = true;
         return marker;
     }
@@ -315,10 +322,16 @@ public final class ClientMapManager {
     }
 
     public Marker updateMarker(int markerId, ResourceLocation type, Component label) {
+        Marker current = activeProfile == null ? null : activeProfile.markersData.getMarker(markerId);
+        return updateMarker(markerId, type, label,
+                current == null ? MarkerColor.NONE : current.getColor());
+    }
+
+    public Marker updateMarker(int markerId, ResourceLocation type, Component label, MarkerColor color) {
         if (activeProfile == null || type == null) return null;
         Marker current = activeProfile.markersData.getMarker(markerId);
         if (current == null || current.isGlobal()) return null;
-        Marker updated = activeProfile.markersData.updateMarker(markerId, type, label);
+        Marker updated = activeProfile.markersData.updateMarker(markerId, type, label, color);
         if (updated != null) stateDirty = true;
         return updated;
     }

@@ -19,6 +19,12 @@ public class GlobalMarkersData extends MarkersData {
 		return super.createAndSaveMarker(type, world, x, y, visibleAhead, label).setGlobal(true);
 	}
 
+	@Override
+	public Marker createAndSaveMarker(ResourceLocation type, ResourceKey<Level> world, int x, int y,
+								  boolean visibleAhead, Component label, MarkerColor color) {
+		return super.createAndSaveMarker(type, world, x, y, visibleAhead, label, color).setGlobal(true);
+	}
+
 	public static GlobalMarkersData readNbt(CompoundTag compound) {
 		GlobalMarkersData data = new GlobalMarkersData();
 		doReadNbt(compound, data);

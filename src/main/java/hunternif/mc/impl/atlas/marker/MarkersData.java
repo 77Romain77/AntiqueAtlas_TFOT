@@ -46,6 +46,7 @@ public class MarkersData extends SavedData {
 	private static final String TAG_MARKER_X = "x";
 	private static final String TAG_MARKER_Y = "y";
 	private static final String TAG_MARKER_VISIBLE_AHEAD = "visAh";
+	private static final String TAG_MARKER_COLOR = "color";
 	private static final ResourceLocation REMOVED_NETHER_PORTAL_MARKER = AntiqueAtlas.id("nether_portal");
 
 	/** Markers are stored in lists within square areas this many MC chunks
@@ -124,7 +125,8 @@ public class MarkersData extends SavedData {
 						world,
 						markerTag.getInt(TAG_MARKER_X),
 						markerTag.getInt(TAG_MARKER_Y),
-						visibleAhead);
+						visibleAhead,
+						MarkerColor.fromSerializedName(markerTag.getString(TAG_MARKER_COLOR)));
 				data.loadMarker(marker);
 			}
 		}
@@ -148,6 +150,9 @@ public class MarkersData extends SavedData {
 				markerTag.putInt(TAG_MARKER_X, marker.getX());
 				markerTag.putInt(TAG_MARKER_Y, marker.getZ());
 				markerTag.putBoolean(TAG_MARKER_VISIBLE_AHEAD, marker.isVisibleAhead());
+				if (marker.getColor().isColored()) {
+					markerTag.putString(TAG_MARKER_COLOR, marker.getColor().getSerializedName());
+				}
 				tagList.add(markerTag);
 			}
 			tag.put(TAG_MARKERS, tagList);
@@ -200,6 +205,11 @@ public class MarkersData extends SavedData {
 	 * its stable id, coordinates, dimension and visibility rules.
 	 */
 	public Marker updateMarker(int id, ResourceLocation type, Component label) {
+		Marker marker = getMarkerByID(id);
+		return updateMarker(id, type, label, marker == null ? MarkerColor.NONE : marker.getColor());
+	}
+
+	public Marker updateMarker(int id, ResourceLocation type, Component label, MarkerColor color) {
 		Marker oldMarker = getMarkerByID(id);
 		if (oldMarker == null || type == null) return null;
 		if (label == null) label = Component.empty();
@@ -208,7 +218,7 @@ public class MarkersData extends SavedData {
 		if (!dimensionData.removeMarker(oldMarker)) return null;
 
 		Marker updatedMarker = new Marker(id, type, label, oldMarker.getWorld(),
-				oldMarker.getX(), oldMarker.getZ(), oldMarker.isVisibleAhead());
+				oldMarker.getX(), oldMarker.getZ(), oldMarker.isVisibleAhead(), color);
 		if (oldMarker.isGlobal()) updatedMarker.setGlobal(true);
 		idMap.put(id, updatedMarker);
 		dimensionData.insertMarker(updatedMarker);
@@ -220,7 +230,12 @@ public class MarkersData extends SavedData {
 	 * creates a new marker from the given data, saves and returns it.
 	 * Server side only! */
 	public Marker createAndSaveMarker(ResourceLocation type, ResourceKey<Level> world, int x, int z, boolean visibleAhead, Component label) {
-		Marker marker = new Marker(getNewID(), type, label, world, x, z, visibleAhead);
+		return createAndSaveMarker(type, world, x, z, visibleAhead, label, MarkerColor.NONE);
+	}
+
+	public Marker createAndSaveMarker(ResourceLocation type, ResourceKey<Level> world, int x, int z,
+								  boolean visibleAhead, Component label, MarkerColor color) {
+		Marker marker = new Marker(getNewID(), type, label, world, x, z, visibleAhead, color);
 		Log.info("Created new marker %s", marker.toString());
 		idMap.put(marker.getId(), marker);
 		getMarkersDataInWorld(world).insertMarker(marker);

@@ -426,6 +426,16 @@ public class ExportImageUtil {
                     int markerX = marker.getX() - minX;
                     int markerY = marker.getZ() - minY;
 
+                    if (marker.getColor().isColored()) {
+                        int badgePadding = Math.max(2, Math.min(info.width, info.height) / 8);
+                        int badgeX = (int) (markerX + info.x) - badgePadding;
+                        int badgeY = (int) (markerY + info.y) - badgePadding;
+                        int badgeWidth = info.width + badgePadding * 2;
+                        int badgeHeight = info.height + badgePadding * 2;
+                        drawMarkerBadge(graphics, badgeX, badgeY, badgeWidth, badgeHeight,
+                                marker.getColor().getRgb());
+                    }
+
                     graphics.drawImage(
                             markerImage,
                             (int) (markerX + info.x), (int) (markerY + info.y),
@@ -433,5 +443,31 @@ public class ExportImageUtil {
                 }
             }
         }
+    }
+
+    private static void drawMarkerBadge(Graphics2D graphics, int x, int y,
+                                        int width, int height, int rgb) {
+        int corner = Math.max(1, Math.min(Math.min(width, height) / 5, 4));
+        int[] xPoints = {x + corner, x + width - corner, x + width, x + width,
+                x + width - corner, x + corner, x, x};
+        int[] yPoints = {y, y, y + corner, y + height - corner,
+                y + height, y + height, y + height - corner, y + corner};
+        graphics.setColor(new Color(0xD824180F, true));
+        graphics.fillPolygon(xPoints, yPoints, xPoints.length);
+
+        int innerX = x + 1;
+        int innerY = y + 1;
+        int innerWidth = width - 2;
+        int innerHeight = height - 2;
+        int innerCorner = Math.max(1, corner - 1);
+        int[] innerXPoints = {innerX + innerCorner, innerX + innerWidth - innerCorner,
+                innerX + innerWidth, innerX + innerWidth,
+                innerX + innerWidth - innerCorner, innerX + innerCorner, innerX, innerX};
+        int[] innerYPoints = {innerY, innerY, innerY + innerCorner,
+                innerY + innerHeight - innerCorner, innerY + innerHeight,
+                innerY + innerHeight, innerY + innerHeight - innerCorner,
+                innerY + innerCorner};
+        graphics.setColor(new Color(0xD8000000 | rgb, true));
+        graphics.fillPolygon(innerXPoints, innerYPoints, innerXPoints.length);
     }
 }

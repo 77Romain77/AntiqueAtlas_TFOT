@@ -52,6 +52,8 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         ITexture texture = type == null ? null : type.getTexture();
         float tint = hidden ? 0.45F : 1.0F;
         RenderSystem.setShaderColor(tint, tint, tint, 1.0F);
+        MarkerColorRenderer.drawBadge(graphics, getGuiX() + 2, getGuiY() + 2,
+                18, 18, marker.getColor(), hidden ? 0x72 : 0xD8);
         if (texture != null) texture.draw(graphics, getGuiX() + 3, getGuiY() + 3, 16, 16);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 

@@ -54,7 +54,10 @@ public class GuiMarkerBookmark extends GuiComponentButton {
         Textures.BOOKMARKS_LEFT.draw(matrices, getGuiX(), getGuiY(), u, v, WIDTH, HEIGHT);
 
         // Render the icon:
-        iconTexture.draw(matrices, getGuiX() - (isMouseOver ? 3 : 2), getGuiY()-3, 24,24);
+        int iconX = getGuiX() - (isMouseOver ? 3 : 2);
+        int iconY = getGuiY() - 3;
+        MarkerColorRenderer.drawBadge(matrices, iconX, iconY, 24, 24, marker.getColor());
+        iconTexture.draw(matrices, iconX, iconY, 24, 24);
 
         if (isMouseOver && !getTitle().getString().isEmpty()) {
             drawTooltip(Collections.singletonList(getTitle()), Minecraft.getInstance().font);

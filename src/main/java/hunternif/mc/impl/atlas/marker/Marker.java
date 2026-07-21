@@ -22,11 +22,17 @@ public class Marker {
 	private final ResourceKey<Level> world;
 	private final int x, z;
 	private final boolean visibleAhead;
+	private final MarkerColor color;
 	private boolean isGlobal;
 
 	//TODO make an option for the marker to disappear at a certain scale.
 
 	public Marker(int id, ResourceLocation type, Component label, ResourceKey<Level> world, int x, int z, boolean visibleAhead) {
+		this(id, type, label, world, x, z, visibleAhead, MarkerColor.NONE);
+	}
+
+	public Marker(int id, ResourceLocation type, Component label, ResourceKey<Level> world, int x, int z,
+				  boolean visibleAhead, MarkerColor color) {
 		this.id = id;
 		this.type = type;
 
@@ -35,6 +41,7 @@ public class Marker {
 		this.x = x;
 		this.z = z;
 		this.visibleAhead = visibleAhead;
+		this.color = color == null ? MarkerColor.NONE : color;
 	}
 
 	public Marker(ResourceLocation type, ResourceKey<Level> world, Precursor precursor) {
@@ -81,6 +88,10 @@ public class Marker {
 	/** Whether the marker is visible regardless of the player having seen the location. */
 	public boolean isVisibleAhead() {
 		return visibleAhead;
+	}
+
+	public MarkerColor getColor() {
+		return color;
 	}
 
 	public boolean isGlobal() {
