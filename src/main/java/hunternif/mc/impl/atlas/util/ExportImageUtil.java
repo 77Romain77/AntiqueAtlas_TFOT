@@ -427,11 +427,10 @@ public class ExportImageUtil {
                     int markerY = marker.getZ() - minY;
 
                     if (marker.getColor().isColored()) {
-                        int badgePadding = Math.max(2, Math.min(info.width, info.height) / 8);
-                        int badgeX = (int) (markerX + info.x) - badgePadding;
-                        int badgeY = (int) (markerY + info.y) - badgePadding;
-                        int badgeWidth = info.width + badgePadding * 2;
-                        int badgeHeight = info.height + badgePadding * 2;
+                        int badgeWidth = Math.max(3, Math.round(info.width * 0.5F));
+                        int badgeHeight = Math.max(3, Math.round(info.height * 0.5F));
+                        int badgeX = (int) (markerX + info.x) + (info.width - badgeWidth) / 2;
+                        int badgeY = (int) (markerY + info.y) + (info.height - badgeHeight) / 2;
                         drawMarkerBadge(graphics, badgeX, badgeY, badgeWidth, badgeHeight,
                                 marker.getColor().getRgb());
                     }

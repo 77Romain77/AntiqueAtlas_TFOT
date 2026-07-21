@@ -1188,12 +1188,11 @@ public class GuiAtlas extends GuiComponent {
             markerFinalizer.selectedType.calculateMip(iconScale, mapScale, screenScale);
             MarkerRenderInfo renderInfo = markerFinalizer.selectedType.getRenderInfo(iconScale, mapScale, screenScale);
             markerFinalizer.selectedType.resetMip();
-            int previewPadding = Math.max(2, Math.min(renderInfo.width, renderInfo.height) / 8);
-            MarkerColorRenderer.drawBadge(matrices,
-                    mouseX + renderInfo.x - previewPadding,
-                    mouseY + renderInfo.y - previewPadding,
-                    renderInfo.width + previewPadding * 2,
-                    renderInfo.height + previewPadding * 2,
+            MarkerColorRenderer.drawCompactBadge(matrices,
+                    mouseX + renderInfo.x,
+                    mouseY + renderInfo.y,
+                    renderInfo.width,
+                    renderInfo.height,
                     markerFinalizer.getSelectedColor(), 0x78);
             renderInfo.tex.draw(matrices, mouseX + renderInfo.x, mouseY + renderInfo.y);
             RenderSystem.setShaderColor(1, 1, 1, 1);
@@ -1529,14 +1528,13 @@ public class GuiAtlas extends GuiComponent {
             markerY = Mth.clamp(markerY, getGuiY() + MAP_BORDER_HEIGHT, getGuiY() + MAP_HEIGHT + MAP_BORDER_HEIGHT);
         }
 
-        int badgePadding = Math.max(2, Math.min(info.width, info.height) / 8);
         int badgeAlpha = state.is(PLACING_MARKER)
                 || (state.is(DELETING_MARKER) && marker.isGlobal()) ? 0x78 : 0xD8;
-        MarkerColorRenderer.drawBadge(matrices,
-                markerX + info.x - badgePadding,
-                markerY + info.y - badgePadding,
-                info.width + badgePadding * 2,
-                info.height + badgePadding * 2,
+        MarkerColorRenderer.drawCompactBadge(matrices,
+                markerX + info.x,
+                markerY + info.y,
+                info.width,
+                info.height,
                 marker.getColor(), badgeAlpha);
         info.tex.draw(matrices, markerX + info.x, markerY + info.y, info.width, info.height);
         if (diagnosticVisible) {

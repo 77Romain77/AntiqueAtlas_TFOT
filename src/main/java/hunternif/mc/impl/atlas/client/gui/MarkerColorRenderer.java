@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 /** Draws the compact octagonal badge used behind colored marker icons. */
 final class MarkerColorRenderer {
     private static final int OUTLINE_RGB = 0x24180F;
+    private static final float COMPACT_SCALE = 0.5F;
 
     private MarkerColorRenderer() {
     }
@@ -21,6 +22,26 @@ final class MarkerColorRenderer {
         fillOctagon(graphics, x, y, width, height, argb(alpha, OUTLINE_RGB));
         fillOctagon(graphics, x + 1, y + 1, width - 2, height - 2,
                 argb(alpha, color.getRgb()));
+    }
+
+    /**
+     * Draws a small color accent centered behind a marker texture. Marker PNGs
+     * contain generous transparent margins, so using the complete texture size
+     * would cover the map or the bookmark button instead of merely backing the
+     * visible symbol.
+     */
+    static void drawCompactBadge(GuiGraphics graphics, int iconX, int iconY,
+                                 int iconWidth, int iconHeight, MarkerColor color) {
+        drawCompactBadge(graphics, iconX, iconY, iconWidth, iconHeight, color, 0xD8);
+    }
+
+    static void drawCompactBadge(GuiGraphics graphics, int iconX, int iconY,
+                                 int iconWidth, int iconHeight, MarkerColor color, int alpha) {
+        int badgeWidth = Math.max(3, Math.round(iconWidth * COMPACT_SCALE));
+        int badgeHeight = Math.max(3, Math.round(iconHeight * COMPACT_SCALE));
+        int badgeX = iconX + (iconWidth - badgeWidth) / 2;
+        int badgeY = iconY + (iconHeight - badgeHeight) / 2;
+        drawBadge(graphics, badgeX, badgeY, badgeWidth, badgeHeight, color, alpha);
     }
 
     static void drawNoColorSwatch(GuiGraphics graphics, int x, int y, int size) {
