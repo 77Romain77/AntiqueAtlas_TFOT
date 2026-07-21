@@ -67,7 +67,29 @@ public class GuiAtlas extends GuiComponent {
      */
     private static final double MIN_SCALE_THRESHOLD = 0.5;
 
+    private static final int DIAGNOSTIC_SAMPLE_COUNT = 60;
+    private static final int DIAGNOSTIC_PADDING = 4;
+    private static final int DIAGNOSTIC_MARGIN = 5;
+
     private final long[] renderTimes = new long[30];
+
+    /**
+     * Hidden, session-only performance overlay. It is intentionally absent
+     * from the config and normal controls; Ctrl+D toggles it while the atlas
+     * is open.
+     */
+    private boolean diagnosticVisible;
+    private boolean diagnosticShortcutDown;
+    private final long[] diagnosticFrameTimes = new long[DIAGNOSTIC_SAMPLE_COUNT];
+    private final long[] diagnosticTerrainTimes = new long[DIAGNOSTIC_SAMPLE_COUNT];
+    private int diagnosticSampleIndex;
+    private int diagnosticSamples;
+    private long diagnosticFrameTotal;
+    private long diagnosticTerrainTotal;
+    private int diagnosticTilesVisited;
+    private int diagnosticSubtilesRendered;
+    private int diagnosticBatchCount;
+    private int diagnosticMarkersRendered;
 
     private int renderTimesIndex = 0;
 
@@ -641,7 +663,17 @@ public class GuiAtlas extends GuiComponent {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE && markerFilter.getParent() != null) {
+        if (keyCode == GLFW.GLFW_KEY_D && hasControlDown()) {
+            // Ignore GLFW key-repeat events: one physical press toggles once.
+            if (!diagnosticShortcutDown) {
+                diagnosticVisible = !diagnosticVisible;
+                diagnosticShortcutDown = true;
+                if (diagnosticVisible) {
+                    resetDiagnosticSamples();
+                }
+            }
+            return true;
+        } else if (keyCode == GLFW.GLFW_KEY_ESCAPE && markerFilter.getParent() != null) {
             // Escape from the filter must behave exactly like its Done button,
             // otherwise the full-screen child remains attached to this atlas.
             markerFilter.closeChild();
@@ -675,6 +707,14 @@ public class GuiAtlas extends GuiComponent {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_D) {
+            diagnosticShortcutDown = false;
+        }
+        return super.keyReleased(keyCode, scanCode, modifiers);
     }
 
     @Override
@@ -944,6 +984,16 @@ public class GuiAtlas extends GuiComponent {
 
     @Override
     public void render(GuiGraphics matrices, int mouseX, int mouseY, float par3) {
+        final boolean collectDiagnostics = diagnosticVisible;
+        final long diagnosticFrameStart = collectDiagnostics ? System.nanoTime() : 0L;
+        long diagnosticTerrainTime = 0L;
+        if (collectDiagnostics) {
+            diagnosticTilesVisited = 0;
+            diagnosticSubtilesRendered = 0;
+            diagnosticBatchCount = 0;
+            diagnosticMarkersRendered = 0;
+        }
+
         long currentMillis = System.currentTimeMillis();
         long deltaMillis = currentMillis - lastUpdateMillis;
         lastUpdateMillis = currentMillis;
@@ -980,6 +1030,7 @@ public class GuiAtlas extends GuiComponent {
                 (int) (MAP_WIDTH * screenScale), (int) (MAP_HEIGHT * screenScale));
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        final long diagnosticTerrainStart = collectDiagnostics ? System.nanoTime() : 0L;
         // Find chunk coordinates of the top left corner of the map.
         // The 'roundToBase' is required so that when the map scales below the
         // threshold the tiles don't change when map position changes slightly.
@@ -1007,6 +1058,9 @@ public class GuiAtlas extends GuiComponent {
         int mapRight = mapLeft + MAP_WIDTH;
         int mapBottom = mapTop + MAP_HEIGHT;
         for (SubTileQuartet subtiles : tiles) {
+            if (collectDiagnostics) {
+                diagnosticTilesVisited++;
+            }
             for (SubTile subtile : subtiles) {
                 if (subtile == null || subtile.tile == null) continue;
                 int drawX = subtile.x * tileHalfSize;
@@ -1021,9 +1075,16 @@ public class GuiAtlas extends GuiComponent {
                 if (!(texture instanceof TileTexture tileTexture)) continue;
                 tileBatches.computeIfAbsent(tileTexture, TileRenderBatch::new).add(
                         drawX, drawY, subtile.getTextureU() * 8, subtile.getTextureV() * 8);
+                if (collectDiagnostics) {
+                    diagnosticSubtilesRendered++;
+                }
             }
         }
         tileBatches.values().forEach(batch -> batch.draw(matrices, tileHalfSize));
+        if (collectDiagnostics) {
+            diagnosticBatchCount = tileBatches.size();
+            diagnosticTerrainTime = System.nanoTime() - diagnosticTerrainStart;
+        }
 
         matrices.pose().popPose();
 
@@ -1091,6 +1152,71 @@ public class GuiAtlas extends GuiComponent {
             }
         }
 
+        if (collectDiagnostics) {
+            recordDiagnosticSample(System.nanoTime() - diagnosticFrameStart, diagnosticTerrainTime);
+            renderDiagnosticOverlay(matrices);
+        }
+    }
+
+    private void resetDiagnosticSamples() {
+        Arrays.fill(diagnosticFrameTimes, 0L);
+        Arrays.fill(diagnosticTerrainTimes, 0L);
+        diagnosticSampleIndex = 0;
+        diagnosticSamples = 0;
+        diagnosticFrameTotal = 0L;
+        diagnosticTerrainTotal = 0L;
+    }
+
+    private void recordDiagnosticSample(long frameTime, long terrainTime) {
+        if (diagnosticSamples == DIAGNOSTIC_SAMPLE_COUNT) {
+            diagnosticFrameTotal -= diagnosticFrameTimes[diagnosticSampleIndex];
+            diagnosticTerrainTotal -= diagnosticTerrainTimes[diagnosticSampleIndex];
+        } else {
+            diagnosticSamples++;
+        }
+
+        diagnosticFrameTimes[diagnosticSampleIndex] = frameTime;
+        diagnosticTerrainTimes[diagnosticSampleIndex] = terrainTime;
+        diagnosticFrameTotal += frameTime;
+        diagnosticTerrainTotal += terrainTime;
+        diagnosticSampleIndex = (diagnosticSampleIndex + 1) % DIAGNOSTIC_SAMPLE_COUNT;
+    }
+
+    private void renderDiagnosticOverlay(GuiGraphics graphics) {
+        if (diagnosticSamples == 0) return;
+
+        double atlasMillis = diagnosticFrameTotal / (diagnosticSamples * 1_000_000.0);
+        double terrainMillis = diagnosticTerrainTotal / (diagnosticSamples * 1_000_000.0);
+        List<String> lines = List.of(
+                "ATLAS DIAGNOSTIC",
+                "FPS : " + Minecraft.getInstance().getFps(),
+                String.format("Atlas : %.2f ms", atlasMillis),
+                String.format("Terrain : %.2f ms", terrainMillis),
+                "Zoom : x" + zoomNames[zoomLevel],
+                "Tuiles : " + diagnosticTilesVisited,
+                "Sous-tuiles : " + diagnosticSubtilesRendered,
+                "Textures / lots : " + diagnosticBatchCount + " / " + diagnosticBatchCount,
+                "Marqueurs : " + diagnosticMarkersRendered,
+                "Cache terrain : OFF"
+        );
+
+        int textWidth = 0;
+        for (String line : lines) {
+            textWidth = Math.max(textWidth, font.width(line));
+        }
+
+        int panelWidth = textWidth + DIAGNOSTIC_PADDING * 2;
+        int panelHeight = lines.size() * font.lineHeight + DIAGNOSTIC_PADDING * 2;
+        int panelX = DIAGNOSTIC_MARGIN;
+        int panelY = height - panelHeight - DIAGNOSTIC_MARGIN;
+
+        graphics.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0xB0000000);
+        int textY = panelY + DIAGNOSTIC_PADDING;
+        for (int i = 0; i < lines.size(); i++) {
+            int color = i == 0 ? 0xFFFFB85C : 0xFFE5E5E5;
+            graphics.drawString(font, lines.get(i), panelX + DIAGNOSTIC_PADDING, textY, color, false);
+            textY += font.lineHeight;
+        }
     }
 
     private void renderPlayer(GuiGraphics matrices, double iconScale) {
@@ -1231,6 +1357,9 @@ public class GuiAtlas extends GuiComponent {
         }
 
         info.tex.draw(matrices, markerX + info.x, markerY + info.y, info.width, info.height);
+        if (diagnosticVisible) {
+            diagnosticMarkersRendered++;
+        }
 
         RenderSystem.setShaderColor(1, 1, 1, 1);
 
