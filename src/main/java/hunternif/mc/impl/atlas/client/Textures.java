@@ -46,6 +46,8 @@ public class Textures {
             ICON_ADD_MARKER = icon("add_marker.png"),
             ICON_DELETE_MARKER = icon("del_marker.png"),
             ICON_HIDE_MARKERS = icon("hide_markers.png"),
+            ICON_MARKER_SEARCH = new IconTexture(ResourceLocations.parse(
+                    "minecraft:textures/item/spyglass.png")),
             ICON_DEATH_MARKER = new RegionTexture(ResourceLocations.parse(
                     MOD_PREFIX + "textures/gui/markers/tomb.png"), 32, 32,
                     10, 9, 12, 13, 15, 16),

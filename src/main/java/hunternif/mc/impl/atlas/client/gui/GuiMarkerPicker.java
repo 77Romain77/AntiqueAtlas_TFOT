@@ -58,7 +58,7 @@ final class GuiMarkerPicker extends GuiComponent {
 
         int contentY = 0;
         for (Marker marker : markers) {
-            GuiMarkerResultButton row = new GuiMarkerResultButton(marker, rowWidth, false);
+            GuiMarkerResultButton row = new GuiMarkerResultButton(marker, rowWidth, false, true);
             row.addListener(button -> {
                 closeChild();
                 selectionListener.accept(marker);

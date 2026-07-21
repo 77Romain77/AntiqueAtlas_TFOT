@@ -359,7 +359,7 @@ public class GuiAtlas extends GuiComponent {
 
         btnMaps = new GuiBookmarkButton(1, Textures.ICON_MAPS,
                 Component.translatable("gui.antiqueatlas.maps.manage"));
-        addChild(btnMaps).offsetGuiCoords(300, 94);
+        addChild(btnMaps).offsetGuiCoords(300, 113);
         btnMaps.addListener(button -> {
             if (biomeData != null) {
                 biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);
@@ -424,7 +424,7 @@ public class GuiAtlas extends GuiComponent {
 
         btnDeathMarker = new GuiBookmarkButton(0, Textures.ICON_DEATH_MARKER,
                 Component.translatable("gui.antiqueatlas.deathMarker.title"));
-        addChild(btnDeathMarker).offsetGuiCoords(300, 71);
+        addChild(btnDeathMarker).offsetGuiCoords(300, 90);
         btnDeathMarker.addListener(button -> {
             ClientMapManager maps = ClientMapManager.getInstance();
             maps.setAutoDeathMarkerEnabled(!maps.isAutoDeathMarkerEnabled());
@@ -434,13 +434,13 @@ public class GuiAtlas extends GuiComponent {
 
         btnRescan = new GuiBookmarkButton(1, Component.literal("↻"),
                 Component.translatable("gui.antiqueatlas.rescan.title"));
-        addChild(btnRescan).offsetGuiCoords(300, 118);
+        addChild(btnRescan).offsetGuiCoords(300, 137);
         btnRescan.addListener(button -> requestAreaRescan());
         updateRescanButton();
 
-        btnMarkerSearch = new GuiBookmarkButton(3, Component.literal("⌕"),
+        btnMarkerSearch = new GuiBookmarkButton(3, Textures.ICON_MARKER_SEARCH,
                 Component.translatable("gui.antiqueatlas.markerSearch.title"));
-        addChild(btnMarkerSearch).offsetGuiCoords(300, 137);
+        addChild(btnMarkerSearch).offsetGuiCoords(300, 71);
         btnMarkerSearch.addListener(button -> {
             selectedButton = null;
             if (markerSearch.getParent() != null) {
@@ -692,12 +692,17 @@ public class GuiAtlas extends GuiComponent {
         boolean isMouseOverMap = mouseX >= mapX && mouseX <= mapX + MAP_WIDTH &&
                 mouseY >= mapY && mouseY <= mapY + MAP_HEIGHT;
 
-        // close atlas with right-click
+        // Right-click edits a local marker. A right-click on empty map space is
+        // deliberately consumed so it cannot close the atlas or start dragging.
         if (mouseState == 1 && state.is(NORMAL)) {
-            if (isMouseOverMap && !hoveredLocalMarkers.isEmpty()) {
-                editHoveredMarker();
+            if (isMouseOverMap) {
+                if (!hoveredLocalMarkers.isEmpty()) {
+                    editHoveredMarker();
+                }
                 return true;
             }
+
+            // Preserve the original shortcut when right-clicking outside the map.
             onClose();
             return true;
         }

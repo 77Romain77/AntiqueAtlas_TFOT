@@ -28,7 +28,7 @@ final class GuiMarkerSearch extends GuiComponent {
     private static final int BOOK_WIDTH = 310;
     private static final int BOOK_HEIGHT = 218;
     private static final int SEARCH_BUTTON_X = 300;
-    private static final int SEARCH_BUTTON_Y = 137;
+    private static final int SEARCH_BUTTON_Y = 71;
     private static final int SEARCH_BUTTON_WIDTH = 21;
     private static final int SEARCH_BUTTON_HEIGHT = 18;
 
@@ -105,7 +105,7 @@ final class GuiMarkerSearch extends GuiComponent {
         int rowWidth = PANEL_WIDTH - PANEL_PADDING * 2 - 7;
         for (Marker marker : filteredMarkers) {
             GuiMarkerResultButton row = new GuiMarkerResultButton(marker, rowWidth,
-                    !MarkerVisibility.isVisible(marker.getType()));
+                    !MarkerVisibility.isVisible(marker.getType()), false);
             row.addListener(button -> {
                 closeChild();
                 selectionListener.accept(marker);

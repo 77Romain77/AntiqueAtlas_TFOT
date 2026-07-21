@@ -18,10 +18,12 @@ final class GuiMarkerResultButton extends GuiComponentButton {
 
     private final Marker marker;
     private final boolean hidden;
+    private final boolean showCoordinates;
 
-    GuiMarkerResultButton(Marker marker, int width, boolean hidden) {
+    GuiMarkerResultButton(Marker marker, int width, boolean hidden, boolean showCoordinates) {
         this.marker = marker;
         this.hidden = hidden;
+        this.showCoordinates = showCoordinates;
         setSize(width, HEIGHT);
     }
 
@@ -39,9 +41,10 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         String coordinates = marker.getX() + ", " + marker.getZ();
-        int coordinateWidth = font.width(coordinates);
+        int coordinateWidth = showCoordinates ? font.width(coordinates) : 0;
         int textX = getGuiX() + 23;
-        int textWidth = Math.max(8, getWidth() - 29 - coordinateWidth);
+        int textWidth = Math.max(8, getWidth() - 27
+                - (showCoordinates ? coordinateWidth + 2 : 0));
         String markerName = marker.getLabel().getString();
         if (markerName.isBlank()) {
             markerName = Component.translatable("gui.antiqueatlas.markerSearch.unnamed").getString();
@@ -49,8 +52,10 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         markerName = font.plainSubstrByWidth(markerName, textWidth);
         int textColor = hidden ? 0xFF8D8D8D : 0xFFF1E3C2;
         graphics.drawString(font, markerName, textX, getGuiY() + 7, textColor, false);
-        graphics.drawString(font, coordinates, getGuiX() + getWidth() - coordinateWidth - 4,
-                getGuiY() + 7, hidden ? 0xFF777777 : 0xFFB9A98A, false);
+        if (showCoordinates) {
+            graphics.drawString(font, coordinates, getGuiX() + getWidth() - coordinateWidth - 4,
+                    getGuiY() + 7, hidden ? 0xFF777777 : 0xFFB9A98A, false);
+        }
 
         if (isMouseOver && hidden) {
             drawTooltip(List.of(Component.translatable("gui.antiqueatlas.markerSearch.hidden")), font);
