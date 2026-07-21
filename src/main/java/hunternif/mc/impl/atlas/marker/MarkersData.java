@@ -181,6 +181,10 @@ public class MarkersData extends SavedData {
 	private Marker getMarkerByID(int id) {
 		return idMap.get(id);
 	}
+
+	public Marker getMarker(int id) {
+		return getMarkerByID(id);
+	}
 	public Marker removeMarker(int id) {
 		Marker marker = getMarkerByID(id);
 		if (marker == null) return null;
@@ -189,6 +193,27 @@ public class MarkersData extends SavedData {
 			setDirty();
 		}
 		return marker;
+	}
+
+	/**
+	 * Replaces the editable properties of an existing marker while preserving
+	 * its stable id, coordinates, dimension and visibility rules.
+	 */
+	public Marker updateMarker(int id, ResourceLocation type, Component label) {
+		Marker oldMarker = getMarkerByID(id);
+		if (oldMarker == null || type == null) return null;
+		if (label == null) label = Component.empty();
+
+		DimensionMarkersData dimensionData = getMarkersDataInWorld(oldMarker.getWorld());
+		if (!dimensionData.removeMarker(oldMarker)) return null;
+
+		Marker updatedMarker = new Marker(id, type, label, oldMarker.getWorld(),
+				oldMarker.getX(), oldMarker.getZ(), oldMarker.isVisibleAhead());
+		if (oldMarker.isGlobal()) updatedMarker.setGlobal(true);
+		idMap.put(id, updatedMarker);
+		dimensionData.insertMarker(updatedMarker);
+		setDirty();
+		return updatedMarker;
 	}
 
 	/** For internal use. Use the {@link MarkerAPI} to put markers! This method

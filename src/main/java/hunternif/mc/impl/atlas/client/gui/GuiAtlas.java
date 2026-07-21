@@ -189,6 +189,9 @@ public class GuiAtlas extends GuiComponent {
     /** One-shot refresh of already mapped chunks loaded around the player. */
     private final GuiBookmarkButton btnRescan;
 
+    /** Opens the local marker search panel. */
+    private final GuiBookmarkButton btnMarkerSearch;
+
     /**
      * Button for restoring player's position at the center of the Atlas.
      */
@@ -288,9 +291,12 @@ public class GuiAtlas extends GuiComponent {
      * be highlighted at the same time, only one of them will be deleted.
      */
     private Marker hoveredMarker;
+    private final List<Marker> hoveredLocalMarkers = new ArrayList<>();
 
     private final GuiMarkerFinalizer markerFinalizer = new GuiMarkerFinalizer();
     private final GuiMarkerFilter markerFilter = new GuiMarkerFilter();
+    private final GuiMarkerSearch markerSearch = new GuiMarkerSearch(this::focusSearchResult);
+    private final GuiMarkerPicker markerPicker = new GuiMarkerPicker(this::openMarkerEditor);
     /**
      * Displayed where the marker is about to be placed when the Finalizer GUI is on.
      */
@@ -432,6 +438,23 @@ public class GuiAtlas extends GuiComponent {
         btnRescan.addListener(button -> requestAreaRescan());
         updateRescanButton();
 
+        btnMarkerSearch = new GuiBookmarkButton(3, Component.literal("⌕"),
+                Component.translatable("gui.antiqueatlas.markerSearch.title"));
+        addChild(btnMarkerSearch).offsetGuiCoords(300, 137);
+        btnMarkerSearch.addListener(button -> {
+            selectedButton = null;
+            if (markerSearch.getParent() != null) {
+                markerSearch.closeChild();
+                return;
+            }
+            markerSearch.setMarkers(localMarkersData == null
+                    ? List.of()
+                    : localMarkersData.getAllMarkers());
+            addChild(markerSearch);
+            btnMarkerSearch.setSelected(true);
+            KeyMapping.releaseAll();
+        });
+
         addChild(scaleBar).offsetGuiCoords(20, 198);
         scaleBar.setMapScale(1);
 
@@ -488,6 +511,44 @@ public class GuiAtlas extends GuiComponent {
 
         selectedButton = null;
         state.switchTo(NORMAL);
+    }
+
+    private void openMarkerEditor(Marker marker) {
+        if (marker == null || marker.isGlobal()) return;
+        markerFinalizer.setMarkerDataForEditing(player.getCommandSenderWorld(), getAtlasID(), marker);
+        addChild(markerFinalizer);
+
+        blinkingIcon.setTexture(markerFinalizer.selectedType.getTexture(), MARKER_SIZE, MARKER_SIZE);
+        addChildBehind(markerFinalizer, blinkingIcon)
+                .setRelativeCoords(worldXToScreenX(marker.getX()) - getGuiX() - MARKER_SIZE / 2,
+                        worldZToScreenY(marker.getZ()) - getGuiY() - MARKER_SIZE / 2);
+
+        setInterceptKeyboard(true);
+        KeyMapping.releaseAll();
+        selectedButton = null;
+        state.switchTo(NORMAL);
+    }
+
+    private void focusSearchResult(Marker marker) {
+        if (marker == null) return;
+        setTargetPosition(marker.getX(), marker.getZ());
+        followPlayer = false;
+        btnPosition.setEnabled(true);
+    }
+
+    private void editHoveredMarker() {
+        if (hoveredLocalMarkers.isEmpty()) return;
+        List<Marker> candidates = hoveredLocalMarkers.stream()
+                .distinct()
+                .sorted(Comparator.comparingInt(Marker::getId))
+                .toList();
+        if (candidates.size() == 1) {
+            openMarkerEditor(candidates.get(0));
+        } else {
+            markerPicker.setMarkers(candidates);
+            addChild(markerPicker);
+            KeyMapping.releaseAll();
+        }
     }
 
     public GuiAtlas prepareToOpen() {
@@ -626,17 +687,22 @@ public class GuiAtlas extends GuiComponent {
             return true;
         }
 
+        int mapX = (width - MAP_WIDTH) / 2;
+        int mapY = (height - MAP_HEIGHT) / 2;
+        boolean isMouseOverMap = mouseX >= mapX && mouseX <= mapX + MAP_WIDTH &&
+                mouseY >= mapY && mouseY <= mapY + MAP_HEIGHT;
+
         // close atlas with right-click
         if (mouseState == 1 && state.is(NORMAL)) {
+            if (isMouseOverMap && !hoveredLocalMarkers.isEmpty()) {
+                editHoveredMarker();
+                return true;
+            }
             onClose();
             return true;
         }
 
         // If clicked on the map, start dragging
-        int mapX = (width - MAP_WIDTH) / 2;
-        int mapY = (height - MAP_HEIGHT) / 2;
-        boolean isMouseOverMap = mouseX >= mapX && mouseX <= mapX + MAP_WIDTH &&
-                mouseY >= mapY && mouseY <= mapY + MAP_HEIGHT;
         if (!state.is(NORMAL)) {
             int atlasID = getAtlasID();
 
@@ -1091,6 +1157,7 @@ public class GuiAtlas extends GuiComponent {
         double iconScale = getIconScale();
 
         hoveredMarker = null;
+        hoveredLocalMarkers.clear();
         // Draw global markers:
         renderMarkers(matrices, markersStartX, markersStartZ, markersEndX, markersEndZ, globalMarkersData);
         renderMarkers(matrices, markersStartX, markersStartZ, markersEndX, markersEndZ, localMarkersData);
@@ -1414,6 +1481,7 @@ public class GuiAtlas extends GuiComponent {
         if (mouseIsOverMarker) {
             RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1);
             hoveredMarker = marker;
+            if (!marker.isGlobal()) hoveredLocalMarkers.add(marker);
 //            MarkerHoveredCallback.EVENT.invoker().onHovered(player, marker);
         } else {
             RenderSystem.setShaderColor(1, 1, 1, 1);
@@ -1471,6 +1539,8 @@ public class GuiAtlas extends GuiComponent {
         super.onClose();
         markerFinalizer.closeChild();
         if (markerFilter.getParent() != null) markerFilter.closeChild();
+        if (markerSearch.getParent() != null) markerSearch.closeChild();
+        if (markerPicker.getParent() != null) markerPicker.closeChild();
         removeChild(blinkingIcon);
         // Keyboard.enableRepeatEvents(false);
         biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);
@@ -1516,10 +1586,16 @@ public class GuiAtlas extends GuiComponent {
         if (child.equals(markerFinalizer)) {
             setInterceptKeyboard(true);
             removeChild(blinkingIcon);
+            hoveredMarker = null;
+            hoveredLocalMarkers.clear();
+            updateBookmarkerList();
         } else if (child.equals(markerFilter)) {
             btnMarkerFilter.setSelected(false);
             hoveredMarker = null;
             updateBookmarkerList();
+        } else if (child.equals(markerSearch)) {
+            btnMarkerSearch.setSelected(false);
+            hoveredMarker = null;
         }
     }
 
@@ -1531,6 +1607,7 @@ public class GuiAtlas extends GuiComponent {
         btnMarker.setTitle(Component.translatable("gui.antiqueatlas.addMarker"));
         btnDelMarker.setTitle(Component.translatable("gui.antiqueatlas.delMarker"));
         btnMarkerFilter.setTitle(Component.translatable("gui.antiqueatlas.markerFilter.title"));
+        btnMarkerSearch.setTitle(Component.translatable("gui.antiqueatlas.markerSearch.title"));
         updateDeathMarkerButton();
         updateRescanButton();
     }

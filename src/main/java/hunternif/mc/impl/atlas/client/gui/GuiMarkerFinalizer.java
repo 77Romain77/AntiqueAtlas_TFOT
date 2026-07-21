@@ -8,6 +8,8 @@ import hunternif.mc.impl.atlas.client.MarkerTypeOrder;
 import hunternif.mc.impl.atlas.client.gui.core.GuiComponent;
 import hunternif.mc.impl.atlas.client.gui.core.GuiScrollingContainer;
 import hunternif.mc.impl.atlas.client.gui.core.ToggleGroup;
+import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
+import hunternif.mc.impl.atlas.marker.Marker;
 import hunternif.mc.impl.atlas.registry.MarkerType;
 import hunternif.mc.impl.atlas.util.Log;
 import net.minecraft.client.Minecraft;
@@ -31,10 +33,13 @@ public class GuiMarkerFinalizer extends GuiComponent {
     private int atlasID;
     private int markerX;
     private int markerZ;
+    private Marker editingMarker;
+    private String markerName = "";
 
     MarkerType selectedType = MarkerType.REGISTRY.get(MarkerType.REGISTRY.getDefaultKey());
 
     private static final int BUTTON_WIDTH = 100;
+    private static final int EDIT_BUTTON_WIDTH = 80;
     private static final int BUTTON_SPACING = 4;
 
     private static final int TYPE_SPACING = 1;
@@ -42,6 +47,7 @@ public class GuiMarkerFinalizer extends GuiComponent {
 
     private Button btnDone;
     private Button btnCancel;
+    private Button btnDelete;
     private EditBox textField;
     private GuiScrollingContainer scroller;
     private ToggleGroup<GuiMarkerInList> typeRadioGroup;
@@ -56,7 +62,25 @@ public class GuiMarkerFinalizer extends GuiComponent {
         this.atlasID = atlasID;
         this.markerX = markerX;
         this.markerZ = markerZ;
+        this.editingMarker = null;
+        this.markerName = "";
         setBlocksScreen(true);
+    }
+
+    void setMarkerDataForEditing(Level world, int atlasID, Marker marker) {
+        this.world = world;
+        this.atlasID = atlasID;
+        this.markerX = marker.getX();
+        this.markerZ = marker.getZ();
+        this.editingMarker = marker;
+        this.markerName = marker.getLabel().getString();
+        MarkerType markerType = MarkerType.REGISTRY.get(marker.getType());
+        if (markerType != null) selectedType = markerType;
+        setBlocksScreen(true);
+    }
+
+    boolean isEditing() {
+        return editingMarker != null;
     }
 
     void addMarkerListener(IMarkerTypeSelectListener listener) {
@@ -75,22 +99,44 @@ public class GuiMarkerFinalizer extends GuiComponent {
     public void init() {
         super.init();
 
-        addRenderableWidget(btnDone = Button.builder(Component.translatable("gui.done"), (button) -> {
-            AtlasClientAPI.getMarkerAPI().putMarker(world, true, atlasID, MarkerType.REGISTRY.getKey(selectedType), Component.literal(textField.getValue()), markerX, markerZ);
-            Log.info("Put marker in Atlas #%d \"%s\" at (%d, %d)", atlasID, textField.getValue(), markerX, markerZ);
+        Component doneLabel = Component.translatable(isEditing()
+                ? "gui.antiqueatlas.markerEdit.save"
+                : "gui.done");
 
-            LocalPlayer player = Minecraft.getInstance().player;
-            world.playSound(player, player.blockPosition(),
-                    SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.AMBIENT,
-                    1F, 1F);
-            closeChild();
-        }).bounds(this.width / 2 + BUTTON_SPACING / 2, this.height / 2 + 40, BUTTON_WIDTH, 20).build());
-        addRenderableWidget(btnCancel = Button.builder(Component.translatable("gui.cancel"), (button) -> {
-            closeChild();
-        }).bounds(this.width / 2 - BUTTON_WIDTH - BUTTON_SPACING / 2, this.height / 2 + 40, BUTTON_WIDTH, 20).build());
+        if (isEditing()) {
+            int controlsWidth = EDIT_BUTTON_WIDTH * 3 + BUTTON_SPACING * 2;
+            int controlsX = (this.width - controlsWidth) / 2;
+            addRenderableWidget(btnDelete = Button.builder(
+                    Component.translatable("gui.antiqueatlas.markerEdit.delete"), button -> {
+                        if (ClientMapManager.getInstance().deleteMarker(editingMarker.getId())) {
+                            LocalPlayer player = Minecraft.getInstance().player;
+                            world.playSound(player, player.blockPosition(),
+                                    SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.AMBIENT,
+                                    1F, 0.5F);
+                            closeChild();
+                        }
+                    }).bounds(controlsX, this.height / 2 + 40, EDIT_BUTTON_WIDTH, 20).build());
+            btnCancel = Button.builder(Component.translatable("gui.cancel"), button -> closeChild())
+                    .bounds(controlsX + EDIT_BUTTON_WIDTH + BUTTON_SPACING,
+                            this.height / 2 + 40, EDIT_BUTTON_WIDTH, 20).build();
+            btnDone = Button.builder(doneLabel, button -> saveMarker())
+                    .bounds(controlsX + (EDIT_BUTTON_WIDTH + BUTTON_SPACING) * 2,
+                            this.height / 2 + 40, EDIT_BUTTON_WIDTH, 20).build();
+        } else {
+            btnCancel = Button.builder(Component.translatable("gui.cancel"), button -> closeChild())
+                    .bounds(this.width / 2 - BUTTON_WIDTH - BUTTON_SPACING / 2,
+                            this.height / 2 + 40, BUTTON_WIDTH, 20).build();
+            btnDone = Button.builder(doneLabel, button -> saveMarker())
+                    .bounds(this.width / 2 + BUTTON_SPACING / 2,
+                            this.height / 2 + 40, BUTTON_WIDTH, 20).build();
+        }
+        addRenderableWidget(btnCancel);
+        addRenderableWidget(btnDone);
+
         textField = new EditBox(Minecraft.getInstance().font, (this.width - 200) / 2, this.height / 2 - 81, 200, 20, Component.translatable("gui.antiqueatlas.marker.label"));
         textField.setEditable(true);
-        textField.setValue("");
+        textField.setMaxLength(128);
+        textField.setValue(markerName);
         this.addRenderableWidget(this.textField);
 
         scroller = new GuiScrollingContainer();
@@ -124,8 +170,30 @@ public class GuiMarkerFinalizer extends GuiComponent {
         }
     }
 
+    private void saveMarker() {
+        if (isEditing()) {
+            Marker updated = ClientMapManager.getInstance().updateMarker(editingMarker.getId(),
+                    MarkerType.REGISTRY.getKey(selectedType), Component.literal(textField.getValue()));
+            if (updated == null) return;
+            Log.info("Updated marker #%d in Atlas #%d", editingMarker.getId(), atlasID);
+        } else {
+            AtlasClientAPI.getMarkerAPI().putMarker(world, true, atlasID,
+                    MarkerType.REGISTRY.getKey(selectedType), Component.literal(textField.getValue()),
+                    markerX, markerZ);
+            Log.info("Put marker in Atlas #%d \"%s\" at (%d, %d)",
+                    atlasID, textField.getValue(), markerX, markerZ);
+        }
+
+        LocalPlayer player = Minecraft.getInstance().player;
+        world.playSound(player, player.blockPosition(),
+                SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.AMBIENT,
+                1F, 1F);
+        closeChild();
+    }
+
     public void setMarkerName(Component name) {
-        textField.setValue(name.getString());
+        markerName = name == null ? "" : name.getString();
+        if (textField != null) textField.setValue(markerName);
     }
 
     @Override
@@ -154,6 +222,10 @@ public class GuiMarkerFinalizer extends GuiComponent {
     @Override
     public void render(GuiGraphics matrices, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(matrices);
+        if (isEditing()) {
+            drawCentered(matrices, Component.translatable("gui.antiqueatlas.markerEdit.title"),
+                    this.height / 2 - 119, 0xFFFFFF, true);
+        }
         drawCentered(matrices, Component.translatable("gui.antiqueatlas.marker.label"), this.height / 2 - 97, 0xffffff, true);
         textField.render(matrices, mouseX, mouseY, partialTick);
         drawCentered(matrices, Component.translatable("gui.antiqueatlas.marker.type"), this.height / 2 - 44, 0xffffff, true);

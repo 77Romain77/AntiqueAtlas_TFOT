@@ -314,6 +314,15 @@ public final class ClientMapManager {
         return removed != null;
     }
 
+    public Marker updateMarker(int markerId, ResourceLocation type, Component label) {
+        if (activeProfile == null || type == null) return null;
+        Marker current = activeProfile.markersData.getMarker(markerId);
+        if (current == null || current.isGlobal()) return null;
+        Marker updated = activeProfile.markersData.updateMarker(markerId, type, label);
+        if (updated != null) stateDirty = true;
+        return updated;
+    }
+
     public void markStateDirty() {
         if (activeProfile != null) stateDirty = true;
     }
