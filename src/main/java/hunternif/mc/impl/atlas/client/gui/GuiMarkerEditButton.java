@@ -11,6 +11,21 @@ import java.util.List;
 final class GuiMarkerEditButton extends GuiComponentButton {
     static final int SIZE = 16;
 
+    private static final String[] PENCIL = {
+            ".........DD.",
+            "........DRRD",
+            ".......DYYRD",
+            "......DLYYD.",
+            ".....DLYYD..",
+            "....DLYYD...",
+            "...DLYYD....",
+            "..DLYYD.....",
+            ".DWWYD......",
+            "DWWWD.......",
+            ".DD.........",
+            "............"
+    };
+
     GuiMarkerEditButton() {
         setSize(SIZE, SIZE);
     }
@@ -24,16 +39,24 @@ final class GuiMarkerEditButton extends GuiComponentButton {
         graphics.fill(x, y, x + SIZE, y + SIZE, border);
         graphics.fill(x + 1, y + 1, x + SIZE - 1, y + SIZE - 1, background);
 
-        // Compact pixel-art pencil, pointing towards the lower-left corner.
-        graphics.fill(x + 3, y + 11, x + 5, y + 13, 0xFFE9D3A5);
-        graphics.fill(x + 2, y + 13, x + 4, y + 15, 0xFF30251B);
-        for (int step = 0; step < 4; step++) {
-            int px = x + 4 + step * 2;
-            int py = y + 10 - step * 2;
-            graphics.fill(px, py, px + 3, py + 3, 0xFFD99A36);
-            graphics.fill(px + 1, py, px + 3, py + 1, 0xFFFFD06A);
+        // Crisp 12x12 pixel-art pencil, matching the atlas' parchment palette.
+        for (int py = 0; py < PENCIL.length; py++) {
+            String row = PENCIL[py];
+            for (int px = 0; px < row.length(); px++) {
+                int color = switch (row.charAt(px)) {
+                    case 'D' -> 0xFF2B1B11; // dark outline
+                    case 'Y' -> 0xFFD89A36; // pencil body
+                    case 'L' -> 0xFFFFD36B; // highlight
+                    case 'R' -> 0xFFB85D58; // eraser
+                    case 'W' -> 0xFFE8D3A6; // sharpened wood
+                    default -> 0;
+                };
+                if (color != 0) {
+                    graphics.fill(x + 2 + px, y + 2 + py,
+                            x + 3 + px, y + 3 + py, color);
+                }
+            }
         }
-        graphics.fill(x + 11, y + 3, x + 14, y + 6, 0xFFB75B58);
 
         if (isMouseOver) {
             drawTooltip(List.of(Component.translatable("gui.antiqueatlas.markerEdit.title")),

@@ -37,12 +37,18 @@ public class GuiComponentButton extends GuiComponent {
 
     @Override
     public boolean mouseClicked(double x, double y, int mouseButton) {
+        // Nested controls must get the click first. This is used by marker
+        // search rows, where the edit button sits inside the selectable row.
+        if (super.mouseClicked(x, y, mouseButton)) {
+            return true;
+        }
+
         if (mouseButton == 0 /*left-click*/ && enabled && isMouseOver) {
             onClick();
             return true;
         }
 
-        return super.mouseClicked(x, y, mouseButton);
+        return false;
     }
 
     /**
