@@ -1542,15 +1542,19 @@ public class GuiAtlas extends GuiComponent {
     @Override
     public void onClose() {
         closeMarkerGroupList();
-        super.onClose();
         markerFinalizer.closeChild();
         if (markerFilter.getParent() != null) markerFilter.closeChild();
         if (markerSearch.getParent() != null) markerSearch.closeChild();
         if (markerPicker.getParent() != null) markerPicker.closeChild();
         removeChild(blinkingIcon);
         // Keyboard.enableRepeatEvents(false);
-        biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);
-        ClientMapManager.getInstance().markStateDirty();
+        if (biomeData != null && (biomeData.getBrowsingX() != mapOffsetX
+                || biomeData.getBrowsingY() != mapOffsetY
+                || Double.compare(biomeData.getBrowsingZoom(), mapScale) != 0)) {
+            biomeData.setBrowsingPosition(mapOffsetX, mapOffsetY, mapScale);
+            ClientMapManager.getInstance().markStateDirty();
+        }
+        super.onClose();
     }
 
     /**

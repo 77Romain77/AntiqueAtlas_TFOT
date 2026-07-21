@@ -431,14 +431,28 @@ public class GuiComponent extends Screen {
     }
 
     /**
-     * Called when the GUI is unloaded, called for each child as well.
+     * Called when the GUI is unloaded.
+     *
+     * Child components are part of this screen; they are not screens of their
+     * own. Calling {@link Screen#onClose()} for every child would therefore
+     * call {@code Minecraft#setScreen(null)} once per component. Only the
+     * top-level component is allowed to close the Minecraft screen.
      */
     @Override
     public void onClose() {
-        for (GuiComponent child : children) {
-            child.onClose();
+        closeChildHierarchy();
+        if (parent == null) {
+            super.onClose();
         }
-        super.onClose();
+    }
+
+    /**
+     * Walk the component tree without invoking Screen#onClose on children.
+     */
+    private void closeChildHierarchy() {
+        for (GuiComponent child : children) {
+            child.closeChildHierarchy();
+        }
     }
 
     /**
