@@ -19,18 +19,15 @@ final class GuiMarkerResultButton extends GuiComponentButton {
 
     private final Marker marker;
     private final boolean hidden;
-    private final boolean showCoordinates;
     private final GuiMarkerEditButton editButton;
 
-    GuiMarkerResultButton(Marker marker, int width, boolean hidden, boolean showCoordinates) {
-        this(marker, width, hidden, showCoordinates, null);
+    GuiMarkerResultButton(Marker marker, int width, boolean hidden) {
+        this(marker, width, hidden, null);
     }
 
-    GuiMarkerResultButton(Marker marker, int width, boolean hidden, boolean showCoordinates,
-                          Consumer<Marker> editListener) {
+    GuiMarkerResultButton(Marker marker, int width, boolean hidden, Consumer<Marker> editListener) {
         this.marker = marker;
         this.hidden = hidden;
-        this.showCoordinates = showCoordinates;
         setSize(width, HEIGHT);
         if (editListener == null) {
             editButton = null;
@@ -57,11 +54,8 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         if (texture != null) texture.draw(graphics, getGuiX() + 3, getGuiY() + 3, 16, 16);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        String coordinates = marker.getX() + ", " + marker.getZ();
-        int coordinateWidth = showCoordinates ? font.width(coordinates) : 0;
         int textX = getGuiX() + 23;
         int textWidth = Math.max(8, getWidth() - 27
-                - (showCoordinates ? coordinateWidth + 2 : 0)
                 - (editButton == null ? 0 : GuiMarkerEditButton.SIZE + 4));
         String markerName = marker.getLabel().getString();
         if (markerName.isBlank()) {
@@ -70,10 +64,6 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         markerName = font.plainSubstrByWidth(markerName, textWidth);
         int textColor = hidden ? 0xFF8D8D8D : 0xFFF1E3C2;
         graphics.drawString(font, markerName, textX, getGuiY() + 7, textColor, false);
-        if (showCoordinates) {
-            graphics.drawString(font, coordinates, getGuiX() + getWidth() - coordinateWidth - 4,
-                    getGuiY() + 7, hidden ? 0xFF777777 : 0xFFB9A98A, false);
-        }
 
         if (isMouseOver && hidden) {
             drawTooltip(List.of(Component.translatable("gui.antiqueatlas.markerSearch.hidden")), font);

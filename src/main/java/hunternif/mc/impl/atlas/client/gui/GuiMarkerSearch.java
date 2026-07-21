@@ -112,7 +112,7 @@ final class GuiMarkerSearch extends GuiComponent {
         int rowWidth = PANEL_WIDTH - PANEL_PADDING * 2 - 7;
         for (Marker marker : filteredMarkers) {
             GuiMarkerResultButton row = new GuiMarkerResultButton(marker, rowWidth,
-                    !MarkerVisibility.isVisible(marker.getType()), false, selectedMarker -> {
+                    !MarkerVisibility.isVisible(marker.getType()), selectedMarker -> {
                         closeChild();
                         editListener.accept(selectedMarker);
                     });
