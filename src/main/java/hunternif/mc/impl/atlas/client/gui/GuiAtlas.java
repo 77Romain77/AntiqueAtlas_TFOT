@@ -91,6 +91,28 @@ public class GuiAtlas extends GuiComponent {
     private int diagnosticBatchCount;
     private int diagnosticMarkersRendered;
 
+    /** Prepared terrain geometry reused until the visible page actually changes. */
+    private final Map<TileTexture, TileRenderBatch> terrainCacheBatches = new LinkedHashMap<>();
+    private boolean terrainCacheValid;
+    private WorldData terrainCacheWorld;
+    private int terrainCacheStartX;
+    private int terrainCacheStartZ;
+    private int terrainCacheEndX;
+    private int terrainCacheEndZ;
+    private int terrainCacheGuiX;
+    private int terrainCacheGuiY;
+    private int terrainCacheTileHalfSize;
+    private int terrainCacheTile2ChunkScale;
+    private long terrainCacheGlobalWorldRevision = Long.MIN_VALUE;
+    private long terrainCacheWorldRevision = Long.MIN_VALUE;
+    private long terrainCacheTextureRevision = Long.MIN_VALUE;
+    private int terrainCacheTilesVisited;
+    private int terrainCacheSubtilesRendered;
+    private String terrainCacheFrameState = "EMPTY";
+    private String terrainCacheLastReason = "initialisation";
+    private long terrainCacheLastBuildNanos;
+    private long terrainCacheRebuildCount;
+
     private int renderTimesIndex = 0;
 
     // States ==================================================================
@@ -1042,47 +1064,16 @@ public class GuiAtlas extends GuiComponent {
         int mapEndZ = MathUtil.roundToBase((int) Math.ceil(((double) MAP_HEIGHT / 2d - mapOffsetY + 2 * tileHalfSize) / mapScale / 16d), tile2ChunkScale);
         int mapStartScreenX = worldXToScreenX(mapStartX << 4);
         int mapStartScreenY = worldZToScreenY(mapStartZ << 4);
-        TileRenderIterator tiles = new TileRenderIterator(biomeData);
-        tiles.setScope(new Rect(mapStartX, mapStartZ, mapEndX, mapEndZ));
-        tiles.setStep(tile2ChunkScale);
+        prepareTerrainCache(mapStartX, mapStartZ, mapEndX, mapEndZ,
+                mapStartScreenX, mapStartScreenY);
 
         matrices.pose().pushPose();
         matrices.pose().translate(mapStartScreenX, mapStartScreenY, 0);
-
-        // TileRenderIterator reuses its four SubTile instances. Capture only
-        // primitive draw data while grouping by texture, then submit one GPU
-        // buffer per texture instead of one draw call per visible subtile.
-        Map<TileTexture, TileRenderBatch> tileBatches = new LinkedHashMap<>();
-        int mapLeft = getGuiX() + MAP_BORDER_WIDTH;
-        int mapTop = getGuiY() + MAP_BORDER_HEIGHT;
-        int mapRight = mapLeft + MAP_WIDTH;
-        int mapBottom = mapTop + MAP_HEIGHT;
-        for (SubTileQuartet subtiles : tiles) {
-            if (collectDiagnostics) {
-                diagnosticTilesVisited++;
-            }
-            for (SubTile subtile : subtiles) {
-                if (subtile == null || subtile.tile == null) continue;
-                int drawX = subtile.x * tileHalfSize;
-                int drawY = subtile.y * tileHalfSize;
-                int screenX = mapStartScreenX + drawX;
-                int screenY = mapStartScreenY + drawY;
-                if (screenX >= mapRight || screenY >= mapBottom
-                        || screenX + tileHalfSize <= mapLeft
-                        || screenY + tileHalfSize <= mapTop) continue;
-
-                ITexture texture = TileTextureMap.instance().getTexture(subtile);
-                if (!(texture instanceof TileTexture tileTexture)) continue;
-                tileBatches.computeIfAbsent(tileTexture, TileRenderBatch::new).add(
-                        drawX, drawY, subtile.getTextureU() * 8, subtile.getTextureV() * 8);
-                if (collectDiagnostics) {
-                    diagnosticSubtilesRendered++;
-                }
-            }
-        }
-        tileBatches.values().forEach(batch -> batch.draw(matrices, tileHalfSize));
+        terrainCacheBatches.values().forEach(batch -> batch.draw(matrices, tileHalfSize));
         if (collectDiagnostics) {
-            diagnosticBatchCount = tileBatches.size();
+            diagnosticTilesVisited = terrainCacheTilesVisited;
+            diagnosticSubtilesRendered = terrainCacheSubtilesRendered;
+            diagnosticBatchCount = terrainCacheBatches.size();
             diagnosticTerrainTime = System.nanoTime() - diagnosticTerrainStart;
         }
 
@@ -1158,6 +1149,104 @@ public class GuiAtlas extends GuiComponent {
         }
     }
 
+    private void prepareTerrainCache(int mapStartX, int mapStartZ, int mapEndX, int mapEndZ,
+                                     int mapStartScreenX, int mapStartScreenY) {
+        int stitchMargin = tile2ChunkScale * 2;
+        boolean worldChanged = terrainCacheWorld != biomeData;
+        boolean scopeChanged = terrainCacheStartX != mapStartX || terrainCacheStartZ != mapStartZ
+                || terrainCacheEndX != mapEndX || terrainCacheEndZ != mapEndZ;
+        boolean viewportChanged = terrainCacheGuiX != getGuiX() || terrainCacheGuiY != getGuiY();
+        long globalWorldRevision = biomeData.getRenderRevision();
+        long worldRevision = terrainCacheWorldRevision;
+        if (!terrainCacheValid || worldChanged || scopeChanged
+                || terrainCacheGlobalWorldRevision != globalWorldRevision) {
+            worldRevision = biomeData.getRenderRevision(
+                    mapStartX - stitchMargin, mapStartZ - stitchMargin,
+                    mapEndX + stitchMargin, mapEndZ + stitchMargin);
+        }
+        long textureRevision = TileTextureMap.instance().getRenderRevision();
+
+        String rebuildReason = null;
+        if (!terrainCacheValid) {
+            rebuildReason = "initialisation";
+        } else if (worldChanged) {
+            rebuildReason = "monde";
+        } else if (terrainCacheTileHalfSize != tileHalfSize
+                || terrainCacheTile2ChunkScale != tile2ChunkScale) {
+            rebuildReason = "zoom";
+        } else if (viewportChanged) {
+            rebuildReason = "fenetre";
+        } else if (scopeChanged) {
+            rebuildReason = "deplacement";
+        } else if (terrainCacheTextureRevision != textureRevision) {
+            rebuildReason = "textures";
+        } else if (terrainCacheWorldRevision != worldRevision) {
+            rebuildReason = "terrain";
+        }
+
+        if (rebuildReason == null) {
+            terrainCacheFrameState = "HIT";
+            terrainCacheGlobalWorldRevision = globalWorldRevision;
+            terrainCacheWorldRevision = worldRevision;
+            return;
+        }
+
+        long buildStart = System.nanoTime();
+        terrainCacheBatches.clear();
+        terrainCacheTilesVisited = 0;
+        terrainCacheSubtilesRendered = 0;
+
+        TileRenderIterator tiles = new TileRenderIterator(biomeData);
+        tiles.setScope(new Rect(mapStartX, mapStartZ, mapEndX, mapEndZ));
+        tiles.setStep(tile2ChunkScale);
+
+        // TileRenderIterator reuses its four SubTile instances. Store only
+        // primitive quad data. Keep one chunk-screen-width around the page so
+        // it can move within the same chunk scope without revealing a gap.
+        int cachePanMargin = tileHalfSize * 2;
+        int mapLeft = getGuiX() + MAP_BORDER_WIDTH - cachePanMargin;
+        int mapTop = getGuiY() + MAP_BORDER_HEIGHT - cachePanMargin;
+        int mapRight = getGuiX() + MAP_BORDER_WIDTH + MAP_WIDTH + cachePanMargin;
+        int mapBottom = getGuiY() + MAP_BORDER_HEIGHT + MAP_HEIGHT + cachePanMargin;
+        for (SubTileQuartet subtiles : tiles) {
+            terrainCacheTilesVisited++;
+            for (SubTile subtile : subtiles) {
+                if (subtile == null || subtile.tile == null) continue;
+                int drawX = subtile.x * tileHalfSize;
+                int drawY = subtile.y * tileHalfSize;
+                int screenX = mapStartScreenX + drawX;
+                int screenY = mapStartScreenY + drawY;
+                if (screenX >= mapRight || screenY >= mapBottom
+                        || screenX + tileHalfSize <= mapLeft
+                        || screenY + tileHalfSize <= mapTop) continue;
+                ITexture texture = TileTextureMap.instance().getTexture(subtile);
+                if (!(texture instanceof TileTexture tileTexture)) continue;
+                terrainCacheBatches.computeIfAbsent(tileTexture, TileRenderBatch::new).add(
+                        drawX, drawY,
+                        subtile.getTextureU() * 8, subtile.getTextureV() * 8);
+                terrainCacheSubtilesRendered++;
+            }
+        }
+
+        terrainCacheWorld = biomeData;
+        terrainCacheStartX = mapStartX;
+        terrainCacheStartZ = mapStartZ;
+        terrainCacheEndX = mapEndX;
+        terrainCacheEndZ = mapEndZ;
+        terrainCacheGuiX = getGuiX();
+        terrainCacheGuiY = getGuiY();
+        terrainCacheTileHalfSize = tileHalfSize;
+        terrainCacheTile2ChunkScale = tile2ChunkScale;
+        terrainCacheGlobalWorldRevision = globalWorldRevision;
+        terrainCacheWorldRevision = worldRevision;
+        terrainCacheTextureRevision = textureRevision;
+        terrainCacheValid = true;
+        terrainCacheFrameState = "REBUILD";
+        terrainCacheLastReason = rebuildReason;
+        terrainCacheLastBuildNanos = System.nanoTime() - buildStart;
+        terrainCacheRebuildCount++;
+    }
+
     private void resetDiagnosticSamples() {
         Arrays.fill(diagnosticFrameTimes, 0L);
         Arrays.fill(diagnosticTerrainTimes, 0L);
@@ -1197,7 +1286,10 @@ public class GuiAtlas extends GuiComponent {
                 "Sous-tuiles : " + diagnosticSubtilesRendered,
                 "Textures / lots : " + diagnosticBatchCount + " / " + diagnosticBatchCount,
                 "Marqueurs : " + diagnosticMarkersRendered,
-                "Cache terrain : OFF"
+                "Cache terrain : " + terrainCacheFrameState,
+                "Reconstructions : " + terrainCacheRebuildCount,
+                String.format("Derniere : %.2f ms (%s)",
+                        terrainCacheLastBuildNanos / 1_000_000.0, terrainCacheLastReason)
         );
 
         int textWidth = 0;

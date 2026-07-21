@@ -8,6 +8,7 @@ import hunternif.mc.impl.atlas.util.Streams;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceKey;
@@ -35,6 +36,14 @@ public class WorldData implements ITileStorage {
      * Key is a ChunkPos representing the tilegroup's position in units of TileGroup.CHUNK_STEP
      */
     private final Map<ChunkPos, TileGroup> tileGroups = new ConcurrentHashMap<>(2, 0.75f, 2);
+
+    /**
+     * Monotonic versions used by the client terrain render cache. Versions are
+     * tracked per tile group so changes outside the visible page do not force a
+     * needless cache rebuild.
+     */
+    private final AtomicLong renderRevisionCounter = new AtomicLong();
+    private final Map<ChunkPos, Long> tileGroupRenderRevisions = new ConcurrentHashMap<>();
 
     /**
      * Limits of explored area, in chunks.
@@ -109,6 +118,7 @@ public class WorldData implements ITileStorage {
             tileGroups.put(groupPos, tg);
         }
         tg.setTile(x, y, tile);
+        markTileGroupChanged(groupPos);
         scope.extendTo(x, y);
         parent.setDirty();
     }
@@ -119,6 +129,7 @@ public class WorldData implements ITileStorage {
     public void putTileGroup(TileGroup t) {
         ChunkPos key = new ChunkPos(Math.floorDiv(t.scope.minX, TileGroup.CHUNK_STEP), Math.floorDiv(t.scope.minY, TileGroup.CHUNK_STEP));
         tileGroups.put(key, t);
+        markTileGroupChanged(key);
         extendToTileGroup(t);
     }
 
@@ -129,7 +140,10 @@ public class WorldData implements ITileStorage {
         TileGroup group = tileGroups.get(groupPos);
         if (group == null) return null;
         ResourceLocation removed = group.removeTile(x, y);
-        if (removed != null) parent.setDirty();
+        if (removed != null) {
+            markTileGroupChanged(groupPos);
+            parent.setDirty();
+        }
         // Keeping the old scope is intentional: shrinking it would require a
         // full pass over every stored tile and does not affect rendering.
         return removed;
@@ -156,11 +170,45 @@ public class WorldData implements ITileStorage {
         return scope;
     }
 
+    /**
+     * Returns the newest terrain change touching the supplied chunk area.
+     * Looking up the coarse 16x16 tile groups is intentionally much cheaper
+     * than walking every visible tile merely to validate the render cache.
+     */
+    public long getRenderRevision(int minX, int minY, int maxX, int maxY) {
+        int minGroupX = Math.floorDiv(minX, TileGroup.CHUNK_STEP);
+        int minGroupY = Math.floorDiv(minY, TileGroup.CHUNK_STEP);
+        int maxGroupX = Math.floorDiv(maxX, TileGroup.CHUNK_STEP);
+        int maxGroupY = Math.floorDiv(maxY, TileGroup.CHUNK_STEP);
+        long newestRevision = 0L;
+
+        for (int groupX = minGroupX; groupX <= maxGroupX; groupX++) {
+            for (int groupY = minGroupY; groupY <= maxGroupY; groupY++) {
+                Long revision = tileGroupRenderRevisions.get(new ChunkPos(groupX, groupY));
+                if (revision != null && revision > newestRevision) {
+                    newestRevision = revision;
+                }
+            }
+        }
+        return newestRevision;
+    }
+
+    /** Cheap first-level check used before scanning visible tile groups. */
+    public long getRenderRevision() {
+        return renderRevisionCounter.get();
+    }
+
+    private void markTileGroupChanged(ChunkPos groupPos) {
+        tileGroupRenderRevisions.put(groupPos, renderRevisionCounter.incrementAndGet());
+    }
+
     @Override
     public WorldData clone() {
         //TODO
         WorldData data = new WorldData(this.parent, this.world);
         data.tileGroups.putAll(tileGroups);
+        data.tileGroupRenderRevisions.putAll(tileGroupRenderRevisions);
+        data.renderRevisionCounter.set(renderRevisionCounter.get());
         data.scope.set(scope);
         return data;
     }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 import hunternif.mc.impl.atlas.AntiqueAtlas;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
@@ -42,6 +43,7 @@ public class TileTextureMap {
      * This map stores the pseudo biome texture mappings, any biome with ID <0 is assumed to be a pseudo biome
      */
     private final Map<ResourceLocation, TextureSet> textureMap = new HashMap<>();
+    private final AtomicLong renderRevision = new AtomicLong();
 
     /**
      * Assign texture set to pseudo biome
@@ -51,12 +53,19 @@ public class TileTextureMap {
 
         if (textureSet == null) {
             if (textureMap.remove(tileId) != null) {
+                renderRevision.incrementAndGet();
                 Log.warn("Removing old texture for %d", tileId);
             }
             return;
         }
 
         textureMap.put(tileId, textureSet);
+        renderRevision.incrementAndGet();
+    }
+
+    /** Changes whenever a resource reload can alter cached terrain batches. */
+    public long getRenderRevision() {
+        return renderRevision.get();
     }
 
     /**
