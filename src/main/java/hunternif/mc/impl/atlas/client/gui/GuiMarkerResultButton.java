@@ -11,6 +11,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Compact marker row shared by search results and overlap selection. */
 final class GuiMarkerResultButton extends GuiComponentButton {
@@ -19,12 +20,26 @@ final class GuiMarkerResultButton extends GuiComponentButton {
     private final Marker marker;
     private final boolean hidden;
     private final boolean showCoordinates;
+    private final GuiMarkerEditButton editButton;
 
     GuiMarkerResultButton(Marker marker, int width, boolean hidden, boolean showCoordinates) {
+        this(marker, width, hidden, showCoordinates, null);
+    }
+
+    GuiMarkerResultButton(Marker marker, int width, boolean hidden, boolean showCoordinates,
+                          Consumer<Marker> editListener) {
         this.marker = marker;
         this.hidden = hidden;
         this.showCoordinates = showCoordinates;
         setSize(width, HEIGHT);
+        if (editListener == null) {
+            editButton = null;
+        } else {
+            editButton = new GuiMarkerEditButton();
+            editButton.addListener(button -> editListener.accept(marker));
+            addChild(editButton).setRelativeCoords(width - GuiMarkerEditButton.SIZE - 3,
+                    (HEIGHT - GuiMarkerEditButton.SIZE) / 2);
+        }
     }
 
     @Override
@@ -44,7 +59,8 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         int coordinateWidth = showCoordinates ? font.width(coordinates) : 0;
         int textX = getGuiX() + 23;
         int textWidth = Math.max(8, getWidth() - 27
-                - (showCoordinates ? coordinateWidth + 2 : 0));
+                - (showCoordinates ? coordinateWidth + 2 : 0)
+                - (editButton == null ? 0 : GuiMarkerEditButton.SIZE + 4));
         String markerName = marker.getLabel().getString();
         if (markerName.isBlank()) {
             markerName = Component.translatable("gui.antiqueatlas.markerSearch.unnamed").getString();

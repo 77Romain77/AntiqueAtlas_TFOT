@@ -32,7 +32,7 @@
   "gui.antiqueatlas.markerEdit.delete": "Supprimer",
   "gui.antiqueatlas.markerEdit.choose": "Choisissez le marqueur à modifier",
   "gui.antiqueatlas.markerSearch.title": "Rechercher des marqueurs",
-  "gui.antiqueatlas.markerSearch.placeholder": "Nom ou coordonnées…",
+  "gui.antiqueatlas.markerSearch.placeholder": "Nom du marqueur…",
   "gui.antiqueatlas.markerSearch.results": "%s résultat(s)",
   "gui.antiqueatlas.markerSearch.noResults": "Aucun résultat",
   "gui.antiqueatlas.markerSearch.unnamed": "Marqueur sans nom",

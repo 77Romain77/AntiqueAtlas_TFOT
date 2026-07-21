@@ -6,6 +6,7 @@ import hunternif.mc.impl.atlas.client.gui.core.GuiComponent;
 import hunternif.mc.impl.atlas.client.gui.core.GuiScrollingContainer;
 import hunternif.mc.impl.atlas.marker.Marker;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
@@ -24,7 +25,7 @@ final class GuiMarkerSearch extends GuiComponent {
     private static final int PANEL_HEIGHT = 180;
     private static final int PANEL_PADDING = 8;
     private static final int RESULTS_TOP = 51;
-    private static final int RESULTS_HEIGHT = 112;
+    private static final int RESULTS_HEIGHT = 90;
     private static final int BOOK_WIDTH = 310;
     private static final int BOOK_HEIGHT = 218;
     private static final int SEARCH_BUTTON_X = 300;
@@ -33,6 +34,7 @@ final class GuiMarkerSearch extends GuiComponent {
     private static final int SEARCH_BUTTON_HEIGHT = 18;
 
     private final Consumer<Marker> selectionListener;
+    private final Consumer<Marker> editListener;
     private final List<Marker> markers = new ArrayList<>();
     private final List<Marker> filteredMarkers = new ArrayList<>();
     private EditBox searchField;
@@ -40,8 +42,9 @@ final class GuiMarkerSearch extends GuiComponent {
     private int panelX;
     private int panelY;
 
-    GuiMarkerSearch(Consumer<Marker> selectionListener) {
+    GuiMarkerSearch(Consumer<Marker> selectionListener, Consumer<Marker> editListener) {
         this.selectionListener = selectionListener;
+        this.editListener = editListener;
         setBlocksScreen(true);
     }
 
@@ -69,6 +72,11 @@ final class GuiMarkerSearch extends GuiComponent {
         searchField.setResponder(ignored -> rebuildResults());
         addRenderableWidget(searchField);
 
+        addRenderableWidget(Button.builder(Component.translatable("gui.back"), button -> closeChild())
+                .bounds(panelX + PANEL_WIDTH - PANEL_PADDING - 70,
+                        panelY + PANEL_HEIGHT - 27, 70, 20)
+                .build());
+
         if (results == null) {
             results = new GuiScrollingContainer();
             results.setWheelScrollsVertically();
@@ -90,8 +98,7 @@ final class GuiMarkerSearch extends GuiComponent {
         String query = normalize(searchField.getValue().strip());
         filteredMarkers.clear();
         for (Marker marker : markers) {
-            String searchable = normalize(marker.getLabel().getString() + " "
-                    + marker.getX() + " " + marker.getZ() + " " + marker.getType());
+            String searchable = normalize(marker.getLabel().getString());
             if (query.isEmpty() || searchable.contains(query)) filteredMarkers.add(marker);
         }
         filteredMarkers.sort(Comparator
@@ -105,7 +112,10 @@ final class GuiMarkerSearch extends GuiComponent {
         int rowWidth = PANEL_WIDTH - PANEL_PADDING * 2 - 7;
         for (Marker marker : filteredMarkers) {
             GuiMarkerResultButton row = new GuiMarkerResultButton(marker, rowWidth,
-                    !MarkerVisibility.isVisible(marker.getType()), false);
+                    !MarkerVisibility.isVisible(marker.getType()), false, selectedMarker -> {
+                        closeChild();
+                        editListener.accept(selectedMarker);
+                    });
             row.addListener(button -> {
                 closeChild();
                 selectionListener.accept(marker);
@@ -180,6 +190,6 @@ final class GuiMarkerSearch extends GuiComponent {
                 ? Component.translatable("gui.antiqueatlas.markerSearch.noResults")
                 : Component.translatable("gui.antiqueatlas.markerSearch.results", filteredMarkers.size());
         graphics.drawString(font, count, panelX + PANEL_PADDING,
-                panelY + PANEL_HEIGHT - 13, 0xFF9E8F77, false);
+                panelY + PANEL_HEIGHT - 20, 0xFF9E8F77, false);
     }
 }

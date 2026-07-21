@@ -295,7 +295,8 @@ public class GuiAtlas extends GuiComponent {
 
     private final GuiMarkerFinalizer markerFinalizer = new GuiMarkerFinalizer();
     private final GuiMarkerFilter markerFilter = new GuiMarkerFilter();
-    private final GuiMarkerSearch markerSearch = new GuiMarkerSearch(this::focusSearchResult);
+    private final GuiMarkerSearch markerSearch = new GuiMarkerSearch(
+            this::focusSearchResult, this::openMarkerEditor);
     private final GuiMarkerPicker markerPicker = new GuiMarkerPicker(this::openMarkerEditor);
     /**
      * Displayed where the marker is about to be placed when the Finalizer GUI is on.
