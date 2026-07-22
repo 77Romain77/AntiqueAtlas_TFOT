@@ -49,9 +49,11 @@ public class GuiMarkerFinalizer extends GuiComponent {
     private static final int TYPE_BG_FRAME = 4;
     private static final int COLOR_COLUMNS = 9;
     private static final int COLOR_SPACING = 2;
-    private static final int COLOR_TOP_OFFSET = 29;
-    private static final int PREVIEW_SIZE = 30;
-    private static final int CONTROLS_Y_OFFSET = 73;
+    private static final int COLOR_LABEL_OFFSET = 20;
+    private static final int COLOR_TOP_OFFSET = 34;
+    // A 32x32 icon matches a regular marker rendered on the atlas at zoom x1.
+    private static final int PREVIEW_SIZE = GuiAtlas.MARKER_SIZE + 6;
+    private static final int CONTROLS_Y_OFFSET = 78;
 
     private Button btnDone;
     private Button btnCancel;
@@ -294,7 +296,7 @@ public class GuiMarkerFinalizer extends GuiComponent {
         Component colorLabel = Component.translatable("gui.antiqueatlas.markerColor.title");
         matrices.drawString(font, colorLabel,
                 paletteX + (paletteWidth - font.width(colorLabel)) / 2,
-                this.height / 2 + 16, 0xFFFFFF, true);
+                this.height / 2 + COLOR_LABEL_OFFSET, 0xFFFFFF, true);
 
         int previewX = paletteX + paletteWidth + 8;
         int previewY = this.height / 2 + COLOR_TOP_OFFSET;

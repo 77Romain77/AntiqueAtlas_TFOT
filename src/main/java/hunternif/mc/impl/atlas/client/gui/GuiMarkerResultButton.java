@@ -53,7 +53,7 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         int iconX = getGuiX() + 3;
         int iconY = getGuiY() + 3;
         if (texture != null) texture.draw(graphics, iconX, iconY, ICON_SIZE, ICON_SIZE);
-        MarkerColorRenderer.drawMarkerBanner(graphics, iconX, iconY,
+        MarkerColorRenderer.drawCompactMarkerBanner(graphics, iconX, iconY,
                 ICON_SIZE, ICON_SIZE, marker.getColor(), hidden ? 0x72 : 0xE8);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 

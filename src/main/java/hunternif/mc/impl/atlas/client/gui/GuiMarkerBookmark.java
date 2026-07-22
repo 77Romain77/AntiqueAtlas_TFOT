@@ -57,10 +57,9 @@ public class GuiMarkerBookmark extends GuiComponentButton {
         int iconX = getGuiX() - (isMouseOver ? 3 : 2);
         int iconY = getGuiY() - 3;
         iconTexture.draw(matrices, iconX, iconY, 24, 24);
-        // Keep the original green bookmark and plant the color banner over the
-        // lower-right edge of the marker symbol. The one-pixel inset preserves
-        // the finalizer preview placement while keeping the banner in the tab.
-        MarkerColorRenderer.drawMarkerBanner(matrices, iconX, iconY,
+        // Keep the original green bookmark and use the compact banner variant
+        // so it stays balanced inside this narrow tab.
+        MarkerColorRenderer.drawCompactMarkerBanner(matrices, iconX, iconY,
                 23, 23, marker.getColor());
 
         if (isMouseOver && !getTitle().getString().isEmpty()) {

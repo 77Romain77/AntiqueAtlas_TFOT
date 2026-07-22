@@ -10,8 +10,12 @@ final class MarkerColorRenderer {
     private static final int OUTLINE_RGB = 0x24180F;
     private static final int BANNER_WIDTH = 7;
     private static final int BANNER_HEIGHT = 12;
-    private static final int BANNER_SHIFT_LEFT = 3;
-    private static final int BANNER_RAISE = 5;
+    private static final int BANNER_SHIFT_LEFT = 5;
+    private static final int BANNER_RAISE = 7;
+    private static final int COMPACT_BANNER_WIDTH = 6;
+    private static final int COMPACT_BANNER_HEIGHT = 10;
+    private static final int COMPACT_BANNER_SHIFT_LEFT = 6;
+    private static final int COMPACT_BANNER_RAISE = 9;
 
     private MarkerColorRenderer() {
     }
@@ -34,22 +38,43 @@ final class MarkerColorRenderer {
         drawMarkerBanner(graphics, iconX, iconY, iconWidth, iconHeight, color, 0xE8);
     }
 
+    static void drawCompactMarkerBanner(GuiGraphics graphics, int iconX, int iconY,
+                                        int iconWidth, int iconHeight, MarkerColor color) {
+        drawCompactMarkerBanner(graphics, iconX, iconY, iconWidth, iconHeight, color, 0xE8);
+    }
+
+    static void drawCompactMarkerBanner(GuiGraphics graphics, int iconX, int iconY,
+                                        int iconWidth, int iconHeight, MarkerColor color, int alpha) {
+        drawMarkerBanner(graphics, iconX, iconY, iconWidth, iconHeight, color, alpha,
+                COMPACT_BANNER_WIDTH, COMPACT_BANNER_HEIGHT,
+                COMPACT_BANNER_SHIFT_LEFT, COMPACT_BANNER_RAISE);
+    }
+
     /**
-     * Draws the shared Minecraft-style banner texture at the lower-right of the
-     * marker. The banner deliberately keeps its fixed 7x12 pixel size in every
-     * rendering context so bookmarks, map markers and previews stay uniform.
+     * Draws the shared Minecraft-style banner texture over the marker. Map
+     * markers and creation previews use the full 7x12 pixel version; compact
+     * lists use the dedicated helper above so the banner does not dominate the
+     * smaller icon slot.
      */
     static void drawMarkerBanner(GuiGraphics graphics, int iconX, int iconY,
                                  int iconWidth, int iconHeight, MarkerColor color, int alpha) {
+        drawMarkerBanner(graphics, iconX, iconY, iconWidth, iconHeight, color, alpha,
+                BANNER_WIDTH, BANNER_HEIGHT, BANNER_SHIFT_LEFT, BANNER_RAISE);
+    }
+
+    private static void drawMarkerBanner(GuiGraphics graphics, int iconX, int iconY,
+                                         int iconWidth, int iconHeight, MarkerColor color, int alpha,
+                                         int bannerWidth, int bannerHeight,
+                                         int shiftLeft, int raise) {
         if (color == null || !color.isColored() || iconWidth < 3 || iconHeight < 3) return;
 
-        int bannerX = iconX + iconWidth - BANNER_WIDTH - BANNER_SHIFT_LEFT;
-        int bannerY = iconY + iconHeight - BANNER_HEIGHT - BANNER_RAISE;
+        int bannerX = iconX + iconWidth - bannerWidth - shiftLeft;
+        int bannerY = iconY + iconHeight - bannerHeight - raise;
 
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha / 255.0F);
         Textures.MARKER_BANNER_BASE.draw(graphics,
-                bannerX, bannerY, BANNER_WIDTH, BANNER_HEIGHT);
+                bannerX, bannerY, bannerWidth, bannerHeight);
 
         int rgb = color.getRgb();
         RenderSystem.setShaderColor(((rgb >> 16) & 0xFF) / 255.0F,
@@ -57,7 +82,7 @@ final class MarkerColorRenderer {
                 (rgb & 0xFF) / 255.0F,
                 alpha / 255.0F);
         Textures.MARKER_BANNER_FABRIC.draw(graphics,
-                bannerX, bannerY, BANNER_WIDTH, BANNER_HEIGHT);
+                bannerX, bannerY, bannerWidth, bannerHeight);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
