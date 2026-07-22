@@ -14,7 +14,7 @@ final class MarkerColorRenderer {
     private static final int BANNER_RAISE = 7;
     private static final int COMPACT_BANNER_WIDTH = 6;
     private static final int COMPACT_BANNER_HEIGHT = 10;
-    private static final int COMPACT_BANNER_SHIFT_RIGHT = 4;
+    private static final int COMPACT_BANNER_SHIFT_RIGHT = 6;
     private static final int COMPACT_BANNER_SHIFT_DOWN = 2;
 
     private MarkerColorRenderer() {

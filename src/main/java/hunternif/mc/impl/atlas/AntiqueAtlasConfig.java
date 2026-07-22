@@ -50,6 +50,7 @@ public class AntiqueAtlasConfig {
     public double minScale = 1.0 / 32.0;
     public double maxScale = 4.0;
     public boolean doReverseWheelZoom = false;
+    public boolean showUnexploredClouds = true;
     public int maxMaps = 10;
     /** Shared display order used by every marker-type selector and category list. */
     public List<String> markerTypeOrder = new ArrayList<>(DEFAULT_MARKER_TYPE_ORDER);

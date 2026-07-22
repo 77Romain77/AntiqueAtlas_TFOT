@@ -20,7 +20,7 @@ public class GuiClientSettings extends Screen {
     @Override
     protected void init() {
         int x = width / 2 - 110;
-        int y = height / 2 - 58;
+        int y = height / 2 - 70;
 
         addRenderableWidget(Button.builder(itemLabel(), button -> {
             AntiqueAtlas.CONFIG.itemNeeded = !AntiqueAtlas.CONFIG.itemNeeded;
@@ -43,8 +43,13 @@ public class GuiClientSettings extends Screen {
             button.setMessage(budgetLabel());
         }).bounds(x + 112, y + 48, 108, 20).build());
 
+        addRenderableWidget(Button.builder(cloudsLabel(), button -> {
+            AntiqueAtlas.CONFIG.showUnexploredClouds = !AntiqueAtlas.CONFIG.showUnexploredClouds;
+            button.setMessage(cloudsLabel());
+        }).bounds(x, y + 72, 220, 20).build());
+
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose())
-                .bounds(width / 2 - 50, y + 84, 100, 20).build());
+                .bounds(width / 2 - 50, y + 108, 100, 20).build());
     }
 
     private Component itemLabel() {
@@ -63,6 +68,11 @@ public class GuiClientSettings extends Screen {
         return Component.translatable("gui.antiqueatlas.config.scanBudget", AntiqueAtlas.CONFIG.clientScanBudget);
     }
 
+    private Component cloudsLabel() {
+        return option("gui.antiqueatlas.config.unexploredClouds",
+                AntiqueAtlas.CONFIG.showUnexploredClouds);
+    }
+
     private static Component option(String key, boolean enabled) {
         return Component.translatable(key, Component.translatable(enabled ? "options.on" : "options.off"));
     }
@@ -75,7 +85,7 @@ public class GuiClientSettings extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
-        graphics.drawCenteredString(font, title, width / 2, height / 2 - 98, 0xFFFFFF);
+        graphics.drawCenteredString(font, title, width / 2, height / 2 - 104, 0xFFFFFF);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

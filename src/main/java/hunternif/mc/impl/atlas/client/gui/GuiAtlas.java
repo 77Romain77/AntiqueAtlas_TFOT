@@ -12,6 +12,7 @@ import hunternif.mc.impl.atlas.client.gui.core.GuiStates.SimpleState;
 import hunternif.mc.impl.atlas.client.texture.ITexture;
 import hunternif.mc.impl.atlas.client.texture.TileRenderBatch;
 import hunternif.mc.impl.atlas.client.texture.TileTexture;
+import hunternif.mc.impl.atlas.client.texture.UnexploredCloudBatch;
 import hunternif.mc.impl.atlas.client.storage.ClientMapManager;
 import hunternif.mc.impl.atlas.core.WorldData;
 import hunternif.mc.impl.atlas.event.MarkerClickedCallback;
@@ -93,7 +94,9 @@ public class GuiAtlas extends GuiComponent {
 
     /** Prepared terrain geometry reused until the visible page actually changes. */
     private final Map<TileTexture, TileRenderBatch> terrainCacheBatches = new LinkedHashMap<>();
+    private final UnexploredCloudBatch terrainCacheClouds = new UnexploredCloudBatch();
     private boolean terrainCacheValid;
+    private boolean terrainCacheCloudsEnabled;
     private WorldData terrainCacheWorld;
     private int terrainCacheStartX;
     private int terrainCacheStartZ;
@@ -1144,6 +1147,7 @@ public class GuiAtlas extends GuiComponent {
 
         matrices.pose().pushPose();
         matrices.pose().translate(mapStartScreenX, mapStartScreenY, 0);
+        terrainCacheClouds.draw(matrices, tileHalfSize);
         terrainCacheBatches.values().forEach(batch -> batch.draw(matrices, tileHalfSize));
         if (collectDiagnostics) {
             diagnosticTilesVisited = terrainCacheTilesVisited;
@@ -1256,6 +1260,8 @@ public class GuiAtlas extends GuiComponent {
         } else if (terrainCacheTileHalfSize != tileHalfSize
                 || terrainCacheTile2ChunkScale != tile2ChunkScale) {
             rebuildReason = "zoom";
+        } else if (terrainCacheCloudsEnabled != AntiqueAtlas.CONFIG.showUnexploredClouds) {
+            rebuildReason = "nuages";
         } else if (viewportChanged) {
             rebuildReason = "fenetre";
         } else if (scopeChanged) {
@@ -1275,6 +1281,7 @@ public class GuiAtlas extends GuiComponent {
 
         long buildStart = System.nanoTime();
         terrainCacheBatches.clear();
+        terrainCacheClouds.clear();
         terrainCacheTilesVisited = 0;
         terrainCacheSubtilesRendered = 0;
 
@@ -1293,7 +1300,7 @@ public class GuiAtlas extends GuiComponent {
         for (SubTileQuartet subtiles : tiles) {
             terrainCacheTilesVisited++;
             for (SubTile subtile : subtiles) {
-                if (subtile == null || subtile.tile == null) continue;
+                if (subtile == null) continue;
                 int drawX = subtile.x * tileHalfSize;
                 int drawY = subtile.y * tileHalfSize;
                 int screenX = mapStartScreenX + drawX;
@@ -1301,6 +1308,13 @@ public class GuiAtlas extends GuiComponent {
                 if (screenX >= mapRight || screenY >= mapBottom
                         || screenX + tileHalfSize <= mapLeft
                         || screenY + tileHalfSize <= mapTop) continue;
+                if (subtile.tile == null) {
+                    if (AntiqueAtlas.CONFIG.showUnexploredClouds) {
+                        terrainCacheClouds.add(drawX, drawY,
+                                subtile.variationNumber ^ (subtile.part.ordinal() * 0x9E3779B9));
+                    }
+                    continue;
+                }
                 ITexture texture = TileTextureMap.instance().getTexture(subtile);
                 if (!(texture instanceof TileTexture tileTexture)) continue;
                 terrainCacheBatches.computeIfAbsent(tileTexture, TileRenderBatch::new).add(
@@ -1319,6 +1333,7 @@ public class GuiAtlas extends GuiComponent {
         terrainCacheGuiY = getGuiY();
         terrainCacheTileHalfSize = tileHalfSize;
         terrainCacheTile2ChunkScale = tile2ChunkScale;
+        terrainCacheCloudsEnabled = AntiqueAtlas.CONFIG.showUnexploredClouds;
         terrainCacheGlobalWorldRevision = globalWorldRevision;
         terrainCacheWorldRevision = worldRevision;
         terrainCacheTextureRevision = textureRevision;
