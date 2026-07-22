@@ -455,11 +455,10 @@ public class ExportImageUtil {
         BufferedImage fabricMask = textureImageMap.get(Textures.MARKER_BANNER_FABRIC_LOCATION);
         if (base == null || fabricMask == null) return;
 
-        int referenceSize = Math.min(iconWidth, iconHeight);
-        int height = Math.max(6, Math.min(10, Math.round(referenceSize * 0.50F)));
-        int width = Math.max(5, Math.round(height * 0.75F));
+        int height = 10;
+        int width = 7;
         int x = iconX + iconWidth - width;
-        int y = iconY + iconHeight - height;
+        int y = iconY + iconHeight - height - 2;
 
         BufferedImage tintedFabric = tintBannerFabric(fabricMask, rgb);
         Composite oldComposite = graphics.getComposite();

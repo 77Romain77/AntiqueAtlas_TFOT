@@ -8,6 +8,9 @@ import net.minecraft.client.gui.GuiGraphics;
 /** Draws marker color swatches and the small standing banner attached to icons. */
 final class MarkerColorRenderer {
     private static final int OUTLINE_RGB = 0x24180F;
+    private static final int BANNER_WIDTH = 7;
+    private static final int BANNER_HEIGHT = 10;
+    private static final int BANNER_RAISE = 2;
 
     private MarkerColorRenderer() {
     }
@@ -32,23 +35,20 @@ final class MarkerColorRenderer {
 
     /**
      * Draws the shared Minecraft-style banner texture at the lower-right of the
-     * marker's actual visible pixels. Its size follows the symbol rather than
-     * the transparent canvas around it.
+     * marker. The banner deliberately keeps its native 7x10 pixel size in every
+     * rendering context so bookmarks, map markers and previews stay uniform.
      */
     static void drawMarkerBanner(GuiGraphics graphics, int iconX, int iconY,
                                  int iconWidth, int iconHeight, MarkerColor color, int alpha) {
         if (color == null || !color.isColored() || iconWidth < 3 || iconHeight < 3) return;
 
-        int referenceSize = Math.min(iconWidth, iconHeight);
-        int bannerHeight = clamp(Math.round(referenceSize * 0.50F), 6, 10);
-        int bannerWidth = Math.max(5, Math.round(bannerHeight * 0.75F));
-        int bannerX = iconX + iconWidth - bannerWidth;
-        int bannerY = iconY + iconHeight - bannerHeight;
+        int bannerX = iconX + iconWidth - BANNER_WIDTH;
+        int bannerY = iconY + iconHeight - BANNER_HEIGHT - BANNER_RAISE;
 
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha / 255.0F);
         Textures.MARKER_BANNER_BASE.draw(graphics,
-                bannerX, bannerY, bannerWidth, bannerHeight);
+                bannerX, bannerY, BANNER_WIDTH, BANNER_HEIGHT);
 
         int rgb = color.getRgb();
         RenderSystem.setShaderColor(((rgb >> 16) & 0xFF) / 255.0F,
@@ -56,7 +56,7 @@ final class MarkerColorRenderer {
                 (rgb & 0xFF) / 255.0F,
                 alpha / 255.0F);
         Textures.MARKER_BANNER_FABRIC.draw(graphics,
-                bannerX, bannerY, bannerWidth, bannerHeight);
+                bannerX, bannerY, BANNER_WIDTH, BANNER_HEIGHT);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
