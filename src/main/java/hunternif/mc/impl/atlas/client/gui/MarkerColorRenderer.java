@@ -14,6 +14,8 @@ final class MarkerColorRenderer {
     private static final int BANNER_RAISE = 7;
     private static final int COMPACT_BANNER_WIDTH = 6;
     private static final int COMPACT_BANNER_HEIGHT = 10;
+    private static final int COMPACT_BANNER_SHIFT_RIGHT = 2;
+    private static final int COMPACT_BANNER_SHIFT_DOWN = 2;
 
     private MarkerColorRenderer() {
     }
@@ -45,11 +47,13 @@ final class MarkerColorRenderer {
                                         int iconWidth, int iconHeight, MarkerColor color, int alpha) {
         if (color == null || !color.isColored() || iconWidth < 3 || iconHeight < 3) return;
 
-        // Compact icons use different canvas sizes in bookmarks and search
-        // rows. Center the banner in the actual icon canvas so it does not
-        // drift upward (or sideways) when the surrounding slot changes.
-        int bannerX = iconX + (iconWidth - COMPACT_BANNER_WIDTH) / 2;
-        int bannerY = iconY + (iconHeight - COMPACT_BANNER_HEIGHT) / 2;
+        // Bookmarks and search rows both use the same icon canvas. Keep the
+        // banner centered on that canvas, then bias it down and right so the
+        // pole sits on the marker instead of floating above its top-left edge.
+        int bannerX = iconX + (iconWidth - COMPACT_BANNER_WIDTH) / 2
+                + COMPACT_BANNER_SHIFT_RIGHT;
+        int bannerY = iconY + (iconHeight - COMPACT_BANNER_HEIGHT) / 2
+                + COMPACT_BANNER_SHIFT_DOWN;
         drawBanner(graphics, bannerX, bannerY,
                 COMPACT_BANNER_WIDTH, COMPACT_BANNER_HEIGHT, color, alpha);
     }

@@ -16,7 +16,9 @@ import java.util.function.Consumer;
 /** Compact marker row shared by search results and overlap selection. */
 final class GuiMarkerResultButton extends GuiComponentButton {
     static final int HEIGHT = 24;
-    private static final int ICON_SIZE = 18;
+    private static final int ICON_SIZE = 24;
+    private static final int ICON_X = 3;
+    private static final int TEXT_GAP = 4;
 
     private final Marker marker;
     private final boolean hidden;
@@ -50,15 +52,15 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         ITexture texture = type == null ? null : type.getTexture();
         float tint = hidden ? 0.45F : 1.0F;
         RenderSystem.setShaderColor(tint, tint, tint, 1.0F);
-        int iconX = getGuiX() + 3;
-        int iconY = getGuiY() + 3;
+        int iconX = getGuiX() + ICON_X;
+        int iconY = getGuiY();
         if (texture != null) texture.draw(graphics, iconX, iconY, ICON_SIZE, ICON_SIZE);
         MarkerColorRenderer.drawCompactMarkerBanner(graphics, iconX, iconY,
                 ICON_SIZE, ICON_SIZE, marker.getColor(), hidden ? 0x72 : 0xE8);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        int textX = getGuiX() + 25;
-        int textWidth = Math.max(8, getWidth() - 29
+        int textX = iconX + ICON_SIZE + TEXT_GAP;
+        int textWidth = Math.max(8, getWidth() - (textX - getGuiX()) - 4
                 - (editButton == null ? 0 : GuiMarkerEditButton.SIZE + 4));
         String markerName = marker.getLabel().getString();
         if (markerName.isBlank()) {
