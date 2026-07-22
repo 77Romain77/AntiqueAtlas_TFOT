@@ -426,47 +426,52 @@ public class ExportImageUtil {
                     int markerX = marker.getX() - minX;
                     int markerY = marker.getZ() - minY;
 
-                    if (marker.getColor().isColored()) {
-                        int badgeWidth = Math.max(3, Math.round(info.width * 0.5F));
-                        int badgeHeight = Math.max(3, Math.round(info.height * 0.5F));
-                        int badgeX = (int) (markerX + info.x) + (info.width - badgeWidth) / 2;
-                        int badgeY = (int) (markerY + info.y) + (info.height - badgeHeight) / 2;
-                        drawMarkerBadge(graphics, badgeX, badgeY, badgeWidth, badgeHeight,
-                                marker.getColor().getRgb());
-                    }
-
                     graphics.drawImage(
                             markerImage,
                             (int) (markerX + info.x), (int) (markerY + info.y),
                             info.tex.width(), info.tex.height(), null);
+
+                    if (marker.getColor().isColored()) {
+                        drawMarkerBanner(graphics,
+                                (int) (markerX + info.x), (int) (markerY + info.y),
+                                info.width, info.height, marker.getColor().getRgb());
+                    }
                 }
             }
         }
     }
 
-    private static void drawMarkerBadge(Graphics2D graphics, int x, int y,
-                                        int width, int height, int rgb) {
-        int corner = Math.max(1, Math.min(Math.min(width, height) / 5, 4));
-        int[] xPoints = {x + corner, x + width - corner, x + width, x + width,
-                x + width - corner, x + corner, x, x};
-        int[] yPoints = {y, y, y + corner, y + height - corner,
-                y + height, y + height, y + height - corner, y + corner};
-        graphics.setColor(new Color(0xD824180F, true));
-        graphics.fillPolygon(xPoints, yPoints, xPoints.length);
+    private static void drawMarkerBanner(Graphics2D graphics, int iconX, int iconY,
+                                         int iconWidth, int iconHeight, int rgb) {
+        if (iconWidth < 6 || iconHeight < 8) return;
 
-        int innerX = x + 1;
-        int innerY = y + 1;
-        int innerWidth = width - 2;
-        int innerHeight = height - 2;
-        int innerCorner = Math.max(1, corner - 1);
-        int[] innerXPoints = {innerX + innerCorner, innerX + innerWidth - innerCorner,
-                innerX + innerWidth, innerX + innerWidth,
-                innerX + innerWidth - innerCorner, innerX + innerCorner, innerX, innerX};
-        int[] innerYPoints = {innerY, innerY, innerY + innerCorner,
-                innerY + innerHeight - innerCorner, innerY + innerHeight,
-                innerY + innerHeight, innerY + innerHeight - innerCorner,
-                innerY + innerCorner};
-        graphics.setColor(new Color(0xD8000000 | rgb, true));
-        graphics.fillPolygon(innerXPoints, innerYPoints, innerXPoints.length);
+        int referenceSize = Math.min(iconWidth, iconHeight);
+        int width = Math.max(6, Math.min(7, Math.round(referenceSize * 0.25F)));
+        int height = Math.max(8, Math.min(10, Math.round(referenceSize * 0.375F)));
+        int visualRight = iconX + iconWidth * 3 / 4;
+        int visualBottom = iconY + iconHeight * 3 / 4;
+        int x = Math.max(iconX, Math.min(iconX + iconWidth - width, visualRight - width));
+        int y = Math.max(iconY, Math.min(iconY + iconHeight - height, visualBottom - height));
+
+        Color outline = new Color(0xE824180F, true);
+        Color pole = new Color(0xE85A3A21, true);
+        Color fabric = new Color(0xE8000000 | rgb, true);
+
+        graphics.setColor(outline);
+        graphics.fillRect(x + 1, y + 1, width - 1, height - 3);
+        graphics.fillRect(x + 1, y + height - 2, 1, 1);
+        graphics.fillRect(x + width - 1, y + height - 2, 1, 1);
+
+        graphics.setColor(fabric);
+        graphics.fillRect(x + 2, y + 2, width - 3, height - 5);
+        graphics.fillRect(x + 2, y + height - 3, 1, 1);
+        graphics.fillRect(x + width - 2, y + height - 3, 1, 1);
+
+        graphics.setColor(outline);
+        graphics.fillRect(x, y, width, 1);
+        graphics.setColor(pole);
+        graphics.fillRect(x, y + 1, 1, height - 1);
+        graphics.setColor(outline);
+        graphics.fillRect(x, y + height - 1, 3, 1);
     }
 }

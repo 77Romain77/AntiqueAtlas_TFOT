@@ -1188,13 +1188,13 @@ public class GuiAtlas extends GuiComponent {
             markerFinalizer.selectedType.calculateMip(iconScale, mapScale, screenScale);
             MarkerRenderInfo renderInfo = markerFinalizer.selectedType.getRenderInfo(iconScale, mapScale, screenScale);
             markerFinalizer.selectedType.resetMip();
-            MarkerColorRenderer.drawCompactBadge(matrices,
+            renderInfo.tex.draw(matrices, mouseX + renderInfo.x, mouseY + renderInfo.y);
+            MarkerColorRenderer.drawMarkerBanner(matrices,
                     mouseX + renderInfo.x,
                     mouseY + renderInfo.y,
                     renderInfo.width,
                     renderInfo.height,
-                    markerFinalizer.getSelectedColor(), 0x78);
-            renderInfo.tex.draw(matrices, mouseX + renderInfo.x, mouseY + renderInfo.y);
+                    markerFinalizer.getSelectedColor(), 0x88);
             RenderSystem.setShaderColor(1, 1, 1, 1);
         }
         RenderSystem.disableBlend();
@@ -1530,13 +1530,13 @@ public class GuiAtlas extends GuiComponent {
 
         int badgeAlpha = state.is(PLACING_MARKER)
                 || (state.is(DELETING_MARKER) && marker.isGlobal()) ? 0x78 : 0xD8;
-        MarkerColorRenderer.drawCompactBadge(matrices,
+        info.tex.draw(matrices, markerX + info.x, markerY + info.y, info.width, info.height);
+        MarkerColorRenderer.drawMarkerBanner(matrices,
                 markerX + info.x,
                 markerY + info.y,
                 info.width,
                 info.height,
                 marker.getColor(), badgeAlpha);
-        info.tex.draw(matrices, markerX + info.x, markerY + info.y, info.width, info.height);
         if (diagnosticVisible) {
             diagnosticMarkersRendered++;
         }

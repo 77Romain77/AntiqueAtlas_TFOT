@@ -299,10 +299,10 @@ public class GuiMarkerFinalizer extends GuiComponent {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         ITexture previewTexture = selectedType == null ? null : selectedType.getTexture();
         if (previewTexture != null) {
-            MarkerColorRenderer.drawCompactBadge(matrices, previewX + 3, previewY + 3,
-                    PREVIEW_SIZE - 6, PREVIEW_SIZE - 6, selectedColor);
             previewTexture.draw(matrices, previewX + 3, previewY + 3,
                     PREVIEW_SIZE - 6, PREVIEW_SIZE - 6);
+            MarkerColorRenderer.drawMarkerBanner(matrices, previewX + 3, previewY + 3,
+                    PREVIEW_SIZE - 6, PREVIEW_SIZE - 6, selectedColor);
         }
         super.render(matrices, mouseX, mouseY, partialTick);
     }

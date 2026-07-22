@@ -56,10 +56,10 @@ public class GuiMarkerBookmark extends GuiComponentButton {
         // Render the icon:
         int iconX = getGuiX() - (isMouseOver ? 3 : 2);
         int iconY = getGuiY() - 3;
-        // Keep the original green bookmark visible and add only a compact
-        // color accent behind the marker symbol.
-        MarkerColorRenderer.drawCompactBadge(matrices, iconX, iconY, 24, 24, marker.getColor());
         iconTexture.draw(matrices, iconX, iconY, 24, 24);
+        // Keep the original green bookmark and plant the color banner over the
+        // lower-right edge of the marker symbol.
+        MarkerColorRenderer.drawMarkerBanner(matrices, iconX, iconY, 24, 24, marker.getColor());
 
         if (isMouseOver && !getTitle().getString().isEmpty()) {
             drawTooltip(Collections.singletonList(getTitle()), Minecraft.getInstance().font);
