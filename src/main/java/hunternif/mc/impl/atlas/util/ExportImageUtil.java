@@ -457,8 +457,8 @@ public class ExportImageUtil {
 
         int height = 12;
         int width = 7;
-        int x = iconX + iconWidth - width;
-        int y = iconY + iconHeight - height - 2;
+        int x = iconX + iconWidth - width - 3;
+        int y = iconY + iconHeight - height - 5;
 
         BufferedImage tintedFabric = tintBannerFabric(fabricMask, rgb);
         Composite oldComposite = graphics.getComposite();

@@ -10,7 +10,8 @@ final class MarkerColorRenderer {
     private static final int OUTLINE_RGB = 0x24180F;
     private static final int BANNER_WIDTH = 7;
     private static final int BANNER_HEIGHT = 12;
-    private static final int BANNER_RAISE = 2;
+    private static final int BANNER_SHIFT_LEFT = 3;
+    private static final int BANNER_RAISE = 5;
 
     private MarkerColorRenderer() {
     }
@@ -42,7 +43,7 @@ final class MarkerColorRenderer {
                                  int iconWidth, int iconHeight, MarkerColor color, int alpha) {
         if (color == null || !color.isColored() || iconWidth < 3 || iconHeight < 3) return;
 
-        int bannerX = iconX + iconWidth - BANNER_WIDTH;
+        int bannerX = iconX + iconWidth - BANNER_WIDTH - BANNER_SHIFT_LEFT;
         int bannerY = iconY + iconHeight - BANNER_HEIGHT - BANNER_RAISE;
 
         RenderSystem.enableBlend();

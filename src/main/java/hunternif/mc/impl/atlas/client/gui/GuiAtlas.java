@@ -1534,12 +1534,16 @@ public class GuiAtlas extends GuiComponent {
         int badgeAlpha = state.is(PLACING_MARKER)
                 || (state.is(DELETING_MARKER) && marker.isGlobal()) ? 0x78 : 0xD8;
         info.tex.draw(matrices, markerX + info.x, markerY + info.y, info.width, info.height);
-        MarkerColorRenderer.drawMarkerBanner(matrices,
-                markerX + info.x,
-                markerY + info.y,
-                info.width,
-                info.height,
-                marker.getColor(), badgeAlpha);
+        // At zoom levels below x1 the fixed-size banner no longer tracks the
+        // shrinking marker cleanly, so keep it visible only from x1 upwards.
+        if (zoomLevel <= zoomLevelOne) {
+            MarkerColorRenderer.drawMarkerBanner(matrices,
+                    markerX + info.x,
+                    markerY + info.y,
+                    info.width,
+                    info.height,
+                    marker.getColor(), badgeAlpha);
+        }
         if (diagnosticVisible) {
             diagnosticMarkersRendered++;
         }
