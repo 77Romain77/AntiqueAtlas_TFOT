@@ -1190,10 +1190,10 @@ public class GuiAtlas extends GuiComponent {
             markerFinalizer.selectedType.resetMip();
             renderInfo.tex.draw(matrices, mouseX + renderInfo.x, mouseY + renderInfo.y);
             MarkerColorRenderer.drawMarkerBanner(matrices,
-                    mouseX + renderInfo.x,
-                    mouseY + renderInfo.y,
-                    renderInfo.width,
-                    renderInfo.height,
+                    mouseX + renderInfo.x + renderInfo.visibleX,
+                    mouseY + renderInfo.y + renderInfo.visibleY,
+                    renderInfo.visibleWidth,
+                    renderInfo.visibleHeight,
                     markerFinalizer.getSelectedColor(), 0x88);
             RenderSystem.setShaderColor(1, 1, 1, 1);
         }
@@ -1532,10 +1532,10 @@ public class GuiAtlas extends GuiComponent {
                 || (state.is(DELETING_MARKER) && marker.isGlobal()) ? 0x78 : 0xD8;
         info.tex.draw(matrices, markerX + info.x, markerY + info.y, info.width, info.height);
         MarkerColorRenderer.drawMarkerBanner(matrices,
-                markerX + info.x,
-                markerY + info.y,
-                info.width,
-                info.height,
+                markerX + info.x + info.visibleX,
+                markerY + info.y + info.visibleY,
+                info.visibleWidth,
+                info.visibleHeight,
                 marker.getColor(), badgeAlpha);
         if (diagnosticVisible) {
             diagnosticMarkersRendered++;

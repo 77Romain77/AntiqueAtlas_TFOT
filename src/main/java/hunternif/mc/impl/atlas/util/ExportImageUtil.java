@@ -128,6 +128,8 @@ public class ExportImageUtil {
                     allTextures.addAll(Arrays.asList(type.getAllIcons()));
 //					allTextures.add(type.getIcon());
                 }
+                allTextures.add(Textures.MARKER_BANNER_BASE_LOCATION);
+                allTextures.add(Textures.MARKER_BANNER_FABRIC_LOCATION);
             }
             for (ResourceLocation texture : allTextures) {
                 try {
@@ -200,6 +202,8 @@ public class ExportImageUtil {
                     allTextures.addAll(Arrays.asList(type.getAllIcons()));
 //					allTextures.add(type.getIcon());
                 }
+                allTextures.add(Textures.MARKER_BANNER_BASE_LOCATION);
+                allTextures.add(Textures.MARKER_BANNER_FABRIC_LOCATION);
             }
             for (ResourceLocation texture : allTextures) {
                 try {
@@ -433,8 +437,10 @@ public class ExportImageUtil {
 
                     if (marker.getColor().isColored()) {
                         drawMarkerBanner(graphics,
-                                (int) (markerX + info.x), (int) (markerY + info.y),
-                                info.width, info.height, marker.getColor().getRgb());
+                                markerX + info.x + info.visibleX,
+                                markerY + info.y + info.visibleY,
+                                info.visibleWidth, info.visibleHeight,
+                                marker.getColor().getRgb(), textureImageMap);
                     }
                 }
             }
@@ -442,50 +448,50 @@ public class ExportImageUtil {
     }
 
     private static void drawMarkerBanner(Graphics2D graphics, int iconX, int iconY,
-                                         int iconWidth, int iconHeight, int rgb) {
-        if (iconWidth < 6 || iconHeight < 8) return;
+                                         int iconWidth, int iconHeight, int rgb,
+                                         Map<ResourceLocation, BufferedImage> textureImageMap) {
+        if (iconWidth < 3 || iconHeight < 3) return;
+        BufferedImage base = textureImageMap.get(Textures.MARKER_BANNER_BASE_LOCATION);
+        BufferedImage fabricMask = textureImageMap.get(Textures.MARKER_BANNER_FABRIC_LOCATION);
+        if (base == null || fabricMask == null) return;
 
         int referenceSize = Math.min(iconWidth, iconHeight);
-        int width = Math.max(5, Math.min(6, Math.round(referenceSize * 0.20F)));
-        int height = Math.max(8, Math.min(9, Math.round(referenceSize * 0.34F)));
-        int visualRight = iconX + iconWidth * 3 / 4;
-        int visualBottom = iconY + iconHeight * 3 / 4;
-        int x = Math.max(iconX,
-                Math.min(iconX + iconWidth - width, visualRight - width - 1));
-        int y = Math.max(iconY, Math.min(iconY + iconHeight - height, visualBottom - height));
+        int height = Math.max(5, Math.min(8, Math.round(referenceSize * 0.45F)));
+        int width = Math.max(4, Math.round(height * 0.7F));
+        int x = iconX + iconWidth - width;
+        int y = iconY + iconHeight - height;
 
-        Color outline = new Color(0xE824180F, true);
-        Color pole = new Color(0xE85A3A21, true);
-        Color fabric = new Color(0xE8000000 | rgb, true);
-        Color fabricShadow = new Color(0xE8000000 | darken(rgb), true);
-        int poleX = x + width / 2;
-        int clothBottom = y + height - 2;
-
-        graphics.setColor(pole);
-        graphics.fillRect(poleX, y, 1, height - 1);
-        graphics.setColor(outline);
-        graphics.fillRect(poleX - 1, y + height - 1, 3, 1);
-
-        graphics.fillRect(x, y + 1, width, 1);
-        graphics.fillRect(x, y + 2, 1, clothBottom - (y + 2));
-        graphics.fillRect(x + width - 1, y + 2, 1, clothBottom - (y + 2));
-        graphics.setColor(fabric);
-        graphics.fillRect(x + 1, y + 2, width - 3, clothBottom - 1 - (y + 2));
-        graphics.setColor(fabricShadow);
-        graphics.fillRect(x + width - 2, y + 2, 1, clothBottom - 1 - (y + 2));
-        graphics.setColor(outline);
-        graphics.fillRect(x, clothBottom - 1, 2, 1);
-        graphics.fillRect(x + width - 2, clothBottom - 1, 2, 1);
-        graphics.setColor(fabric);
-        graphics.fillRect(x + 1, clothBottom - 1, 1, 1);
-        graphics.setColor(fabricShadow);
-        graphics.fillRect(x + width - 2, clothBottom - 1, 1, 1);
+        BufferedImage tintedFabric = tintBannerFabric(fabricMask, rgb);
+        Composite oldComposite = graphics.getComposite();
+        Object oldInterpolation = graphics.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
+        graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0xE8 / 255.0F));
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        graphics.drawImage(base, x, y, width, height, null);
+        graphics.drawImage(tintedFabric, x, y, width, height, null);
+        graphics.setComposite(oldComposite);
+        if (oldInterpolation != null) {
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, oldInterpolation);
+        }
     }
 
-    private static int darken(int rgb) {
-        int red = ((rgb >> 16) & 0xFF) * 3 / 4;
-        int green = ((rgb >> 8) & 0xFF) * 3 / 4;
-        int blue = (rgb & 0xFF) * 3 / 4;
-        return (red << 16) | (green << 8) | blue;
+    private static BufferedImage tintBannerFabric(BufferedImage mask, int rgb) {
+        BufferedImage tinted = new BufferedImage(mask.getWidth(), mask.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        int red = (rgb >> 16) & 0xFF;
+        int green = (rgb >> 8) & 0xFF;
+        int blue = rgb & 0xFF;
+        for (int y = 0; y < mask.getHeight(); y++) {
+            for (int x = 0; x < mask.getWidth(); x++) {
+                int pixel = mask.getRGB(x, y);
+                int alpha = (pixel >>> 24) & 0xFF;
+                int shade = (pixel >> 16) & 0xFF;
+                tinted.setRGB(x, y, (alpha << 24)
+                        | (red * shade / 255 << 16)
+                        | (green * shade / 255 << 8)
+                        | (blue * shade / 255));
+            }
+        }
+        return tinted;
     }
 }

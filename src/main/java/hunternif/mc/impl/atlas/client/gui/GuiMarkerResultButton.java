@@ -2,7 +2,6 @@ package hunternif.mc.impl.atlas.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import hunternif.mc.impl.atlas.client.gui.core.GuiComponentButton;
-import hunternif.mc.impl.atlas.client.texture.ITexture;
 import hunternif.mc.impl.atlas.marker.Marker;
 import hunternif.mc.impl.atlas.registry.MarkerType;
 import net.minecraft.client.Minecraft;
@@ -15,7 +14,8 @@ import java.util.function.Consumer;
 
 /** Compact marker row shared by search results and overlap selection. */
 final class GuiMarkerResultButton extends GuiComponentButton {
-    static final int HEIGHT = 22;
+    static final int HEIGHT = 28;
+    private static final int ICON_SIZE = 20;
 
     private final Marker marker;
     private final boolean hidden;
@@ -46,16 +46,16 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         graphics.fill(getGuiX(), getGuiY(), getGuiX() + getWidth(), getGuiY() + HEIGHT - 1, background);
 
         MarkerType type = MarkerType.REGISTRY.get(marker.getType());
-        ITexture texture = type == null ? null : type.getTexture();
         float tint = hidden ? 0.45F : 1.0F;
         RenderSystem.setShaderColor(tint, tint, tint, 1.0F);
-        if (texture != null) texture.draw(graphics, getGuiX() + 3, getGuiY() + 3, 16, 16);
-        MarkerColorRenderer.drawMarkerBanner(graphics, getGuiX() + 3, getGuiY() + 3,
-                16, 16, marker.getColor(), hidden ? 0x72 : 0xE8);
+        MarkerIconRenderer.Bounds bounds = MarkerIconRenderer.drawNormalized(graphics, type,
+                getGuiX() + 4, getGuiY() + 4, ICON_SIZE, ICON_SIZE);
+        MarkerColorRenderer.drawMarkerBanner(graphics, bounds.x(), bounds.y(),
+                bounds.width(), bounds.height(), marker.getColor(), hidden ? 0x72 : 0xE8);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        int textX = getGuiX() + 23;
-        int textWidth = Math.max(8, getWidth() - 27
+        int textX = getGuiX() + 30;
+        int textWidth = Math.max(8, getWidth() - 34
                 - (editButton == null ? 0 : GuiMarkerEditButton.SIZE + 4));
         String markerName = marker.getLabel().getString();
         if (markerName.isBlank()) {
@@ -63,7 +63,8 @@ final class GuiMarkerResultButton extends GuiComponentButton {
         }
         markerName = font.plainSubstrByWidth(markerName, textWidth);
         int textColor = hidden ? 0xFF8D8D8D : 0xFFF1E3C2;
-        graphics.drawString(font, markerName, textX, getGuiY() + 7, textColor, false);
+        graphics.drawString(font, markerName, textX,
+                getGuiY() + (HEIGHT - font.lineHeight) / 2, textColor, false);
 
         if (isMouseOver && hidden) {
             drawTooltip(List.of(Component.translatable("gui.antiqueatlas.markerSearch.hidden")), font);

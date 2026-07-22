@@ -35,6 +35,7 @@ public class MarkerType {
 	private ResourceLocation[] icons;
 	private BitMatrix[] iconPixels;
 	private int[] iconSizes = null;
+	private VisibleBounds[] visibleBounds = null;
 
 	private int viewSize = 2;
 	private int clipMin = -1000;
@@ -145,6 +146,17 @@ public class MarkerType {
 		return new Texture(getIcon(), iconSizes[iconIndex], iconSizes[iconIndex]);
 	}
 
+	/** Alpha bounds of the currently selected mip, in source-texture pixels. */
+	public VisibleBounds getVisibleBounds() {
+		if (visibleBounds == null || iconIndex < 0 || iconIndex >= visibleBounds.length
+				|| visibleBounds[iconIndex] == null) {
+			int size = iconSizes == null || iconIndex < 0 || iconIndex >= iconSizes.length
+					? 1 : Math.max(1, iconSizes[iconIndex]);
+			return new VisibleBounds(0, 0, size, size);
+		}
+		return visibleBounds[iconIndex];
+	}
+
 	public ResourceLocation[] getAllIcons() {
 		return icons;
 	}
@@ -188,12 +200,23 @@ public class MarkerType {
 		int x = -(int) (size * getCenterX());
 		int y = -(int) (size * getCenterY());
 
-		return new MarkerRenderInfo(getTexture(), x, y, size, size);
+		VisibleBounds bounds = getVisibleBounds();
+		int textureSize = Math.max(1, iconSizes[iconIndex]);
+		int visibleX = (int) Math.round(bounds.x() * size / (double) textureSize);
+		int visibleY = (int) Math.round(bounds.y() * size / (double) textureSize);
+		int visibleWidth = Math.max(1,
+				(int) Math.round(bounds.width() * size / (double) textureSize));
+		int visibleHeight = Math.max(1,
+				(int) Math.round(bounds.height() * size / (double) textureSize));
+
+		return new MarkerRenderInfo(getTexture(), x, y, size, size,
+				visibleX, visibleY, visibleWidth, visibleHeight);
 	}
 
 	public void initMips() {
 		iconSizes = new int[icons.length];
 		iconPixels = new BitMatrix[icons.length];
+		visibleBounds = new VisibleBounds[icons.length];
 		int ALPHA_THRESHOLD = 8;
 		for (int i = 0; i < icons.length; i++) {
 			iconSizes[i] = -1;
@@ -211,6 +234,10 @@ public class MarkerType {
 				bufferedimage = NativeImage.read(is);
 				iconSizes[i] = Math.min(bufferedimage.getWidth(), bufferedimage.getHeight());
 				BitMatrix matrix = new BitMatrix(bufferedimage.getWidth(), bufferedimage.getHeight(), false);
+				int minX = bufferedimage.getWidth();
+				int minY = bufferedimage.getHeight();
+				int maxX = -1;
+				int maxY = -1;
 
 				for (int x = 0; x < bufferedimage.getWidth(); x++) {
 					for (int y = 0; y < bufferedimage.getHeight(); y++) {
@@ -219,6 +246,10 @@ public class MarkerType {
 						int alpha = (color >> 24) & 0xff;
 
 						if(alpha >= ALPHA_THRESHOLD) {
+							minX = Math.min(minX, x);
+							minY = Math.min(minY, y);
+							maxX = Math.max(maxX, x);
+							maxY = Math.max(maxY, y);
 							matrix.set(x, y, true);
 
 							// sides
@@ -237,6 +268,9 @@ public class MarkerType {
 				}
 
 				iconPixels[i] = matrix;
+				visibleBounds[i] = maxX >= minX && maxY >= minY
+						? new VisibleBounds(minX, minY, maxX - minX + 1, maxY - minY + 1)
+						: new VisibleBounds(0, 0, bufferedimage.getWidth(), bufferedimage.getHeight());
 				is.close();
 			} catch (IOException e) {
 				Log.warn(e, "Marker %s -- Error getting texture size data for index %d - %s",
@@ -249,6 +283,9 @@ public class MarkerType {
 				//IOUtils.closeQuietly(iresource);
 			}
 		}
+	}
+
+	public record VisibleBounds(int x, int y, int width, int height) {
 	}
 
 	/* Setters */

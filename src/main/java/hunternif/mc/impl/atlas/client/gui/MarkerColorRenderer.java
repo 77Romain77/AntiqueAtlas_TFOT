@@ -1,12 +1,13 @@
 package hunternif.mc.impl.atlas.client.gui;
 
 import hunternif.mc.impl.atlas.marker.MarkerColor;
+import hunternif.mc.impl.atlas.client.Textures;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 
 /** Draws marker color swatches and the small standing banner attached to icons. */
 final class MarkerColorRenderer {
     private static final int OUTLINE_RGB = 0x24180F;
-    private static final int POLE_RGB = 0x5A3A21;
 
     private MarkerColorRenderer() {
     }
@@ -30,28 +31,33 @@ final class MarkerColorRenderer {
     }
 
     /**
-     * Draws a Minecraft-style banner planted at the lower-right of the visible
-     * marker area. It is rendered after the icon so large marker textures can
-     * never hide it, while remaining inside the icon's maximum footprint.
+     * Draws the shared Minecraft-style banner texture at the lower-right of the
+     * marker's actual visible pixels. Its size follows the symbol rather than
+     * the transparent canvas around it.
      */
     static void drawMarkerBanner(GuiGraphics graphics, int iconX, int iconY,
                                  int iconWidth, int iconHeight, MarkerColor color, int alpha) {
-        if (color == null || !color.isColored() || iconWidth < 6 || iconHeight < 8) return;
+        if (color == null || !color.isColored() || iconWidth < 3 || iconHeight < 3) return;
 
         int referenceSize = Math.min(iconWidth, iconHeight);
-        int bannerWidth = clamp(Math.round(referenceSize * 0.20F), 5, 6);
-        int bannerHeight = clamp(Math.round(referenceSize * 0.34F), 8, 9);
+        int bannerHeight = clamp(Math.round(referenceSize * 0.45F), 5, 8);
+        int bannerWidth = Math.max(4, Math.round(bannerHeight * 0.7F));
+        int bannerX = iconX + iconWidth - bannerWidth;
+        int bannerY = iconY + iconHeight - bannerHeight;
 
-        // Marker textures reserve transparent margins around their symbols. The
-        // central half is the stable visual footprint shared by small and large
-        // icons, so anchor the banner to its lower-right corner.
-        int visualRight = iconX + iconWidth * 3 / 4;
-        int visualBottom = iconY + iconHeight * 3 / 4;
-        int bannerX = clamp(visualRight - bannerWidth - 1,
-                iconX, iconX + iconWidth - bannerWidth);
-        int bannerY = clamp(visualBottom - bannerHeight, iconY, iconY + iconHeight - bannerHeight);
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha / 255.0F);
+        Textures.MARKER_BANNER_BASE.draw(graphics,
+                bannerX, bannerY, bannerWidth, bannerHeight);
 
-        drawStandingBanner(graphics, bannerX, bannerY, bannerWidth, bannerHeight, color, alpha);
+        int rgb = color.getRgb();
+        RenderSystem.setShaderColor(((rgb >> 16) & 0xFF) / 255.0F,
+                ((rgb >> 8) & 0xFF) / 255.0F,
+                (rgb & 0xFF) / 255.0F,
+                alpha / 255.0F);
+        Textures.MARKER_BANNER_FABRIC.draw(graphics,
+                bannerX, bannerY, bannerWidth, bannerHeight);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     static void drawNoColorSwatch(GuiGraphics graphics, int x, int y, int size) {
@@ -78,35 +84,6 @@ final class MarkerColorRenderer {
                 x + width - corner, y + height, color);
     }
 
-    private static void drawStandingBanner(GuiGraphics graphics, int x, int y,
-                                           int width, int height, MarkerColor color, int alpha) {
-        int outline = argb(alpha, OUTLINE_RGB);
-        int pole = argb(alpha, POLE_RGB);
-        int fabric = argb(alpha, color.getRgb());
-        int fabricShadow = argb(alpha, darken(color.getRgb()));
-        int poleX = x + width / 2;
-        int clothBottom = y + height - 2;
-
-        // The centered pole is drawn first so the cloth hangs naturally in
-        // front of it. Only its tip, the notch and its planted foot stay visible.
-        graphics.fill(poleX, y, poleX + 1, y + height - 1, pole);
-        graphics.fill(poleX - 1, y + height - 1, poleX + 2, y + height, outline);
-
-        // Slim Minecraft-style cloth with a one-pixel outline and a split lower
-        // edge. Leaving the center of the last row empty reveals the pole behind.
-        graphics.fill(x, y + 1, x + width, y + 2, outline);
-        graphics.fill(x, y + 2, x + 1, clothBottom, outline);
-        graphics.fill(x + width - 1, y + 2, x + width, clothBottom, outline);
-        graphics.fill(x + 1, y + 2, x + width - 2, clothBottom - 1, fabric);
-        graphics.fill(x + width - 2, y + 2, x + width - 1,
-                clothBottom - 1, fabricShadow);
-        graphics.fill(x, clothBottom - 1, x + 2, clothBottom, outline);
-        graphics.fill(x + width - 2, clothBottom - 1, x + width, clothBottom, outline);
-        graphics.fill(x + 1, clothBottom - 1, x + 2, clothBottom, fabric);
-        graphics.fill(x + width - 2, clothBottom - 1,
-                x + width - 1, clothBottom, fabricShadow);
-    }
-
     private static int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
     }
@@ -115,10 +92,4 @@ final class MarkerColorRenderer {
         return (Math.max(0, Math.min(255, alpha)) << 24) | (rgb & 0xFFFFFF);
     }
 
-    private static int darken(int rgb) {
-        int red = ((rgb >> 16) & 0xFF) * 3 / 4;
-        int green = ((rgb >> 8) & 0xFF) * 3 / 4;
-        int blue = (rgb & 0xFF) * 3 / 4;
-        return (red << 16) | (green << 8) | blue;
-    }
 }

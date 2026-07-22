@@ -32,6 +32,8 @@ public class Textures {
             SCROLLBAR_VER = gui("scrollbar_ver.png", 7,8),
             MARKER_FRAME_ON = gui("marker_frame_on.png", 34, 34),
             MARKER_FRAME_OFF = gui("marker_frame_off.png", 34, 34),
+            MARKER_BANNER_BASE = gui("marker_banner_base.png", 7, 10),
+            MARKER_BANNER_FABRIC = gui("marker_banner_fabric.png", 7, 10),
             ERASER = gui("eraser.png", 24, 24),
 
             SCALEBAR_4 = scaleBar("scalebar_4.png"),
@@ -54,6 +56,10 @@ public class Textures {
             ICON_MAPS = new IconTexture(ResourceLocations.parse(MOD_PREFIX + "textures/item/antique_atlas.png"));
 
     public static final ResourceLocation EXPORTED_BG = ResourceLocations.parse(GUI + "exported_bg.png");
+    public static final ResourceLocation MARKER_BANNER_BASE_LOCATION =
+            ResourceLocations.parse(GUI + "marker_banner_base.png");
+    public static final ResourceLocation MARKER_BANNER_FABRIC_LOCATION =
+            ResourceLocations.parse(GUI + "marker_banner_fabric.png");
 
     // Constructor helpers:
     private static ITexture gui(String fileName, int width, int height) {

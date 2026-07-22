@@ -38,7 +38,6 @@ public class GuiMarkerFinalizer extends GuiComponent {
     private Marker editingMarker;
     private String markerName = "";
     private MarkerColor selectedColor = MarkerColor.NONE;
-    private MarkerColor lastUsedColor = MarkerColor.NONE;
 
     MarkerType selectedType = MarkerType.REGISTRY.get(MarkerType.REGISTRY.getDefaultKey());
 
@@ -75,7 +74,8 @@ public class GuiMarkerFinalizer extends GuiComponent {
         this.markerZ = markerZ;
         this.editingMarker = null;
         this.markerName = "";
-        this.selectedColor = lastUsedColor;
+        this.selectedType = MarkerType.REGISTRY.get(MarkerType.REGISTRY.getDefaultKey());
+        this.selectedColor = MarkerColor.NONE;
         setBlocksScreen(true);
     }
 
@@ -223,8 +223,6 @@ public class GuiMarkerFinalizer extends GuiComponent {
                     atlasID, textField.getValue(), markerX, markerZ);
         }
 
-        lastUsedColor = selectedColor;
-
         LocalPlayer player = Minecraft.getInstance().player;
         world.playSound(player, player.blockPosition(),
                 SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.AMBIENT,
@@ -299,10 +297,11 @@ public class GuiMarkerFinalizer extends GuiComponent {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         ITexture previewTexture = selectedType == null ? null : selectedType.getTexture();
         if (previewTexture != null) {
-            previewTexture.draw(matrices, previewX + 3, previewY + 3,
-                    PREVIEW_SIZE - 6, PREVIEW_SIZE - 6);
-            MarkerColorRenderer.drawMarkerBanner(matrices, previewX + 3, previewY + 3,
-                    PREVIEW_SIZE - 6, PREVIEW_SIZE - 6, selectedColor);
+            MarkerIconRenderer.Bounds bounds = MarkerIconRenderer.drawNormalized(matrices,
+                    selectedType, previewX + 4, previewY + 4,
+                    PREVIEW_SIZE - 8, PREVIEW_SIZE - 8);
+            MarkerColorRenderer.drawMarkerBanner(matrices, bounds.x(), bounds.y(),
+                    bounds.width(), bounds.height(), selectedColor);
         }
         super.render(matrices, mouseX, mouseY, partialTick);
     }

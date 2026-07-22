@@ -56,10 +56,13 @@ public class GuiMarkerBookmark extends GuiComponentButton {
         // Render the icon:
         int iconX = getGuiX() - (isMouseOver ? 3 : 2);
         int iconY = getGuiY() - 3;
-        iconTexture.draw(matrices, iconX, iconY, 24, 24);
+        MarkerType type = MarkerType.REGISTRY.get(marker.getType());
+        MarkerIconRenderer.Bounds bounds = MarkerIconRenderer.drawNormalized(matrices, type,
+                iconX + 3, iconY + 3, 18, 18);
         // Keep the original green bookmark and plant the color banner over the
         // lower-right edge of the marker symbol.
-        MarkerColorRenderer.drawMarkerBanner(matrices, iconX, iconY, 24, 24, marker.getColor());
+        MarkerColorRenderer.drawMarkerBanner(matrices, bounds.x(), bounds.y(),
+                bounds.width(), bounds.height(), marker.getColor());
 
         if (isMouseOver && !getTitle().getString().isEmpty()) {
             drawTooltip(Collections.singletonList(getTitle()), Minecraft.getInstance().font);

@@ -26,10 +26,8 @@ public class GuiMarkerInList extends GuiToggleButton {
         ITexture frame_texture = isSelected() ? Textures.MARKER_FRAME_ON : Textures.MARKER_FRAME_OFF;
         frame_texture.draw(matrices, getGuiX() + 1, getGuiY() + 1);
 
-        ITexture texture = markerType.getTexture();
-        if (texture != null) {
-            texture.draw(matrices, getGuiX() + 1, getGuiY() + 1);
-        }
+        MarkerIconRenderer.drawNormalized(matrices, markerType,
+                getGuiX() + 7, getGuiY() + 7, 20, 20);
 
         super.render(matrices, mouseX, mouseY, partialTick);
     }
