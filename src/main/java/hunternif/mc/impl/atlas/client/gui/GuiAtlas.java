@@ -1310,7 +1310,7 @@ public class GuiAtlas extends GuiComponent {
                         || screenY + tileHalfSize <= mapTop) continue;
                 if (subtile.tile == null) {
                     if (AntiqueAtlas.CONFIG.showUnexploredClouds) {
-                        terrainCacheClouds.add(drawX, drawY,
+                        terrainCacheClouds.add(drawX, drawY, tileHalfSize,
                                 subtile.variationNumber ^ (subtile.part.ordinal() * 0x9E3779B9));
                     }
                     continue;
