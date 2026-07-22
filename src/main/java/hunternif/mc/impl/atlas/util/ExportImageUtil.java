@@ -437,9 +437,9 @@ public class ExportImageUtil {
 
                     if (marker.getColor().isColored()) {
                         drawMarkerBanner(graphics,
-                                markerX + info.x + info.visibleX,
-                                markerY + info.y + info.visibleY,
-                                info.visibleWidth, info.visibleHeight,
+                                markerX + info.x,
+                                markerY + info.y,
+                                info.width, info.height,
                                 marker.getColor().getRgb(), textureImageMap);
                     }
                 }
@@ -455,7 +455,7 @@ public class ExportImageUtil {
         BufferedImage fabricMask = textureImageMap.get(Textures.MARKER_BANNER_FABRIC_LOCATION);
         if (base == null || fabricMask == null) return;
 
-        int height = 10;
+        int height = 12;
         int width = 7;
         int x = iconX + iconWidth - width;
         int y = iconY + iconHeight - height - 2;

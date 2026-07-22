@@ -67,15 +67,19 @@ public class GuiMarkerFinalizer extends GuiComponent {
     GuiMarkerFinalizer() {
     }
 
+    void resetNewMarkerSelection() {
+        this.editingMarker = null;
+        this.markerName = "";
+        this.selectedType = MarkerType.REGISTRY.get(MarkerType.REGISTRY.getDefaultKey());
+        this.selectedColor = MarkerColor.NONE;
+    }
+
     void setMarkerData(Level world, int atlasID, int markerX, int markerZ) {
         this.world = world;
         this.atlasID = atlasID;
         this.markerX = markerX;
         this.markerZ = markerZ;
-        this.editingMarker = null;
-        this.markerName = "";
-        this.selectedType = MarkerType.REGISTRY.get(MarkerType.REGISTRY.getDefaultKey());
-        this.selectedColor = MarkerColor.NONE;
+        resetNewMarkerSelection();
         setBlocksScreen(true);
     }
 

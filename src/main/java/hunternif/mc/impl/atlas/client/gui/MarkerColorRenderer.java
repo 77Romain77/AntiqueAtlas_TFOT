@@ -9,7 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 final class MarkerColorRenderer {
     private static final int OUTLINE_RGB = 0x24180F;
     private static final int BANNER_WIDTH = 7;
-    private static final int BANNER_HEIGHT = 10;
+    private static final int BANNER_HEIGHT = 12;
     private static final int BANNER_RAISE = 2;
 
     private MarkerColorRenderer() {
@@ -35,7 +35,7 @@ final class MarkerColorRenderer {
 
     /**
      * Draws the shared Minecraft-style banner texture at the lower-right of the
-     * marker. The banner deliberately keeps its native 7x10 pixel size in every
+     * marker. The banner deliberately keeps its fixed 7x12 pixel size in every
      * rendering context so bookmarks, map markers and previews stay uniform.
      */
     static void drawMarkerBanner(GuiGraphics graphics, int iconX, int iconY,

@@ -377,6 +377,9 @@ public class GuiAtlas extends GuiComponent {
                 selectedButton = null;
                 state.switchTo(NORMAL);
             } else if (stack != null || !AntiqueAtlas.CONFIG.itemNeeded) {
+                // Reset before entering placement mode so the translucent icon
+                // attached to the cursor never reuses the previous marker.
+                markerFinalizer.resetNewMarkerSelection();
                 selectedButton = button;
                 state.switchTo(PLACING_MARKER);
 
@@ -1190,10 +1193,10 @@ public class GuiAtlas extends GuiComponent {
             markerFinalizer.selectedType.resetMip();
             renderInfo.tex.draw(matrices, mouseX + renderInfo.x, mouseY + renderInfo.y);
             MarkerColorRenderer.drawMarkerBanner(matrices,
-                    mouseX + renderInfo.x + renderInfo.visibleX,
-                    mouseY + renderInfo.y + renderInfo.visibleY,
-                    renderInfo.visibleWidth,
-                    renderInfo.visibleHeight,
+                    mouseX + renderInfo.x,
+                    mouseY + renderInfo.y,
+                    renderInfo.width,
+                    renderInfo.height,
                     markerFinalizer.getSelectedColor(), 0x88);
             RenderSystem.setShaderColor(1, 1, 1, 1);
         }
@@ -1532,10 +1535,10 @@ public class GuiAtlas extends GuiComponent {
                 || (state.is(DELETING_MARKER) && marker.isGlobal()) ? 0x78 : 0xD8;
         info.tex.draw(matrices, markerX + info.x, markerY + info.y, info.width, info.height);
         MarkerColorRenderer.drawMarkerBanner(matrices,
-                markerX + info.x + info.visibleX,
-                markerY + info.y + info.visibleY,
-                info.visibleWidth,
-                info.visibleHeight,
+                markerX + info.x,
+                markerY + info.y,
+                info.width,
+                info.height,
                 marker.getColor(), badgeAlpha);
         if (diagnosticVisible) {
             diagnosticMarkersRendered++;
