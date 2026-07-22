@@ -47,13 +47,17 @@ public class GuiMarkerFinalizer extends GuiComponent {
 
     private static final int TYPE_SPACING = 1;
     private static final int TYPE_BG_FRAME = 4;
+    private static final int TYPE_SCROLLBAR_HEIGHT = 7;
     private static final int COLOR_COLUMNS = 9;
     private static final int COLOR_SPACING = 2;
-    private static final int COLOR_LABEL_OFFSET = 20;
-    private static final int COLOR_TOP_OFFSET = 34;
+    private static final int SECTION_LABEL_GAP = 6;
+    private static final int LABEL_CONTENT_GAP = 5;
+    private static final int COLOR_LABEL_OFFSET = -25 + GuiMarkerInList.FRAME_SIZE
+            + TYPE_SPACING + TYPE_SCROLLBAR_HEIGHT + TYPE_BG_FRAME + SECTION_LABEL_GAP;
+    private static final int COLOR_TOP_OFFSET = COLOR_LABEL_OFFSET + 9 + LABEL_CONTENT_GAP;
     // A 32x32 icon matches a regular marker rendered on the atlas at zoom x1.
     private static final int PREVIEW_SIZE = GuiAtlas.MARKER_SIZE + 6;
-    private static final int CONTROLS_Y_OFFSET = 78;
+    private static final int CONTROLS_Y_OFFSET = COLOR_TOP_OFFSET + PREVIEW_SIZE + 6;
 
     private Button btnDone;
     private Button btnCancel;
@@ -300,6 +304,10 @@ public class GuiMarkerFinalizer extends GuiComponent {
 
         int previewX = paletteX + paletteWidth + 8;
         int previewY = this.height / 2 + COLOR_TOP_OFFSET;
+        Component previewLabel = Component.translatable("gui.antiqueatlas.markerColor.preview");
+        matrices.drawString(font, previewLabel,
+                previewX + (PREVIEW_SIZE - font.width(previewLabel)) / 2,
+                this.height / 2 + COLOR_LABEL_OFFSET, 0xFFFFFF, true);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         ITexture previewTexture = selectedType == null ? null : selectedType.getTexture();
         if (previewTexture != null) {

@@ -32,6 +32,7 @@
   "gui.antiqueatlas.markerEdit.delete": "Delete",
   "gui.antiqueatlas.markerEdit.choose": "Choose a marker to edit",
   "gui.antiqueatlas.markerColor.title": "Color:",
+  "gui.antiqueatlas.markerColor.preview": "Preview:",
   "gui.antiqueatlas.markerColor.none": "No color",
   "gui.antiqueatlas.markerColor.black": "Black",
   "gui.antiqueatlas.markerColor.dark_blue": "Dark blue",

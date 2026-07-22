@@ -14,8 +14,6 @@ final class MarkerColorRenderer {
     private static final int BANNER_RAISE = 7;
     private static final int COMPACT_BANNER_WIDTH = 6;
     private static final int COMPACT_BANNER_HEIGHT = 10;
-    private static final int COMPACT_BANNER_SHIFT_LEFT = 6;
-    private static final int COMPACT_BANNER_RAISE = 9;
 
     private MarkerColorRenderer() {
     }
@@ -45,9 +43,15 @@ final class MarkerColorRenderer {
 
     static void drawCompactMarkerBanner(GuiGraphics graphics, int iconX, int iconY,
                                         int iconWidth, int iconHeight, MarkerColor color, int alpha) {
-        drawMarkerBanner(graphics, iconX, iconY, iconWidth, iconHeight, color, alpha,
-                COMPACT_BANNER_WIDTH, COMPACT_BANNER_HEIGHT,
-                COMPACT_BANNER_SHIFT_LEFT, COMPACT_BANNER_RAISE);
+        if (color == null || !color.isColored() || iconWidth < 3 || iconHeight < 3) return;
+
+        // Compact icons use different canvas sizes in bookmarks and search
+        // rows. Center the banner in the actual icon canvas so it does not
+        // drift upward (or sideways) when the surrounding slot changes.
+        int bannerX = iconX + (iconWidth - COMPACT_BANNER_WIDTH) / 2;
+        int bannerY = iconY + (iconHeight - COMPACT_BANNER_HEIGHT) / 2;
+        drawBanner(graphics, bannerX, bannerY,
+                COMPACT_BANNER_WIDTH, COMPACT_BANNER_HEIGHT, color, alpha);
     }
 
     /**
@@ -70,6 +74,13 @@ final class MarkerColorRenderer {
 
         int bannerX = iconX + iconWidth - bannerWidth - shiftLeft;
         int bannerY = iconY + iconHeight - bannerHeight - raise;
+
+        drawBanner(graphics, bannerX, bannerY, bannerWidth, bannerHeight, color, alpha);
+    }
+
+    private static void drawBanner(GuiGraphics graphics, int bannerX, int bannerY,
+                                   int bannerWidth, int bannerHeight,
+                                   MarkerColor color, int alpha) {
 
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha / 255.0F);

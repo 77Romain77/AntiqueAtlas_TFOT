@@ -60,7 +60,7 @@ public class GuiMarkerBookmark extends GuiComponentButton {
         // Keep the original green bookmark and use the compact banner variant
         // so it stays balanced inside this narrow tab.
         MarkerColorRenderer.drawCompactMarkerBanner(matrices, iconX, iconY,
-                23, 23, marker.getColor());
+                24, 24, marker.getColor());
 
         if (isMouseOver && !getTitle().getString().isEmpty()) {
             drawTooltip(Collections.singletonList(getTitle()), Minecraft.getInstance().font);
