@@ -39,15 +39,16 @@ final class MarkerColorRenderer {
         if (color == null || !color.isColored() || iconWidth < 6 || iconHeight < 8) return;
 
         int referenceSize = Math.min(iconWidth, iconHeight);
-        int bannerWidth = clamp(Math.round(referenceSize * 0.25F), 6, 7);
-        int bannerHeight = clamp(Math.round(referenceSize * 0.375F), 8, 10);
+        int bannerWidth = clamp(Math.round(referenceSize * 0.20F), 5, 6);
+        int bannerHeight = clamp(Math.round(referenceSize * 0.34F), 8, 9);
 
         // Marker textures reserve transparent margins around their symbols. The
         // central half is the stable visual footprint shared by small and large
         // icons, so anchor the banner to its lower-right corner.
         int visualRight = iconX + iconWidth * 3 / 4;
         int visualBottom = iconY + iconHeight * 3 / 4;
-        int bannerX = clamp(visualRight - bannerWidth, iconX, iconX + iconWidth - bannerWidth);
+        int bannerX = clamp(visualRight - bannerWidth - 1,
+                iconX, iconX + iconWidth - bannerWidth);
         int bannerY = clamp(visualBottom - bannerHeight, iconY, iconY + iconHeight - bannerHeight);
 
         drawStandingBanner(graphics, bannerX, bannerY, bannerWidth, bannerHeight, color, alpha);
@@ -82,22 +83,28 @@ final class MarkerColorRenderer {
         int outline = argb(alpha, OUTLINE_RGB);
         int pole = argb(alpha, POLE_RGB);
         int fabric = argb(alpha, color.getRgb());
+        int fabricShadow = argb(alpha, darken(color.getRgb()));
+        int poleX = x + width / 2;
+        int clothBottom = y + height - 2;
 
-        // Dark one-pixel outline around the cloth, including its split lower edge.
-        graphics.fill(x + 1, y + 1, x + width, y + height - 2, outline);
-        graphics.fill(x + 1, y + height - 2, x + 2, y + height - 1, outline);
-        graphics.fill(x + width - 1, y + height - 2, x + width, y + height - 1, outline);
+        // The centered pole is drawn first so the cloth hangs naturally in
+        // front of it. Only its tip, the notch and its planted foot stay visible.
+        graphics.fill(poleX, y, poleX + 1, y + height - 1, pole);
+        graphics.fill(poleX - 1, y + height - 1, poleX + 2, y + height, outline);
 
-        // Colored fabric. The two lower pixels form the familiar banner notch.
-        graphics.fill(x + 2, y + 2, x + width - 1, y + height - 3, fabric);
-        graphics.fill(x + 2, y + height - 3, x + 3, y + height - 2, fabric);
-        graphics.fill(x + width - 2, y + height - 3,
-                x + width - 1, y + height - 2, fabric);
-
-        // Pole, top crossbar and small foot make the banner look planted on the map.
-        graphics.fill(x, y, x + width, y + 1, outline);
-        graphics.fill(x, y + 1, x + 1, y + height, pole);
-        graphics.fill(x, y + height - 1, x + 3, y + height, outline);
+        // Slim Minecraft-style cloth with a one-pixel outline and a split lower
+        // edge. Leaving the center of the last row empty reveals the pole behind.
+        graphics.fill(x, y + 1, x + width, y + 2, outline);
+        graphics.fill(x, y + 2, x + 1, clothBottom, outline);
+        graphics.fill(x + width - 1, y + 2, x + width, clothBottom, outline);
+        graphics.fill(x + 1, y + 2, x + width - 2, clothBottom - 1, fabric);
+        graphics.fill(x + width - 2, y + 2, x + width - 1,
+                clothBottom - 1, fabricShadow);
+        graphics.fill(x, clothBottom - 1, x + 2, clothBottom, outline);
+        graphics.fill(x + width - 2, clothBottom - 1, x + width, clothBottom, outline);
+        graphics.fill(x + 1, clothBottom - 1, x + 2, clothBottom, fabric);
+        graphics.fill(x + width - 2, clothBottom - 1,
+                x + width - 1, clothBottom, fabricShadow);
     }
 
     private static int clamp(int value, int min, int max) {
@@ -106,5 +113,12 @@ final class MarkerColorRenderer {
 
     private static int argb(int alpha, int rgb) {
         return (Math.max(0, Math.min(255, alpha)) << 24) | (rgb & 0xFFFFFF);
+    }
+
+    private static int darken(int rgb) {
+        int red = ((rgb >> 16) & 0xFF) * 3 / 4;
+        int green = ((rgb >> 8) & 0xFF) * 3 / 4;
+        int blue = (rgb & 0xFF) * 3 / 4;
+        return (red << 16) | (green << 8) | blue;
     }
 }

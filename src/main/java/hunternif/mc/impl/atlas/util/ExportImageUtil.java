@@ -446,32 +446,46 @@ public class ExportImageUtil {
         if (iconWidth < 6 || iconHeight < 8) return;
 
         int referenceSize = Math.min(iconWidth, iconHeight);
-        int width = Math.max(6, Math.min(7, Math.round(referenceSize * 0.25F)));
-        int height = Math.max(8, Math.min(10, Math.round(referenceSize * 0.375F)));
+        int width = Math.max(5, Math.min(6, Math.round(referenceSize * 0.20F)));
+        int height = Math.max(8, Math.min(9, Math.round(referenceSize * 0.34F)));
         int visualRight = iconX + iconWidth * 3 / 4;
         int visualBottom = iconY + iconHeight * 3 / 4;
-        int x = Math.max(iconX, Math.min(iconX + iconWidth - width, visualRight - width));
+        int x = Math.max(iconX,
+                Math.min(iconX + iconWidth - width, visualRight - width - 1));
         int y = Math.max(iconY, Math.min(iconY + iconHeight - height, visualBottom - height));
 
         Color outline = new Color(0xE824180F, true);
         Color pole = new Color(0xE85A3A21, true);
         Color fabric = new Color(0xE8000000 | rgb, true);
+        Color fabricShadow = new Color(0xE8000000 | darken(rgb), true);
+        int poleX = x + width / 2;
+        int clothBottom = y + height - 2;
 
-        graphics.setColor(outline);
-        graphics.fillRect(x + 1, y + 1, width - 1, height - 3);
-        graphics.fillRect(x + 1, y + height - 2, 1, 1);
-        graphics.fillRect(x + width - 1, y + height - 2, 1, 1);
-
-        graphics.setColor(fabric);
-        graphics.fillRect(x + 2, y + 2, width - 3, height - 5);
-        graphics.fillRect(x + 2, y + height - 3, 1, 1);
-        graphics.fillRect(x + width - 2, y + height - 3, 1, 1);
-
-        graphics.setColor(outline);
-        graphics.fillRect(x, y, width, 1);
         graphics.setColor(pole);
-        graphics.fillRect(x, y + 1, 1, height - 1);
+        graphics.fillRect(poleX, y, 1, height - 1);
         graphics.setColor(outline);
-        graphics.fillRect(x, y + height - 1, 3, 1);
+        graphics.fillRect(poleX - 1, y + height - 1, 3, 1);
+
+        graphics.fillRect(x, y + 1, width, 1);
+        graphics.fillRect(x, y + 2, 1, clothBottom - (y + 2));
+        graphics.fillRect(x + width - 1, y + 2, 1, clothBottom - (y + 2));
+        graphics.setColor(fabric);
+        graphics.fillRect(x + 1, y + 2, width - 3, clothBottom - 1 - (y + 2));
+        graphics.setColor(fabricShadow);
+        graphics.fillRect(x + width - 2, y + 2, 1, clothBottom - 1 - (y + 2));
+        graphics.setColor(outline);
+        graphics.fillRect(x, clothBottom - 1, 2, 1);
+        graphics.fillRect(x + width - 2, clothBottom - 1, 2, 1);
+        graphics.setColor(fabric);
+        graphics.fillRect(x + 1, clothBottom - 1, 1, 1);
+        graphics.setColor(fabricShadow);
+        graphics.fillRect(x + width - 2, clothBottom - 1, 1, 1);
+    }
+
+    private static int darken(int rgb) {
+        int red = ((rgb >> 16) & 0xFF) * 3 / 4;
+        int green = ((rgb >> 8) & 0xFF) * 3 / 4;
+        int blue = (rgb & 0xFF) * 3 / 4;
+        return (red << 16) | (green << 8) | blue;
     }
 }
