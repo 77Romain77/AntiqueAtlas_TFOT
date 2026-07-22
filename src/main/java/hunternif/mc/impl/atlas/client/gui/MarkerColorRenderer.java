@@ -40,8 +40,8 @@ final class MarkerColorRenderer {
         if (color == null || !color.isColored() || iconWidth < 3 || iconHeight < 3) return;
 
         int referenceSize = Math.min(iconWidth, iconHeight);
-        int bannerHeight = clamp(Math.round(referenceSize * 0.45F), 5, 8);
-        int bannerWidth = Math.max(4, Math.round(bannerHeight * 0.7F));
+        int bannerHeight = clamp(Math.round(referenceSize * 0.50F), 6, 10);
+        int bannerWidth = Math.max(5, Math.round(bannerHeight * 0.75F));
         int bannerX = iconX + iconWidth - bannerWidth;
         int bannerY = iconY + iconHeight - bannerHeight;
 

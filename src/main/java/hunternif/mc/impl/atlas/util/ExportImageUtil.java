@@ -456,8 +456,8 @@ public class ExportImageUtil {
         if (base == null || fabricMask == null) return;
 
         int referenceSize = Math.min(iconWidth, iconHeight);
-        int height = Math.max(5, Math.min(8, Math.round(referenceSize * 0.45F)));
-        int width = Math.max(4, Math.round(height * 0.7F));
+        int height = Math.max(6, Math.min(10, Math.round(referenceSize * 0.50F)));
+        int width = Math.max(5, Math.round(height * 0.75F));
         int x = iconX + iconWidth - width;
         int y = iconY + iconHeight - height;
 
