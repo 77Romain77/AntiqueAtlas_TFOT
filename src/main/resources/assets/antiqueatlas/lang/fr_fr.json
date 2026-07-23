@@ -75,6 +75,7 @@
   "gui.antiqueatlas.config.scanRadius": "Rayon d’analyse : %s",
   "gui.antiqueatlas.config.scanBudget": "Budget d’analyse : %s",
   "gui.antiqueatlas.config.unexploredClouds": "Nuages sur le terrain non exploré : %s",
+  "gui.antiqueatlas.config.bookSpine": "Pliure centrale du livre : %s",
 
   "gui.antiqueatlas.marker.label": "Nom :",
   "gui.antiqueatlas.marker.type": "Type :",

@@ -75,6 +75,7 @@
   "gui.antiqueatlas.config.scanRadius": "Scan radius: %s",
   "gui.antiqueatlas.config.scanBudget": "Scan budget: %s",
   "gui.antiqueatlas.config.unexploredClouds": "Clouds over unexplored terrain: %s",
+  "gui.antiqueatlas.config.bookSpine": "Book center crease: %s",
 
   "gui.antiqueatlas.marker.label": "Label:",
   "gui.antiqueatlas.marker.type": "Type:",

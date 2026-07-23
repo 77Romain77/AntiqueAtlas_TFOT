@@ -48,8 +48,13 @@ public class GuiClientSettings extends Screen {
             button.setMessage(cloudsLabel());
         }).bounds(x, y + 72, 220, 20).build());
 
+        addRenderableWidget(Button.builder(bookSpineLabel(), button -> {
+            AntiqueAtlas.CONFIG.showBookSpine = !AntiqueAtlas.CONFIG.showBookSpine;
+            button.setMessage(bookSpineLabel());
+        }).bounds(x, y + 96, 220, 20).build());
+
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose())
-                .bounds(width / 2 - 50, y + 108, 100, 20).build());
+                .bounds(width / 2 - 50, y + 132, 100, 20).build());
     }
 
     private Component itemLabel() {
@@ -71,6 +76,10 @@ public class GuiClientSettings extends Screen {
     private Component cloudsLabel() {
         return option("gui.antiqueatlas.config.unexploredClouds",
                 AntiqueAtlas.CONFIG.showUnexploredClouds);
+    }
+
+    private Component bookSpineLabel() {
+        return option("gui.antiqueatlas.config.bookSpine", AntiqueAtlas.CONFIG.showBookSpine);
     }
 
     private static Component option(String key, boolean enabled) {

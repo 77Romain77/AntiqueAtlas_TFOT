@@ -1116,7 +1116,9 @@ public class GuiAtlas extends GuiComponent {
         // TODO fix me for 1.17
 //        RenderSystem.enableAlphaTest();
 //        RenderSystem.alphaFunc(GL11.GL_GREATER, 0); // So light detail on tiles is visible
-        Textures.BOOK.draw(matrices, getGuiX(), getGuiY());
+        ITexture bookTexture = AntiqueAtlas.CONFIG.showBookSpine
+                ? Textures.BOOK : Textures.BOOK_FLAT;
+        bookTexture.draw(matrices, getGuiX(), getGuiY());
 
         if ((stack == null && AntiqueAtlas.CONFIG.itemNeeded) || biomeData == null)
             return;
@@ -1165,7 +1167,9 @@ public class GuiAtlas extends GuiComponent {
 
         // Overlay the frame so that edges of the map are smooth:
         RenderSystem.setShaderColor(1, 1, 1, 1);
-        Textures.BOOK_FRAME.draw(matrices, getGuiX(), getGuiY());
+        ITexture bookFrameTexture = AntiqueAtlas.CONFIG.showBookSpine
+                ? Textures.BOOK_FRAME : Textures.BOOK_FRAME_FLAT;
+        bookFrameTexture.draw(matrices, getGuiX(), getGuiY());
 
         double iconScale = getIconScale();
 
@@ -1177,7 +1181,9 @@ public class GuiAtlas extends GuiComponent {
 
         RenderSystem.disableScissor();
 
-        Textures.BOOK_FRAME_NARROW.draw(matrices, getGuiX(), getGuiY());
+        ITexture narrowBookFrameTexture = AntiqueAtlas.CONFIG.showBookSpine
+                ? Textures.BOOK_FRAME_NARROW : Textures.BOOK_FRAME_NARROW_FLAT;
+        narrowBookFrameTexture.draw(matrices, getGuiX(), getGuiY());
 
         renderScaleOverlay(matrices, deltaMillis);
 
