@@ -23,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * This GUI is used select marker icon and enter a label.
@@ -268,6 +269,10 @@ public class GuiMarkerFinalizer extends GuiComponent {
 
     @Override
     public boolean keyPressed(int aa, int bb, int cc) {
+        if (aa == GLFW.GLFW_KEY_ESCAPE) {
+            closeChild();
+            return true;
+        }
         return super.keyPressed(aa, bb, cc) || textField.keyPressed(aa, bb, cc);
     }
 

@@ -495,6 +495,7 @@ public class GuiAtlas extends GuiComponent {
     }
 
     public void openMarkerFinalizer(Component name) {
+        if (isMapInteractionBlocked()) return;
         markerFinalizer.setMarkerData(player.getCommandSenderWorld(),
                 getAtlasID(),
                 (int) player.getX(), (int) player.getZ());
@@ -521,7 +522,7 @@ public class GuiAtlas extends GuiComponent {
     }
 
     private void openMarkerEditor(Marker marker) {
-        if (marker == null || marker.isGlobal()) return;
+        if (marker == null || marker.isGlobal() || isMapInteractionBlocked()) return;
         markerFinalizer.setMarkerDataForEditing(player.getCommandSenderWorld(), getAtlasID(), marker);
         addChild(markerFinalizer);
 
@@ -763,6 +764,12 @@ public class GuiAtlas extends GuiComponent {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // Modal children get exclusive keyboard control. This also prevents
+        // navigation and zoom shortcuts from affecting the atlas behind them.
+        if (isMapInteractionBlocked()) {
+            super.keyPressed(keyCode, scanCode, modifiers);
+            return true;
+        }
         if (keyCode == GLFW.GLFW_KEY_D && hasControlDown()) {
             // Ignore GLFW key-repeat events: one physical press toggles once.
             if (!diagnosticShortcutDown) {
@@ -773,10 +780,12 @@ public class GuiAtlas extends GuiComponent {
                 }
             }
             return true;
-        } else if (keyCode == GLFW.GLFW_KEY_ESCAPE && markerFilter.getParent() != null) {
-            // Escape from the filter must behave exactly like its Done button,
-            // otherwise the full-screen child remains attached to this atlas.
-            markerFilter.closeChild();
+        } else if (keyCode == GLFW.GLFW_KEY_ESCAPE
+                && (state.is(PLACING_MARKER) || state.is(DELETING_MARKER))) {
+            // Escape first cancels the temporary map tool. A second Escape can
+            // then close the atlas normally.
+            selectedButton = null;
+            state.switchTo(NORMAL);
             return true;
         } else if (keyCode == GLFW.GLFW_KEY_UP) {
             navigateMap(0, navigateStep);
@@ -819,6 +828,10 @@ public class GuiAtlas extends GuiComponent {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double wheelMove) {
+        if (isMapInteractionBlocked()) {
+            super.mouseScrolled(mx, my, wheelMove);
+            return true;
+        }
         double origWheelMove = wheelMove;
 
         boolean handled = super.mouseScrolled(mx, my, origWheelMove);
@@ -856,6 +869,9 @@ public class GuiAtlas extends GuiComponent {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int mouseState) {
+        if (isMapInteractionBlocked()) {
+            return super.mouseReleased(mouseX, mouseY, mouseState);
+        }
         boolean result = false;
         if (mouseState != -1) {
             result = selectedButton != null || isDragging;
@@ -869,6 +885,9 @@ public class GuiAtlas extends GuiComponent {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int lastMouseButton, double deltaX, double deltaY) {
+        if (isMapInteractionBlocked()) {
+            return super.mouseDragged(mouseX, mouseY, lastMouseButton, deltaX, deltaY);
+        }
         boolean result = false;
         if (isDragging) {
             followPlayer = false;
@@ -1212,7 +1231,7 @@ public class GuiAtlas extends GuiComponent {
         }
         RenderSystem.disableBlend();
 
-        if (AntiqueAtlas.CONFIG.debugRender && !isDragging && isMouseOver) {
+        if (AntiqueAtlas.CONFIG.debugRender && !isMapInteractionBlocked() && !isDragging && isMouseOver) {
             int x = screenXToWorldX((int) getMouseX());
             int z = screenYToWorldZ((int) getMouseY());
 
@@ -1511,7 +1530,9 @@ public class GuiAtlas extends GuiComponent {
         type.calculateMip(scale, mapScale, screenScale);
         MarkerRenderInfo info = type.getRenderInfo(scale, mapScale, screenScale);
 
-        boolean mouseIsOverMarker = type.shouldHover((getMouseX() - (markerX + info.x)) / info.tex.width(), (getMouseY() - (markerY + info.y)) / info.tex.height());
+        boolean mouseIsOverMarker = !isMapInteractionBlocked()
+                && type.shouldHover((getMouseX() - (markerX + info.x)) / info.tex.width(),
+                (getMouseY() - (markerY + info.y)) / info.tex.height());
         type.resetMip();
 
         if (mouseIsOverMarker) {
@@ -1649,6 +1670,18 @@ public class GuiAtlas extends GuiComponent {
             btnMarkerSearch.setSelected(false);
             hoveredMarker = null;
         }
+    }
+
+    /**
+     * The atlas must be inert while one of its modal panels is displayed.
+     * Keeping this explicit also prevents map marker hover state from being
+     * computed and rendered behind a modal.
+     */
+    private boolean isMapInteractionBlocked() {
+        return markerFinalizer.getParent() != null
+                || markerFilter.getParent() != null
+                || markerSearch.getParent() != null
+                || markerPicker.getParent() != null;
     }
 
     /**

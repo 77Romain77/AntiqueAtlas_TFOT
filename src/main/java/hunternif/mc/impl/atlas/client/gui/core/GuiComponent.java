@@ -310,6 +310,12 @@ public class GuiComponent extends Screen {
             if (callMethod.call(child)) {
                 return true;
             }
+            // A full-screen modal consumes input even when the pointer is
+            // outside one of its controls. Without this, clicks and scrolling
+            // fall through to the atlas behind the modal.
+            if (child.blocksScreen) {
+                return true;
+            }
         }
 
         return false;
