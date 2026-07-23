@@ -617,12 +617,54 @@ public class GuiComponent extends Screen {
      * </p>
      */
     protected void drawTooltip(List<Component> lines, Font font) {
+        // A screen-blocking child is a modal panel. Components behind that
+        // panel may still have their last mouse-over state from the frame in
+        // which the panel was opened, but must never draw a tooltip on top of
+        // the modal. Tooltips belonging to the modal itself remain allowed.
+        if (!mayDrawTooltip()) {
+            return;
+        }
         GuiComponent topLevel = getTopLevelParent();
         topLevel.hoveringTextInfo.lines = lines;
         topLevel.hoveringTextInfo.x = getMouseX();
         topLevel.hoveringTextInfo.y = getMouseY();
         topLevel.hoveringTextInfo.font = font;
         topLevel.hoveringTextInfo.shouldDraw = true;
+    }
+
+    /**
+     * Returns whether this component belongs to the topmost modal currently
+     * displayed by the atlas. This keeps stale hover tooltips from underlying
+     * controls out of modal screens without disabling tooltips inside them.
+     */
+    private boolean mayDrawTooltip() {
+        GuiComponent topLevel = getTopLevelParent();
+        GuiComponent modal = topLevel.findTopmostScreenBlocker();
+        if (modal == null) {
+            return true;
+        }
+
+        for (GuiComponent component = this; component != null; component = component.parent) {
+            if (component == modal) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private GuiComponent findTopmostScreenBlocker() {
+        ListIterator<GuiComponent> iter = children.listIterator(children.size());
+        while (iter.hasPrevious()) {
+            GuiComponent child = iter.previous();
+            GuiComponent nestedBlocker = child.findTopmostScreenBlocker();
+            if (nestedBlocker != null) {
+                return nestedBlocker;
+            }
+            if (child.blocksScreen) {
+                return child;
+            }
+        }
+        return null;
     }
 
     /**
