@@ -71,16 +71,18 @@ public class GuiAtlas extends GuiComponent {
     private static final int DIAGNOSTIC_SAMPLE_COUNT = 60;
     private static final int DIAGNOSTIC_PADDING = 4;
     private static final int DIAGNOSTIC_MARGIN = 5;
+    private static final long DIAGNOSTIC_HOLD_NANOS = 5_000_000_000L;
 
     private final long[] renderTimes = new long[30];
 
     /**
      * Hidden, session-only performance overlay. It is intentionally absent
-     * from the config and normal controls; Ctrl+D toggles it while the atlas
-     * is open.
+     * from the config and normal controls. Hold Ctrl+D for five seconds to
+     * reveal it while the atlas is open, then press Ctrl+D once to hide it.
      */
     private boolean diagnosticVisible;
     private boolean diagnosticShortcutDown;
+    private long diagnosticHoldStartNanos;
     private final long[] diagnosticFrameTimes = new long[DIAGNOSTIC_SAMPLE_COUNT];
     private final long[] diagnosticTerrainTimes = new long[DIAGNOSTIC_SAMPLE_COUNT];
     private int diagnosticSampleIndex;
@@ -771,12 +773,15 @@ public class GuiAtlas extends GuiComponent {
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_D && hasControlDown()) {
-            // Ignore GLFW key-repeat events: one physical press toggles once.
+            // Ignore GLFW key-repeat events. Opening requires a five-second
+            // hold, while a fresh press closes an already visible overlay.
             if (!diagnosticShortcutDown) {
-                diagnosticVisible = !diagnosticVisible;
                 diagnosticShortcutDown = true;
                 if (diagnosticVisible) {
-                    resetDiagnosticSamples();
+                    diagnosticVisible = false;
+                    diagnosticHoldStartNanos = 0L;
+                } else {
+                    diagnosticHoldStartNanos = System.nanoTime();
                 }
             }
             return true;
@@ -822,6 +827,7 @@ public class GuiAtlas extends GuiComponent {
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_D) {
             diagnosticShortcutDown = false;
+            diagnosticHoldStartNanos = 0L;
         }
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
@@ -918,6 +924,7 @@ public class GuiAtlas extends GuiComponent {
     public void tick() {
         super.tick();
         updateRescanButton();
+        updateDiagnosticShortcut();
         if (player == null) return;
         if (followPlayer) {
             setMapPosition(player.getBlockX(), player.getBlockZ());
@@ -990,6 +997,25 @@ public class GuiAtlas extends GuiComponent {
                     Component.translatable("gui.antiqueatlas.rescan.help.1"),
                     Component.translatable("gui.antiqueatlas.rescan.help.2"),
                     Component.translatable("gui.antiqueatlas.rescan.help.3")));
+        }
+    }
+
+    private void updateDiagnosticShortcut() {
+        if (diagnosticVisible || !diagnosticShortcutDown) return;
+
+        long window = Minecraft.getInstance().getWindow().getWindow();
+        boolean dDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_D) == GLFW.GLFW_PRESS;
+        if (!dDown || !hasControlDown() || isMapInteractionBlocked()) {
+            diagnosticShortcutDown = false;
+            diagnosticHoldStartNanos = 0L;
+            return;
+        }
+
+        if (diagnosticHoldStartNanos != 0L
+                && System.nanoTime() - diagnosticHoldStartNanos >= DIAGNOSTIC_HOLD_NANOS) {
+            diagnosticVisible = true;
+            diagnosticHoldStartNanos = 0L;
+            resetDiagnosticSamples();
         }
     }
 
@@ -1411,7 +1437,8 @@ public class GuiAtlas extends GuiComponent {
                 "Cache terrain : " + terrainCacheFrameState,
                 "Reconstructions : " + terrainCacheRebuildCount,
                 String.format("Derniere : %.2f ms (%s)",
-                        terrainCacheLastBuildNanos / 1_000_000.0, terrainCacheLastReason)
+                        terrainCacheLastBuildNanos / 1_000_000.0, terrainCacheLastReason),
+                "Ctrl + D pour fermer"
         );
 
         int textWidth = 0;
